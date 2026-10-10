@@ -16,6 +16,7 @@ Start with [README.md](README.md), then the doc for your area:
 | 0x85 metadata record, lane cells | `ars510/shell85.py` | `docs/04` |
 | ACC target, support messages, car-bus 0x366 | `ars510/support.py` | `docs/05`, `docs/13` |
 | openpilot-facing interface, profiles, filters | `ars510/interface.py` | `docs/08`, `docs/11`, `docs/12` |
+| what each fork does with the radar lead | `tools/fork_lead/` | `docs/14` |
 | install into openpilot / forks | `openpilot/install.py`, `openpilot/ars510_radar_interface.py` | `openpilot/README.md` |
 | replay harness, Cabana, figures | `tools/` | `docs/09` |
 

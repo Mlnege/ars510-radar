@@ -27,6 +27,8 @@ One installer serves every fork: it copies the decoder and appends a 4-line hook
 | StarPilot | same hook; driven by the owner with the earlier patch-based install |
 | any fork | optional `openpilot/radard_vision_fusion.patch` ([openpilot/README](../openpilot/README.md#optional-radard-patch)) |
 
+What sunnypilot, FrogPilot and StarPilot each do with a radar lead, and how the radar's speed errors reach their planners: [14](14_forks.md).
+
 ## How it hooks in
 
 1. **Detection** (hook around Toyota's `CarInterface._get_params`). A `RADAR_ACC` Toyota gets
