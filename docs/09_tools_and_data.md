@@ -8,6 +8,7 @@
 | [`tools/build_cabana_route.py`](../tools/build_cabana_route.py) | appends reassembled objects to your rlogs on a virtual bus, for Cabana; `--dbc-only` regenerates `dbc/ars510_objects_vbus.dbc` |
 | [`tools/openpilot_replay/process_replay_ars510.py`](../tools/openpilot_replay/process_replay_ars510.py) | openpilot's own process_replay (card → radard → plannerd), stock vs installed integration |
 | [`tools/openpilot_replay/replay_radard.py`](../tools/openpilot_replay/replay_radard.py) | radard + planner only, several interface profiles side by side |
+| [`tools/fork_lead/`](../tools/fork_lead) | runs a fork's own radard and MPC lead handling on your drives: `prepare_route.py`, `fork_replay.py`, `fork_report.py`, `fork_synth.py` ([below](#compare-forks)) |
 | [`tools/check_structure.py`](../tools/check_structure.py) | CRC, slot-index and allocation-count checks on the bundled samples |
 | [`tools/make_profile_figures.py`](../tools/make_profile_figures.py) | runs the profiles on the bundled samples: the examples in [12](12_kalman_filter.md); a template for plotting your own idea |
 | [`tools/make_analysis_figures.py`](../tools/make_analysis_figures.py), [`make_fused_figures.py`](../tools/make_fused_figures.py), [`make_guide_figures.py`](../tools/make_guide_figures.py), [`make_jitter_figures.py`](../tools/make_jitter_figures.py), [`make_figures.py`](../tools/make_figures.py) | rebuild the other charts in `docs/` |
@@ -77,6 +78,24 @@ if clip rendering fails on `-vsync`.
 
 Here `vision` is unmodified openpilot (vision-only leads on this car) and `ars510` the installed integration; install
 another profile into a second opendbc copy (`install.py /tmp/opendbc_raw --profile raw`) to compare profiles.
+
+### Compare forks
+
+[14](14_forks.md) comes from `tools/fork_lead/`, which executes a fork's radard and `long_mpc.process_lead` unmodified
+(no openpilot runtime, no solver) on recorded ticks. Clone the forks, then:
+
+```bash
+export PYTHONPATH=$OP                      # openpilot's LogReader, as for decode_log.py
+python tools/fork_lead/prepare_route.py -o drive1 seg0/rlog.zst seg1/rlog.zst      # ticks + raw / fused / ACC-target points
+python tools/fork_lead/fork_replay.py --sunnypilot ~/sunnypilot --frogpilot ~/frogpilot --starpilot ~/starpilot \
+    --out replay drive1 drive2             # 4 fork configurations x 4 profiles per drive; two jobs at a time, about 2 min each
+python tools/fork_lead/fork_report.py replay drive1 drive2 --json fork_lead_handling.json
+python tools/fork_lead/fork_synth.py --sunnypilot ~/sunnypilot --frogpilot ~/frogpilot --starpilot ~/starpilot --template drive1
+```
+
+Pass only the forks you have. The result is a proxy for the planner (a demand number on the lead trajectory each fork
+gives its MPC), good for comparing forks and profiles, not for what a planner would request. Its tests
+(`tests/test_fork_lead_tools.py`) need no fork checkout.
 
 ## Developing and testing a change
 
