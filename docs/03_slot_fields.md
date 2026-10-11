@@ -13,7 +13,7 @@ In a DBC that is Intel `start|len@1+` on the slot bytes. Most numeric fields are
 the middle of the code range).
 
 **Confidence:** ● confirmed (exact rule or replicated on held-out drives) · ◐ likely (consistent structure and
-physics, scale or name still being pinned) · ○ candidate (a leading interpretation with supporting patterns).
+physics; the scale or name is the leading reading) · ○ candidate (a leading interpretation with supporting patterns).
 
 The layout follows Continental's generic ARS object list (kinematics with standard deviations, class and dimensions,
 lifecycle and maintenance state, existence probability). That template guided the naming; every decision below comes
@@ -149,7 +149,7 @@ as `raw_weight_state128`.
 | bits | field | behaviour | conf. |
 |---|---|---|---|
 | `112\|3` | **camera-association state** | 0 = radar only; 1 (rarely 2-4) while the camera has the vehicle | ◐ |
-| `136\|4` | association confidence | 15 on 91 % of unassociated rows; restarts at 3-7 (median 4-5) when `112\|3` becomes non-zero (1,264 onsets on the bundled drives) and climbs to 14-15 | ◐ |
+| `136\|4` | association confidence | 15 on 91 % of rows with `112\|3` = 0; restarts at 3-7 (median 4) when `112\|3` becomes non-zero (1,279 onsets on the bundled drives) and climbs to 14-15 | ◐ |
 | `181\|1` | daylight flag | set on a quarter of mature vehicle rows by day, on 2 of 59,988 at night | ○ |
 
 ![camera association by day and night](img/analysis/camera_association.png)
@@ -158,10 +158,10 @@ Two slot fields follow what the camera can see (the camera's object data, like t
 radar over another link):
 
 - **By day** `112|3` is non-zero on 99.7 % of in-lane vehicles at 5-40 m, on 62 % at 40-50 m and on 0.7 % at 50-80 m:
-  a sharp range limit near 45 m, independent of ego speed. It is non-zero on 98 % within ±6° of boresight and falls to 62-67 % beyond ±20°, reads 0 for pedestrians, two-wheelers and class 5, and is set on 5-21 % of
+  a sharp range limit near 45 m at every ego speed. It is non-zero on 98 % within ±6° of boresight and falls to 62-67 % beyond ±20°, reads 0 for pedestrians, two-wheelers and class 5, and is set on 5-21 % of
   oncoming vehicles.
 - **At night**, when the camera switches to light-source records ([05](05_acc_target_and_support.md#0x240-0x248-context-frames)),
-  the range limit disappears: non-zero on 69 % at 5-40 m and on 85 % at 50-80 m (67 % and 99.6 % on a second set of drives).
+  the share rises with range: non-zero on 69 % at 5-40 m and on 85 % at 50-80 m (67 % and 99.6 % on a second set of drives).
 - The position stays continuous when the state changes (median lateral change 0.03 m, as on any other record).
 - `181|1` is set on 24.5 % of mature vehicle rows (classes 2 and 3) by day and on 2 of 59,988 at night (31.4 % and 0 of 12,136 on the second
   set; 29.8 % and 0 of 8,188 decoded from original logs), and more often at long range (22 % at 10-40 m, 43 % at 80-120 m).
@@ -172,14 +172,14 @@ Numbers: [`slot_camera_association.json`](../data/analysis/summaries/slot_camera
 
 | bits | field | decode | conf. |
 |---|---|---|---|
-| `163\|3` | **class** | 1 not yet classified, 2 car, 3 large vehicle, 4 pedestrian, 5 cyclist / person (○), 6 two-wheeler | ◐; 5 ○ |
+| `163\|3` | **class** | 1 new, 2 car, 3 large vehicle, 4 pedestrian, 5 cyclist / person (○), 6 two-wheeler | ◐; 5 ○ |
 | `140\|3` | class, second encoding | 0, 5, 7, 1, 3, 4 ↔ class 1, 2, 3, 4, 5, 6 (exact on 1,253,081 rows) | ● |
-| `115\|5` | **class confidence** | `code × 5` %: mostly 0 while not yet classified, 4-20 otherwise | ◐ |
+| `115\|5` | **class confidence** | `code × 5` %: mostly 0 while the class is 1, 4-20 otherwise | ◐ |
 | `216\|6` | **width** | `(code + 1) × 0.1` m | ◐ |
 | `56\|7` | **length** | `code × 0.1` m | ◐ |
 | `272\|5` | height-like size code | larger for large vehicles | ○ |
 
-**Class confidence `115|5`.** Values are 0 and 4-20, so 20 is 100 %. It is 0 on 83 % of unclassified rows and
+**Class confidence `115|5`.** Values are 0 and 4-20, so 20 is 100 %. It is 0 on 83 % of class-1 rows and
 4-20 on every car row, starts near 55 % for a track born as a car and settles at 80-90 % (median 16-18 from age 25), and moves by exactly one
 step per cycle on 95-96 % of its changes. The class follows it: when a large vehicle is re-classified as a car, the value
 has fallen to 5 (25 %) on the record before and restarts at 15 (106 switches; 4-5 before and 14-15 after on the middle
@@ -205,7 +205,7 @@ and 1.9 × 5.7 m (`class_kinematics` in [`decode_references.json`](../data/analy
 
 | class | share of rows | median speed (2-D, all rows) | width | length |
 |---|---|---|---|---|
-| 1 not yet classified | 15% (median age 5) | 2.6 m/s | — | — |
+| 1 new | 15% (median age 5) | 2.6 m/s | — | — |
 | 2 car | 75% | 9.2 m/s | 1.8 m | 4.9 m |
 | 3 large vehicle | 9% | 4.9 m/s | 2.0 m | 5.7 m |
 | 4 pedestrian | 1% | 0.7 m/s | 0.5 m | 0.4 m |
@@ -215,7 +215,7 @@ On 43 strict camera pairs, width agrees with the camera's vehicle width to about
 
 **Class and size are the radar's own (◐).** Across 75 drives (rows of age ≥ 25):
 - **Pedestrians** (1,322 rows) are camera-associated on 0 % of rows and carry 78 % class confidence and a 0.5 × 0.4 m size.
-- **Cars** are camera-associated on half their rows and measure 1.8 m wide either way; class confidence is 85 % unassociated against 80 % overall.
+- **Cars** are camera-associated on half their rows and measure 1.8 m wide either way; class confidence is 85 % on rows with `112|3` = 0 against 80 % overall.
 - **When the camera associates** with a track, the width changes by more than 0.2 m on 8 % of 245 onsets (4 % elsewhere), the length by more than
   0.5 m on 16 % (6 %) and the class on 17 % (8 %). So the radar creates class and size from its own data, and a camera association refines the length and the class of an
   existing track. Numbers: [`object_size_provenance.json`](../data/analysis/summaries/object_size_provenance.json).
@@ -226,7 +226,7 @@ walkers, including one with 31 mature rows. The camera review covers 21 episodes
 45-episode inventory. The radar's own kinematics point the same way: class-5 objects measure 1.2 × 0.7 m (length × width, per-object
 medians, a different statistic from the row medians in the table above; between pedestrians at 0.5 × 0.6 m and
 two-wheelers at 1.6 × 0.7 m on the same per-object basis) and move at 2.0 m/s median, from walking pace up to 6 m/s: the size of
-a bicycle at walking-to-cycling speed. All 968 class-5 samples read `136|4` = 15, the unassociated value, and their
+a bicycle at walking-to-cycling speed. All 968 class-5 samples read `136|4` = 15, the value of rows with `112|3` = 0, and their
 height-like `272|5` code spans 4-11. Counts are in [`class5_video_review.json`](../data/analysis/summaries/class5_video_review.json) and
 [`decode_references.json`](../data/analysis/summaries/decode_references.json).
 
@@ -282,7 +282,7 @@ Relative speed is the over-ground speed minus ego speed. The ACC target's relati
   [summary](../data/analysis/summaries/uncertainty_code_units.json)): `240|7` 0.043 m/s per count, `232|7` 0.10 m (0.10-0.12 m in every
   range band), `224|7` 0.23 m (0.24 below 40 m; beyond, a 4-8 m error floor dominates), `248|7` 0.37 m/s. Relative units: the
   reference is the radar's own estimate.
-- **Reference-free axis check:** each code grows with the record-to-record jitter of its own quantity (`232|7` yRel, `248|7` and
+- **Axis check from the codes' own jitter:** each code grows with the record-to-record jitter of its own quantity (`232|7` yRel, `248|7` and
   `264|8` lateral speed, `256|8` the `84|10` acceleration, `240|7` speed below 25 m). For `232|7` and `240|7` the
   jitter is about a fifth of the ACC-referenced error per count, so these codes describe slowly varying tracker error.
 - **`240|7` grades the width of the error:** it separates excursion records below 40 m (AUC 0.95, 53 excursions, ACC speed read at 0.1 m/s per code,
@@ -316,7 +316,7 @@ withholds it; in `fused` the speed filter's robust update absorbs it
 
 ## Raw and constant bits
 
-- **Raw, unnamed:** 13, 15, 63, 106, `120|3`, 182, 183, 239. Bits 15 and 239 are mostly active near track birth.
+- **Raw (listed by bit):** 13, 15, 63, 106, `120|3`, 182, 183, 239. Bits 15 and 239 are mostly active near track birth.
 - **Constant in the captured data:** 31, `94|2`, 108, `123|5`, 135, `143|5`, `160|3`, `166|2`, `178|3`, `192|8`, 207,
   `214|2`, `222|2`, 231, 247, 255, `277|11` (zero on all but a handful of rows).
 

@@ -1,5 +1,5 @@
 {
- "description": "Parts of upstream/ars510_radar.py (fused 2.6, 187 code lines in 227): code lines (no comments, docstrings or blank lines; shared constants counted once), the evidence for each, what removing it costs on the 27 replay drives, and its status for an upstream openpilot PR.",
+ "description": "Parts of upstream/ars510_radar.py (fused 2.6, 187 code lines in 227): code lines (comments, docstrings and blank lines excluded; shared constants counted once), the evidence for each, what removing it costs on the 27 replay drives, and its status for an upstream openpilot PR.",
  "file_code_lines": 187,
  "file_total_lines": 227,
  "parts": [
@@ -8,7 +8,7 @@
    "code_lines": 103,
    "since": "1.0",
    "evidence": "docs/02, docs/03; the decode itself",
-   "without": "no radar",
+   "without": "the car runs on vision only",
    "upstream": "required"
   },
   {
@@ -64,15 +64,15 @@
    "code_lines": 0,
    "since": "1.x",
    "evidence": "fused_filter.json part_removed_34_drives",
-   "without": "neutral (onset +12 ms); folded into the decode factor, so it costs no line",
-   "upstream": "keep (no line)"
+   "without": "braking neutral (onset +12 ms); folded into the decode factor, so it costs 0 lines",
+   "upstream": "keep (0 lines)"
   },
   {
    "part": "state pruning",
    "code_lines": 7,
    "since": "2.0",
    "evidence": "test_upstream_candidate churn tests",
-   "without": "unbounded state",
+   "without": "state grows with every track id seen",
    "upstream": "required"
   },
   {
@@ -96,7 +96,7 @@
    "code_lines": 2,
    "since": "2.6",
    "evidence": "far_acc_only.json",
-   "without": "all four drive sets: hard radar-only episodes 12 -> 8 (ticks 30 -> 16), mild 49 -> 26 with it; missed braking unchanged (parked cars at the curb while turning, a parked car alongside)",
+   "without": "all four drive sets: hard radar-only episodes 12 -> 8 (ticks 30 -> 16), mild 49 -> 26 with it; missed braking the same (parked cars at the curb while turning, a parked car alongside)",
    "upstream": "keep"
   },
   {

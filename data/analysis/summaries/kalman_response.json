@@ -13,7 +13,7 @@
       "acc_drop_mps_min_inclusive": 2,
       "native_segment_gap_s_max": 0.5
     },
-    "deduplication_limit": "Route-wide spacing suppresses near-simultaneous ACC/native association duplicates; it is not independent physical episode identification."
+    "deduplication_limit": "Route-wide spacing suppresses near-simultaneous ACC/native association duplicates; episodes are association-defined."
   },
   "metric": {
     "name": "ACC-defined half-drop response lag",
@@ -22,7 +22,7 @@
     "coded_miss_lag_s": 4,
     "shorter_than_4s_followup_windows": 6,
     "miss_containing_short_followup_windows": 2,
-    "negative_lag_meaning": "Estimator crosses before the ACC witness, not independently established physical anticipation."
+    "negative_lag_meaning": "Estimator crosses before the ACC witness (a timing relation to the witness; physical anticipation: \u25cb)."
   },
   "model_versions": {
     "RW": {
@@ -61,15 +61,15 @@
     "method": "Paired route-block bootstrap; resample complete contributing routes with replacement and recompute event-weighted lag differences.",
     "draws": 4000,
     "seed": 510,
-    "interpretation": "Intervals quantify route variation of a dependent-witness response metric; no preregistered equivalence or noninferiority margin."
+    "interpretation": "Intervals quantify route variation of a dependent-witness response metric (descriptive intervals)."
   },
   "reference_limits": [
-    "ACC is a same-radar filtered witness, not independently timed physical braking truth.",
+    "ACC is a same-radar filtered witness (its timing is the radar's own).",
     "Native association and missing ACC samples condition eligible windows.",
-    "Half-drop thresholds use each estimator's own start value and do not verify absolute speed accuracy.",
-    "Repeatedly used recent routes are development evidence, not untouched confirmation.",
-    "CurrentCN here is a recurrence comparison with trackers hidden; it is not a runtime publication, association or full-profile replay.",
-    "Comparable aggregate response does not exclude delayed individual events; one newly selected historicalCN window is 2.220 s later than RW.",
+    "Half-drop thresholds use each estimator's own start value so they measure relative response timing.",
+    "Repeatedly used recent routes serve as development evidence.",
+    "CurrentCN here is a recurrence comparison with trackers hidden (an offline estimator comparison).",
+    "Comparable aggregate response coexists with delayed individual events; one newly selected historicalCN window is 2.220 s later than RW.",
     "The colored profile's full-replay recovery regression (far excursion that recovers) is unchanged and keeps colored experimental."
   ],
   "selection_counts": {

@@ -1,6 +1,6 @@
 {
   "status": "supported lateral association (right / ego / left lane)",
-  "provenance": "Imported aggregate research results, SCR-178; full-route reruns and private camera frames are not bundled.",
+  "provenance": "Imported aggregate research results, SCR-178; the full-route reruns and private camera frames stay in the research workspace.",
   "fields": {
     "148|4": "right-associated",
     "152|4": "left-associated",
@@ -142,6 +142,6 @@
     "Camera bearing uses radar range and an azimuth-gated identity join.",
     "Position bands are lateral offsets in the radar frame.",
     "All-zero rows go with lane states 1 / 5 / 7 (docs/03).",
-    "Analysis only; all drive groups have prior research use."
+    "Analysis result; all drive groups have prior research use."
   ]
 }

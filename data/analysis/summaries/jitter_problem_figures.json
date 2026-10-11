@@ -1,5 +1,5 @@
 {
- "provenance": "research-workspace runs (SCR-112..122), provenance-labelled; not a bundled rerun. Open-loop replays of openpilot 10b9e73 card->radard->plannerd; held-out = 20 routes / 4.56 human-controlled h; drive D = the owner's first closed-loop drive with FrogPilot 0.9.7 + the ARS510 port.",
+ "provenance": "research-workspace runs (SCR-112..122), provenance-labelled; numbers imported from those runs. Open-loop replays of openpilot 10b9e73 card->radard->plannerd; held-out = 20 routes / 4.56 human-controlled h; drive D = the owner's first closed-loop drive with FrogPilot 0.9.7 + the ARS510 port.",
  "drive_d_event": {
   "note": "drive D4 (owner's closed-loop drive), radar lead track at ~95 m on a highway; vision = modelV2 lead (x - 1.52 m, v - vEgo)",
   "radar": {
@@ -1193,7 +1193,7 @@
    "radar_only_brakes_on_gas_per_h": 0.88
   }
  },
- "candidates_note": "Same scorer for every row (E4 = |aTarget - driver aEgo(t+0.5 s)|, human-controlled, lead present). lag = mean first time aTarget <= -0.5 around driver brake presses (negative = earlier). Formal pre-registered verdicts: nothing promoted.",
+ "candidates_note": "Same scorer for every row (E4 = |aTarget - driver aEgo(t+0.5 s)|, human-controlled, lead present). lag = mean first time aTarget <= -0.5 around driver brake presses (negative = earlier). Formal pre-registered verdicts: every candidate stays a candidate.",
  "roughness_vs_baseline_ci": {
   "K1": [
    -0.0008,

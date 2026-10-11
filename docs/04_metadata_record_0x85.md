@@ -75,7 +75,7 @@ A populated cell is one boundary curve, `y(x) = c0 + c1·x + c2·x²/2 + c3·x³
 
 | bits | field | nominal conversion | conf. |
 |---|---|---|---|
-| `32\|12` | **c0 offset** at the radar | `(code − 2000) × 0.01` m | ◐ (0.0098 m per code against the camera's lane width; a centimetre field, unlike object yRel at 0.015 m per code) |
+| `32\|12` | **c0 offset** at the radar | `(code − 2000) × 0.01` m | ◐ (0.0098 m per code against the camera's lane width; a centimetre field; object yRel is 0.015 m per code) |
 | `48\|16` | **c1 heading**, left-positive tangent | `−1.8e-5 × (code − 31200)` rad per code, zero 31.1-31.3 k per cell | ◐ sign, zero; unit bounded 1.6-2.2e-5 |
 | `64\|15` | **c2 curvature**, left positive | `+2.5e-6 × (code − 16020)` 1/m per code | ◐ sign, zero; unit bounded 2.0-2.7e-6 |
 | `10\|10` | **c3 curvature rate** d(κ)/ds, offset binary | `+4e-6 × (code − 500)` 1/m² per code | ◐ sign, zero; unit order of magnitude |
@@ -85,7 +85,7 @@ A populated cell is one boundary curve, `y(x) = c0 + c1·x + c2·x²/2 + c3·x³
 Unpopulated cells hold the defaults 900 at `48|16` and 500 at `64|15`; the conversions describe populated cells, and `ShellCell.heading_rad`,
 `.curvature_per_m` and `.lane_offset_m` return `None` for the others.
 
-**Heading.** Three references independent of the radar's own objects agree on sign and zero:
+**Heading.** Three references agree on sign and zero:
 * the ego-motion offset rate, `d(c0)/d(distance driven)` from consecutive records and carState speed, falls linearly with the code: binned correlation −0.985…−0.993 and slope −1.63…−1.80e-5 rad/code in cells 2, 3, 8 and 9;
 * the camera lane line's fitted slope correlates −0.61…−0.69 with the code and crosses zero at 31,167-31,322; its gain is about half the ego-motion one (consistent with shrinkage in the model's lane lines, ○), so the unit rests on the ego-motion reference;
 * the radar's own ego-lane assignment (slot `128|3` = 3) for objects at 45-90 m is predicted from the cell-2 / cell-3 curves with AUC .9967 on the offsets alone and .9992 once the heading term is added; the AUC is a plateau at 1.3-2.0e-5 rad/code and falls to .9937 at 4e-5.
@@ -119,8 +119,7 @@ group and cell scores (0.35 and 0.41 for the right-lane cells 3 and 9 on drive C
 [`id85_parameter_presence.json`](../data/analysis/summaries/id85_parameter_presence.json)) give median errors of 2.3-8.2 cm in 14 of 16 cell scores and 22 cm in the left-lane cells 2 and 8 of one drive; 5 of the 16 scores meet all gates (median, p90 and centred correlation).*
 
 Each cell describes a nearby boundary whose identity can change: during a lane change or at a turn pocket a cell
-keeps describing the old or a different boundary for a while, and single-cycle spikes of a few metres occur
-.
+keeps describing the old or a different boundary for a while, and single-cycle spikes of a few metres occur.
 
 The remaining cell fields (`0|9`, `20|4`, `24|4`, `44|4`, `80|6`) are raw. `0|9` behaves like a distance (it falls about 4.1-4.4 codes per metre driven in monotone runs of cells 8 and 9); `80|6` is confidence-like (0-50; cell 1 holds 0, 15 or 50 on every row; cell 4 holds the same three values on 99.98 % of populated rows).
 

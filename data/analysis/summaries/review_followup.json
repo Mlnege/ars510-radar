@@ -3,10 +3,10 @@
     "review_date": "2026-09-23",
     "source_experiment": "SCR-104",
     "source_artifact": "ars510_native_video_stationary_truth/summary.json",
-    "scope": "Selected aggregate fields copied from research-workspace output; full window inputs not bundled",
-    "target": "video/odometry stationary hypothesis, not independently surveyed truth",
+    "scope": "Selected aggregate fields copied from research-workspace output; the full window inputs stay in the research workspace",
+    "target": "video/odometry stationary hypothesis (a label from video and odometry)",
     "all_age_rows": true,
-    "settled_age60_results": "diagnostic, not the original all-age acceptance population"
+    "settled_age60_results": "diagnostic on the settled age >= 60 subset of the original acceptance population"
   },
   "B": {
     "stationary_windows": 28,
@@ -58,9 +58,9 @@
   },
   "visual_review": {
     "note": "overlay frames plus modelV2 and odometry on three stationary-labelled windows",
-    "B_night_queue": "video label wrong: modelV2 and radar range both show the lead creeping 1-3 m/s; radar ground speed agrees in sign",
+    "B_night_queue": "the lead creeps at 1-3 m/s (modelV2 and radar range agree) where the video label said stationary; radar ground speed agrees in sign",
     "C_red_light_approach": "radar range walk on a settled lead: range fell 6.4 m while ego travelled ~13.7 m, own ground speed read stopped; modelV2 closed at the odometer rate",
-    "B_left_lane_car": "undecided (no modelV2 reference)",
+    "B_left_lane_car": "undecided; a modelV2 reference for this window would settle it",
     "consequence": "30-60 m stationary results measure the video label as much as the radar; 5-30 m settled result is the usable output"
   }
 }

@@ -52,7 +52,7 @@ PCS/AEB event collection follows the [professional/passive specification](docs/1
   state the expected effect before running it, replay it through openpilot against the current profile with the gates
   in [docs/09](docs/09_tools_and_data.md#developing-and-testing-a-change) and the vision-only comparison in
   [docs/11](docs/11_profiles_compared.md#against-vision-only), and put the numbers in the PR. Review the moments that
-  change, not just the counts. Changes are merged on held-out evidence, beyond the drive that motivated them.
+  change as well as the counts. Changes are merged on held-out evidence, beyond the drive that motivated them.
 - **Integration** (`openpilot/`): run `openpilot/check_integration.py` against every fork you can
   ([`openpilot/README.md`](openpilot/README.md#test-on-a-pc-first)) and list the results in the PR. The installer
   stays fork-agnostic: an append-only hook, with fork files left as they are and the existing `ToyotaFlags` bits.

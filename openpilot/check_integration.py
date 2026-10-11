@@ -216,7 +216,7 @@ def main() -> int:
   last = [o for _, o in outputs[-18:] if o is not None]
   check(bool(last) and not last[-1].errors.radarUnavailableTemporary and len(last[-1].points) == 1, "recovers when records resume")
 
-  # a corrupted record is dropped, not published and not flagged as a CAN error
+  # a corrupted record is dropped; the staleness rule covers sustained loss
   bad = bytearray(record(126))
   bad[100] ^= 0xFF
   n0 = len(outputs)

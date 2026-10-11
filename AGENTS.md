@@ -28,7 +28,7 @@ Parsing works from raw frames; `dbc/` is for Cabana.
 pip install -e .[dev]
 pytest                              # must pass
 python tools/check_structure.py     # CRC and layout evidence on the bundled samples; must pass
-python tools/check_privacy.py       # no route/dongle IDs, VINs, GPS, local paths; must pass
+python tools/check_privacy.py       # keeps route/dongle IDs, VINs, GPS, local paths out; must pass
 ruff check upstream/                # the openpilot file follows opendbc's ruff rules (CI)
 ```
 
@@ -46,10 +46,10 @@ ruff check upstream/                # the openpilot file follows opendbc's ruff 
 - **The openpilot file** (`upstream/ars510_radar.py`) is meant for upstream, where every line has to be defended. A PR
   that adds or removes lines there updates its row in the parts ledger (`docs/10`, "Parts of the openpilot file", and
   `data/analysis/summaries/openpilot_file_parts.json`): code lines, evidence, what removing it costs, upstream status.
-- **Installer** stays fork-agnostic: append-only hook in `toyota/interface.py`, no in-place fork edits, no new
-  `ToyotaFlags` bits. Run `openpilot/check_integration.py` against every fork available.
+- **Installer** stays fork-agnostic: append-only hook in `toyota/interface.py`, fork files left as they are, the fork's
+  existing `ToyotaFlags` bits. Run `openpilot/check_integration.py` against every fork available.
 - **Docs** state the current state only (● / ◐ / ○), rewritten in place; numbers come from
-  `data/analysis/summaries/*.json` listed in `data/README.md`. No dated banners or dead-end lists.
+  `data/analysis/summaries/*.json` listed in `data/README.md`. History lives in git and PRs.
 - **Heavy jobs** (replays, full-log decodes) can use 8-14 GB each. Run at most two in parallel, and on a desktop
   session cap them (for example `systemd-run --user -p MemoryMax=12G …`) so the session stays up.
 - Mark agent-written PRs as such in the description.

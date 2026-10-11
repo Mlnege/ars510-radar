@@ -1,6 +1,6 @@
 {
  "what": "Pre-registered comparison of stock openpilot (vision-only leads on this car) and openpilot with the ARS510 integration (radar+vision fused in radard) against the human driver, open-loop replay, stretches where the driver controlled speed. Primary endpoints P1-P4 (Holm), timing guard G1, secondary E2/E3/E5.",
- "provenance": "research-workspace run 2026-09-24 (SCR-112); pre-registration with two amendments written before held-out scoring; provenance-labelled, not a bundled rerun",
+ "provenance": "research-workspace run 2026-09-24 (SCR-112); pre-registration with two amendments written before held-out scoring; provenance-labelled; numbers imported from that run",
  "heldout": {
   "datasets": 20,
   "routes": 20,
@@ -578,7 +578,7 @@
     ]
    },
    "radar_only_on_gas_per_human_hour": 0.88,
-   "verdict": "no evidence of benefit",
+   "verdict": "P1-P4 fail their Holm gates (Holm p 0.196 / 0.763 / 0.000 / 0.578; P3 worse for radar); the G1 timing guard passes",
    "worse_for_radar": [
     "P3"
    ]
@@ -1161,7 +1161,7 @@
     ]
    },
    "radar_only_on_gas_per_human_hour": 4.71,
-   "verdict": "no evidence of benefit",
+   "verdict": "P1-P4 fail their Holm gates (Holm p 0.117 / 0.117 / 0.032 / 0.302; P3 worse for radar); the G1 timing guard passes",
    "worse_for_radar": [
     "P3"
    ]

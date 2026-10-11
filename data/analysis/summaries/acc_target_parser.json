@@ -1,5 +1,5 @@
 {
- "description": "The default `acc` profile: an openpilot file that publishes the radar's ACC target (0x235 / 0x237) as its one point (upstream/ars510_acc_target.py), against fused 2.6 (upstream/ars510_radar.py) and vision only. Open-loop replays of every drive set in 6-segment chunks through the pinned openpilot's unchanged radard and planner; first 30 s of each chunk dropped. Hard = request <= -2 m/s2 while vision only >= -0.5; mild = <= -1 while vision >= -0.3; unnecessary / missed = against the hindsight-lead oracle (docs/12), whose reference lead is built mostly from the ACC target's range and therefore favours ACC-target designs; hard / mild and onset do not use it.",
+ "description": "The default `acc` profile: an openpilot file that publishes the radar's ACC target (0x235 / 0x237) as its one point (upstream/ars510_acc_target.py), against fused 2.6 (upstream/ars510_radar.py) and vision only. Open-loop replays of every drive set in 6-segment chunks through the pinned openpilot's unchanged radard and planner; each chunk is scored from 30 s in. Hard = request <= -2 m/s2 while vision only >= -0.5; mild = <= -1 while vision >= -0.3; unnecessary / missed = against the hindsight-lead oracle (docs/12), whose reference lead is built mostly from the ACC target's range and therefore favours ACC-target designs; hard / mild are defined by the planner request against vision only.",
  "file_size": {
   "2.6": {
    "code_lines": 187,
@@ -212,7 +212,7 @@
     "standstill": 8
    }
   },
-  "note": "standstill = ego below 0.5 m/s at the episode start: the request holds a stopped car behind an object the camera reports no lead for (radard low-speed rule); the moving columns hold the braking of a moving car"
+  "note": "standstill = ego below 0.5 m/s at the episode start: the request holds a stopped car behind an object only the radar reports as a lead (radard low-speed rule); the moving columns hold the braking of a moving car"
  },
  "route_bootstrap_acc_target_minus_2_6_per_moving_h": {
   "hard": {
@@ -302,7 +302,7 @@
   }
  },
  "drives_not_used_for_development": {
-  "description": "12 second-car routes + 1 owner route (1.98 moving h), never used for any parser decision",
+  "description": "12 second-car routes + 1 owner route (1.98 moving h), held out from every parser decision",
   "2.6": {
    "moving_h": 1.98,
    "hard": 0,
@@ -345,7 +345,7 @@
    "mild_moving": 205
   },
   "shared_range": {
-   "model": "range and range-rate state, range sigma 0.03 x range, ACC distance 0.025 m and speed 0.13 m/s, object speed not used",
+   "model": "range and range-rate state, range sigma 0.03 x range, ACC distance 0.025 m and speed 0.13 m/s as the only speed input",
    "file": {
     "code_lines": 89,
     "constants": 17,
@@ -426,7 +426,7 @@
   }
  },
  "held_out_owner_routes": {
-  "description": "26 owner routes never in any replay set (none shaped a replay-tuned gate or the choice of the ACC-target file), 4.28 h, 2.56 h moving; route bootstrap over 19 routes",
+  "description": "26 owner routes held out of every replay set, of every replay-tuned gate and of the choice of the ACC-target file, 4.28 h, 2.56 h moving; route bootstrap over 19 routes",
   "vision only": {
    "moving_h": 2.56,
    "hard": 0,
@@ -533,7 +533,7 @@
    "hard_moving": 5,
    "mild_moving": 24
   },
-  "report on every update (100 Hz)": "no change in replay (simulation mode); on the car radard accepts radarTracks only at 8-24 Hz"
+  "report on every update (100 Hz)": "replay (simulation mode) gives the same counts; on the car radard accepts radarTracks at 8-24 Hz"
  },
  "drives_not_used_for_development_pooled": {
   "routes": 32,
@@ -646,7 +646,7 @@
   },
   "moving_h": 21.45,
   "routes": 94,
-  "note": "fast suite (four sets) + never-fitted owner routes + confirmation set; ACC target minus fused 2.6 per moving hour, route-block bootstrap 95 % CI; hard/mild_moving = episodes starting at ego >= 0.5 m/s"
+  "note": "fast suite (four sets) + held-out owner routes + confirmation set; ACC target minus fused 2.6 per moving hour, route-block bootstrap 95 % CI; hard/mild_moving = episodes starting at ego >= 0.5 m/s"
  },
  "close_cut_ins": {
   "definition": "lead jumps >= 5 m closer within 0.5 s to < 35 m, ego > 5 m/s (2.6 lead); faster = cutting car opening (> 0.5 m/s); window 0-4 s",

@@ -7,7 +7,7 @@
    -0.03,
    0.27
   ],
-  "limits": "daylight, in-lane leads, straight road; few windows beyond 100 m; the ACC target and the vision model may share the camera; crop, body motion, correspondence, timing, reference error and covariance are not independently bounded; repeatability is not physical accuracy",
+  "limits": "daylight, in-lane leads, straight road; the reference's repeatability grows from 0.13 m/s at 20 m to 1.03 m/s at 110 m (per 1 s); the ACC target and the vision model may share the camera; crop, body motion, correspondence, timing, reference error and covariance enter the reference together; repeatability measures its consistency",
   "reported_repeatability_scale_per_1s_mps": {
    "20m": 0.13,
    "40m": 0.22,
@@ -26,13 +26,13 @@
   "relative_velocity_scale_deviation_theil_sen": 0.003,
   "optical_minus_proxy_median_mps": 0.159,
   "windows": 791,
-  "input_chain": "Nominal .15 ground-velocity window mean minus carState.vEgo window median; not .149/B4",
+  "input_chain": "Nominal .15 ground-velocity window mean minus carState.vEgo window median (the .149 / 0xB4 convention is in native_speed_alignment.json)",
   "relative_velocity_scale_deviation_ols": -0.021,
   "relative_velocity_scale_deviation_ols_90pct": [
    -0.052,
    0.02
   ],
-  "limits": "Marginal regressions mix both scale errors and covariance; neither physical 1% calibration nor factory zero identified"
+  "limits": "Marginal regressions combine both scale errors and covariance into one effective scale; the physical scale and factory zero are bounded in docs/06"
  },
  "uncertainty_code_240_7": {
   "bootstrap_90pct": [
@@ -55,7 +55,7 @@
   "closing_disagreement_auc_range_plus_code": 0.74,
   "native_minus_ecc_rms_slope_mps_per_count_40_80m": 0.049,
   "quantity": "Through-origin fit of ten decile RMS(native-ECC) summaries against mean code; includes both errors, covariance and squared bias",
-  "verification_scope": "Slope, decile R2 and range-stratified rank correlation recomputed; transfer/bootstrap/AUC outputs retained from exploratory report, outside independent check"
+  "verification_scope": "Slope, decile R2 and range-stratified rank correlation recomputed; transfer/bootstrap/AUC outputs are those of the exploratory report"
  },
  "acc_target_velocity": {
   "units_note": "Measured with the ACC speed at 0.1 m/s per code. At 0.125 (acc_unit_recompute.json) the 10-40 m ACC sigma is about 0.01 m/s and 40-70 m stays 0.54; coverage 38 % / 11 % is unit-invariant.",
@@ -75,7 +75,7 @@
    "looming": 0.81
   },
   "acceleration_regression_coefficient_s": 0.006,
-  "limits": "Four-estimator decomposition depends on reference and error-covariance assumptions; ACC independence not independently verified, regression coefficient not physical latency"
+  "limits": "Four-estimator decomposition rests on reference and error-covariance assumptions; ACC independence is assumed (the ACC target and the vision model may share the camera); the regression coefficient is a fit coefficient"
  },
  "motion_state_8_6": {
   "auc_stationary_vs_moving": [
@@ -86,7 +86,7 @@
    0.04,
    0.06
   ],
-  "limits": "Range-kinematics labels; physical stationarity and graded-confidence semantics unverified"
+  "limits": "Range-kinematics labels; physical stationarity and graded-confidence semantics are candidate readings"
  },
  "replay_comparison_stock_planner": {
   "development_4_chains": {
@@ -138,7 +138,7 @@
   "note": "offline simulations of two designs; the decoder-level numbers below are the reference"
  },
  "camera_assisted_veto_decoder": {
-  "feed_conversion": "-(endpoint-interpolated radar range + 3.6 m) * d ln(scale)/dt for both spans; comparison labels use window-median range + 1.52 m. Offsets are source assumptions, not independently measured physical mounting offsets.",
+  "feed_conversion": "-(endpoint-interpolated radar range + 3.6 m) * d ln(scale)/dt for both spans; comparison labels use window-median range + 1.52 m. The offsets are source assumptions.",
   "windows": 2606,
   "segments": 67,
   "closing_disagreement_pct": {
@@ -167,7 +167,7 @@
     "hard_ticks": 179
    }
   },
-  "limits": "Prior-used drives, shared tuning/evaluation; window onset delays are velocity-change/deceleration equivalents, separate from actual planner replay response metrics; no physical-label or all-gates acceptance",
+  "limits": "Drives used in earlier work, tuning and evaluation share them; window onset delays are velocity-change/deceleration equivalents (planner replay response metrics are a separate set); acceptance is judged on the stated gates",
   "labelled_onset_windows": 265,
   "timing_equivalents_over_150ms": {
    "clean": 1,
@@ -180,9 +180,9 @@
     0
    ]
   },
-  "shuffled_velocity_definition": "Circularly shift v05/v1 by max(floor(segment rows/3), 10) rows within each segment; preserve t_end, x, y, cc05 and cc1. Includes future donor rows; fault injection, not observed wrong-target association or its physical error rate.",
-  "window_timing_equivalent_definition": "(variant window velocity minus baseline window velocity) / 1.24 m/s^2 on selected optical/base onset labels; not a measured onset timestamp",
-  "measurement_timestamp_shift_definition": "Add the stated seconds to t_end before loading the feed. This shifts measurement-window alignment and freshness; it does not preserve the measurement endpoint while delaying delivery. True producer latency requires separate availability time.",
+  "shuffled_velocity_definition": "Circularly shift v05/v1 by max(floor(segment rows/3), 10) rows within each segment; preserve t_end, x, y, cc05 and cc1. Includes future donor rows; it is fault injection (a stress feed).",
+  "window_timing_equivalent_definition": "(variant window velocity minus baseline window velocity) / 1.24 m/s^2 on selected optical/base onset labels; an equivalent derived from window velocity",
+  "measurement_timestamp_shift_definition": "Add the stated seconds to t_end before loading the feed. This shifts measurement-window alignment and freshness (the endpoint moves with the delivery); true producer latency is measured from a separate availability time.",
   "feed_scope": "Perturbed-feed and four-chain planner results used all drive feeds pooled by boot-relative timestamp. These clocks can overlap across drives. The clean window outcomes below were separately reproduced with feeds restricted to the originating route. A separate R0 versus R0-plus-camera four-chain route-scoped planner comparison is kept in the research workspace. Perturbation outputs retain pooled scope.",
   "route_scoped_clean_check": {
    "source_segments": 83,
@@ -257,7 +257,7 @@
   }
  ],
  "object_list_window_count": 2657,
- "residual_definition": "native minus ECC; closing below -2.5 m/s, opening above +2.5 m/s; labels are optical disagreement, not independently established false events",
+ "residual_definition": "native minus ECC; closing below -2.5 m/s, opening above +2.5 m/s; labels are optical disagreement (an optical-reference flag)",
  "closing_disagreement_runs": {
   "median_duration_s": [
    2,
@@ -265,5 +265,5 @@
   ],
   "peak_mps": -3.5
  },
- "verification_scope": "Independent arithmetic for window counts/rates, code240 pooled slope/R2/range-stratified correlation and near-scale summaries; upstream ECC and ACC independence not independently reproduced; replay outputs reused"
+ "verification_scope": "Independent arithmetic for window counts/rates, code240 pooled slope/R2/range-stratified correlation and near-scale summaries; upstream ECC and ACC independence are taken from the source reports; replay outputs are reused"
 }

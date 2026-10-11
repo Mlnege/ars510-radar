@@ -19,13 +19,13 @@ often wet or at night, hilly) and **C** (held out, 24 min highway). The referenc
 
 | stream | quantity | result |
 |---|---|---|
-| object list | **dRel** scale and zero, 5-25 m | slope 1.001 / 0.993 / 0.995 against camera ground contact; median camera minus radar −0.01 m (A), +0.22 m (C), +0.71 m (B, hilly) |
+| object list | **dRel** scale and zero, 5-25 m | slope 1.001 / 0.993 / 0.995 against camera ground contact; median camera minus radar −0.01 m (A), +0.22 m (C), +0.72 m (B, hilly) |
 | object list | **dRel** far range | median residual 3.7 m at 60-100 m and 5.1 m at 100-150 m against camera/model consensus; 5-8 % short of the radar's own ACC distance at 50-100 m |
 | object list | **dRel** record to record | walks by about 3% of range (see range walks below) |
 | object list | **yRel** side | correct on 97.9-99.3% of off-centre targets against the camera |
 | both | **lateral** scale | object list 0.015 m per code (66.7 codes/m); ACC target 0.01 m per code, 1.5 of its codes per object-list code (1.499-1.502 on five sets); gyro 69 [65, 74.5], lane peaks 62.8-67.3, camera 69-73 |
 | object list | **velocity** zero and scale | nominal zero 510.5; fitted scales 0.150 / 0.149 / 0.153 m/s per code from native range slope with GPS ego speed |
-| object list | **vRel** vs camera | lower error than a constant zero or range differencing at every range (table below) |
+| object list | **vRel** vs camera | the lowest error of native vRel, a constant zero and range differencing at every range (table below) |
 | object list | **vRel**, stopped targets 5-30 m | RMS 0.54 m/s on settled tracks |
 | both | **speed noise**, second radar unit | object-list and ACC-target noise match the owner unit (fast noise 0.11 / 0.027 against 0.12 / 0.025 m/s) |
 | object list | **trackId** | each ID lives in one slot; 77 of 87 camera-checked tracks within 60 m keep one camera identity ≥ 95% of their life |
@@ -39,7 +39,7 @@ often wet or at night, hilly) and **C** (held out, 24 min highway). The referenc
   camera ground contact gives slope 0.99-1.00 on all three drives.
 - **Nominal zero at code 160.** The formula is `code / 16 − 10 m`: code 160 decodes to zero. The offset was
   fitted against a vision reference. Camera ground contact minus radar is −0.01 m on A and +0.22 m on C; hilly drive B
-  reads +0.71 m, the size of a 0.19° camera-pitch error at B's median 17.5 m
+  reads +0.72 m, the size of a 0.19° camera-pitch error at B's median 17.5 m
   ([`decode_claim_sources.json`](../data/analysis/summaries/decode_claim_sources.json), `data/analysis/ground_contact.parquet`).
   The comparison uses openpilot's `RADAR_TO_CAMERA = 1.52 m`, which sets the physical origin of the camera reference.
 - **Far range** (drive A, camera box scale averaged with the vision model where they agree; the camera scale is anchored
@@ -81,8 +81,8 @@ often wet or at night, hilly) and **C** (held out, 24 min highway). The referenc
 | adjacent-lane peaks at highway speed | 63.9 / 67.3 / 62.8 codes per metre if lanes are 3.66 m: lanes of 3.4-3.7 m at this scale |
 | camera outer box edges | 68.9 / 69.7 / 72.8 codes per metre |
 
-  The first two rows tie the unit to the radar's own centimetre and velocity fields; the gyro, camera and lane rows are
-  independent and wider. Replaying `fused` 2.1 with these lateral units on 27 drives leaves the braking counts unchanged
+  The first two rows tie the unit to the radar's own centimetre and velocity fields; the gyro, camera and lane rows come from
+  outside the radar and have wider intervals. Replaying `fused` 2.1 with these lateral units on 27 drives gives the same braking counts
   (held-out hard radar-only ticks 30 → 30, target episodes 4 → 4; anticipation 0.449 → 0.443, one of 167 driver
   brakes; lead-source switches +0.7 %).
   Numbers: [`lateral_units.json`](../data/analysis/summaries/lateral_units.json).
@@ -116,7 +116,7 @@ often wet or at night, hilly) and **C** (held out, 24 min highway). The referenc
   openpilot file, `fused`, decodes at 0.149 directly). This is an empirical profile setting on top of the nominal
   0.15 decoder unit. Against the ACC target's speed it moves the pooled RMS 1.302 → 1.297 m/s (below 40 m 0.758 → 0.760;
   [comparison](../data/analysis/summaries/native_speed_alignment.json)); the ACC target is a correlated radar witness.
-  The `acc` profile reads the ACC target's own 0.125 m/s unit and needs no ego-speed subtraction.
+  The `acc` profile reads the ACC target's own 0.125 m/s unit, which is already relative to the car.
 
 - **Object list against the camera** (closing speed from box growth over 2 s, all camera-paired samples):
 
@@ -203,7 +203,7 @@ for the object-list range of the same car ([`acc_fields.json`](../data/analysis/
   at least 95% of its life on A 21 / 21, B 28 / 36 and C 28 / 30 tracks.
 - **Re-link:** `raw` re-links a track the radar re-initialises within 3.5 s near its predicted position, so radard keeps
   its filter state across short losses; with `fused`'s speed filter the replays brake the same with or without it (lead-source switches 1,770 vs 1,772,
-  [`fused_filter.json`](../data/analysis/summaries/fused_filter.json)), so `fused` runs without it. `acc` takes the radar's target ID as the track ID.
+  [`fused_filter.json`](../data/analysis/summaries/fused_filter.json)), so `fused` leaves it off. `acc` takes the radar's target ID as the track ID.
 
 ## Object list and ACC target side by side
 

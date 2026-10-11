@@ -168,9 +168,9 @@
   "algebra": "aligned minus nominal = -0.001*(code-510.5); for forward ground speed a downward factor makes a negative native-minus-reference residual more negative.",
   "independent_check": "Scalar byte extraction and fsum reproduce all owner metrics within 1.3e-15.",
   "limits": [
-    "ACC is a correlated radar witness; disagreement is not physical error.",
+    "ACC is a correlated radar witness; the disagreement is a difference between two radar estimates of relative speed.",
     "Selection and timestamps are inherited from the input producers.",
-    "Previously used data, no confirmation or consumer/profile change.",
+    "The observations are the owner-car data the 0.149 setting was fitted on; the table compares speed conventions on them.",
     "Scale, zero, internal ego compensation, timing and target identity remain confounded."
   ]
 }

@@ -21,7 +21,7 @@ Numbers: [`profiles_vs_vision.json`](../data/analysis/summaries/profiles_vs_visi
 | range of the followed car | ACC distance, 0.025 m per code | ACC distance (object-list range for other tracks) | object-list range |
 | other cars | camera, through radard's usual vision match | radar and camera | radar and camera |
 | code | 26 code lines and a two-message, 7-signal DBC ([10](10_research_directions.md#the-acc-target-alone--candidate)) | 187 code lines in the openpilot file ([10](10_research_directions.md#parts-of-the-openpilot-file)) | fork build: relink and saturation guard on the shared decode |
-| tuned constants | none (protocol only) | sigma scale, young-track factor, process noise, clamp, readiness, path gate, far rule, ACC weight ([12](12_kalman_filter.md#the-model)) | none |
+| tuned constants | protocol values only | sigma scale, young-track factor, process noise, clamp, readiness, path gate, far rule, ACC weight ([12](12_kalman_filter.md#the-model)) | protocol values only |
 | hard radar-only braking ticks, 20 held-out routes, moving | 14 | 16 | 93 |
 | braking only the radar asked for, per hour (driver on the gas) | 0 (0) | 0 (0) | 1.75 (0.66) |
 | first braking request vs vision only (95 % CI) | −0.04 s (−0.09 … +0.00) | −0.01 s (−0.06 … +0.03) | −0.15 s (−0.26 … −0.05) |
@@ -29,8 +29,7 @@ Numbers: [`profiles_vs_vision.json`](../data/analysis/summaries/profiles_vs_visi
 | use | everyday driving | the all-tracks alternative | research |
 
 The research profiles `shared_speed` and `shared_range` are covered in
-[10](10_research_directions.md#the-acc-target-alone--candidate). The earlier tuned profiles (`anchor`, `steady`)
-install `fused`.
+[10](10_research_directions.md#the-acc-target-alone--candidate). The legacy names `anchor` and `steady` select `fused`.
 
 ## `acc` and `fused` head to head
 
@@ -69,7 +68,7 @@ What the table shows:
   +0.30 per hour (−0.33 … +1.11), mild +0.18 (−0.75 … +1.21), unnecessary −0.10 s (−0.55 … +0.31), missed +0.06 s
   (−0.19 … +0.34).
 - **`acc`'s hard episodes are mostly standstill holds.** Of its 13 hard episodes, 8 start with the ego car below
-  0.5 m/s: the request holds a stopped car 0.7-4.8 m behind an object the camera does not report as a lead (a wall, a
+  0.5 m/s: the request holds a stopped car 0.7-4.8 m behind an object the camera leaves out of its lead list (a wall, a
   fence, a junction island on video), through radard's low-speed rule. While moving, `acc` has 5 hard episodes against
   `fused`'s 8, and 22 mild against 27.
 - **Both reach the planner with fine range.** The followed car's range comes from the ACC distance in both
@@ -113,7 +112,7 @@ unnecessary-braking difference is −0.31 s per hour (−0.72 … +0.06) and the
   with the radar's range; vision put the lead 3-4 m closer
   ([13](13_car_bus_messages.md#a-recorded-stock-pcs-alarm-u3);
   [`pcs_activation_u3.json`](../data/analysis/summaries/pcs_activation_u3.json), `replay_open_loop`).
-- **Small and auditable.** 26 code lines and a two-message, 7-signal DBC with no fitted constant: it passes on the radar's own
+- **Small and auditable.** 26 code lines and a two-message, 7-signal DBC with protocol values only: it passes on the radar's own
   decision, the one Toyota's ACC acts on.
 - **Replay evidence on 21.45 moving hours.** `fused` also has road drives (sunnypilot and a second driver's car,
   [08](08_openpilot_integration.md#on-the-road)); road drives with `acc` are the next evidence.
@@ -135,8 +134,8 @@ radard matches to the camera's lead through its distance and speed gates.
 ![which processing each profile applies](img/analysis/profile_layers.png)
 
 *Each row is one processing step; coloured cells are the steps a profile runs. Line counts are code lines of the
-fork build (`ars510/`); the summaries are a fork option, on in `colored`. `acc` runs none of the object-list steps: its
-whole file reads the ACC target.*
+fork build (`ars510/`); the summaries are a fork option, on in `colored`. `acc` reads the ACC target in its whole file;
+the object-list steps belong to `raw` and `fused`.*
 
 - **`acc`** publishes the radar's ACC target: the one car the radar's own ACC function follows, already chosen,
   converged and in path, with its fine distance (0.025 m), lateral position and closing speed. Toyota's ACC uses
@@ -165,7 +164,7 @@ tracks back through the filter's own uncertainty.*
 ![profiles on the bundled samples](img/analysis/profile_comparison.png)
 
 *`raw` and `fused` on the two bundled excursions (regenerated from `data/sample/`). The dashed line is the radar's ACC
-target, which is exactly what `acc` publishes. Drive A has no ACC target, so there `acc` publishes nothing and radard
+target, which is exactly what `acc` publishes. Drive A's capture holds 0 frames of 0x235 / 0x237, so there `acc` publishes an empty list and radard
 uses the camera lead.*
 
 ## Against vision only
@@ -173,7 +172,7 @@ uses the camera lead.*
 Each profile was replayed on the same 27 drives through the unchanged openpilot card → radard → planner, and
 judged against what the driver did, with the pre-registered definitions used for the original radar-vs-vision test
 ([`driver_agreement_preregistered.json`](../data/analysis/summaries/driver_agreement_preregistered.json)).
-Held-out set (its historical name; the drives were used during development): 20 routes, 4.56 h with the driver controlling speed, 167 driver brake presses, 47 hard slowdowns.
+The 20-route "held-out" set (the name from the original radar-vs-vision test; development also used its drives): 4.56 h with the driver controlling speed, 167 driver brake presses, 47 hard slowdowns.
 
 ![profiles against vision only](img/analysis/profiles_vs_vision.png)
 
@@ -202,10 +201,10 @@ for `raw` (vision −0.61 s).
 What the radar adds, by profile:
 
 - **`acc`** starts braking 0.04 s before vision only on average (95 % CI −0.09 … +0.00), anticipates 44.9 % of
-  driver brakes at ≤ −1 m/s² (vision 40.1 %), misses one hard slowdown fewer than `fused`, asks for no braking that only
+  driver brakes at ≤ −1 m/s² (vision 40.1 %), misses one hard slowdown fewer than `fused`, asks for 0 braking per hour that only
   the radar wanted, and has the lowest jerk and the fewest lead flips. Its 66 hard ticks are 14 while moving and 52
   holds at standstill. On the 4 further drives it has one moving hard episode (7 ticks, a real object drifting a lane
-  over at 82 m that radard matches to the camera's lead 27 m further on) and 12 ticks at standstill; `fused` has none.
+  over at 82 m that radard matches to the camera's lead 27 m further on) and 12 ticks at standstill; `fused` has 0.
 - **`fused`** removes the object list's over-closing bias and with it all radar-only braking on the held-out drives
   (0 per hour). It starts braking when vision does on average (−0.01 s, 95 % CI −0.06 … +0.03): 18 of 149 paired
   driver brakes are answered earlier than vision and 12 later, and it asks for ≤ −1 m/s² before 44.9 % of brake presses
@@ -223,7 +222,7 @@ What the radar adds, by profile:
 
 ### What the Kalman filter does on its own
 
-`fused` 2.0 with the ACC target ignored runs the filter on the object list alone: 48 hard radar-only ticks on the held-out routes
+`fused` 2.0 with the ACC target switched off runs the filter on the object list alone: 48 hard radar-only ticks on the held-out routes
 against `raw`'s 93, 0.88 radar-only braking events per hour (0.22 with the driver on the gas) against 1.75 (0.66), first
 request −0.03 s against −0.15 s, 41.9 % anticipation at ≤ −1 m/s² against 44.3 %. The ACC target supplies the rest of
 `fused`'s drop (16 hard ticks, 0 radar-only braking per hour). The filter alone is the behaviour of a `fused` track
@@ -234,7 +233,7 @@ without a matched ACC target.
 | profile | pros | cons |
 |---|---|---|
 | vision only | smooth; braking follows the camera alone | camera distance at range; closings through curves or far away are seen later than the radar sees them |
-| `acc` | a DBC and 26 code lines, nothing tuned; uses the radar the way Toyota's ACC does; lowest jerk and fewest flips in replay; slightly earlier than vision; new stationary vehicles published at once | one radar car; a fast closing beyond 60 m reaches the planner through the camera until the radar picks the car (about 1 s later on one owner drive, 0.8 s on another; `fused` publishes only the ACC target there too); close cut-ins are picked after a median 0.2 s and brake as with `fused`; holds at standstill behind close objects that the camera does not report; replay evidence on 21.45 moving hours, road drives pending |
+| `acc` | a DBC and 26 code lines, protocol values only; uses the radar the way Toyota's ACC does; lowest jerk and fewest flips in replay; slightly earlier than vision; new stationary vehicles published at once | one radar car; a fast closing beyond 60 m reaches the planner through the camera until the radar picks the car (about 1 s later on one owner drive, 0.8 s on another; `fused` publishes only the ACC target there too); close cut-ins are picked after a median 0.2 s and brake as with `fused`; holds at standstill behind close objects that the camera leaves out of its lead list; replay evidence on 21.45 moving hours, road drives are the next evidence |
 | `fused` | every radar car within 60 m; closest to vision in feel, radar-only braking gone, as early as vision on average; sunnypilot road drives and a second driver's car | the head start over vision is small on average; 187 code lines with tuned gates; a track is published 3.6 s after it appears |
 | `raw` | earliest reaction to real slowdowns (−0.15 s vs vision) | the most radar-only braking (1.75 per hour, over a third with the driver on the gas): occasional sharp brakes on false closings beyond 40 m |
 
@@ -252,9 +251,9 @@ without a matched ACC target.
   driver-controlled time; 4 further drives; 3 owner sunnypilot drives) used during development, plus 8 fresh drives, 26
   held-out owner routes and the second car's routes. In the driver-brake table, at most 7 brake presses separate
   the columns in each row.
-- **Versions.** `fused` rows are release 2.6.0 (far rule, stationary path gate, ACC target weight 0.13 m/s, no
-  summaries). `acc` rows are the public `upstream/ars510_acc_target.py` replayed through the same harness; the replayed
-  file is the earlier hand-decoded 33-line version that publishes the same points as the current 26-line DBC file on
+- **Versions.** `fused` rows are release 2.6.0 (far rule, stationary path gate, ACC target weight 0.13 m/s, summaries
+  off). `acc` rows are the public `upstream/ars510_acc_target.py` replayed through the same harness; the replayed
+  file is the hand-decoded 33-code-line version that publishes the same points as the current 26-line DBC file on
   all 11,028 bundled reports.
 - **Definitions.** Hard radar-only tick: planner ≤ −2 m/s² while vision only asks ≥ −0.5. Driver-brake metrics use
   [−3, +0.5] s (anticipation), [−3, +2] s (first request) and [−3, +1] s (missed hard slowdown) around the brake press.

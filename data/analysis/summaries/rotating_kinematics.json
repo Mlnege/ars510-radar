@@ -1,5 +1,5 @@
 {
-  "provenance": "Imported research-workspace SCR-140 aggregates; expanded raw corpus and rerun scripts are not bundled in the public repository.",
+  "provenance": "Imported research-workspace SCR-140 aggregates; the expanded raw corpus and rerun scripts stay in the research workspace.",
   "status": "Supported filtered lateral-ground-acceleration-like interpretation; nominal scale and latency remain provisional.",
   "field": {
     "start": 96,
@@ -10,10 +10,10 @@
   },
   "method": "Two-second same-slot settled windows below 60 m; rotation-corrected velocity derivatives; positive lag means field output follows reference; constant .05 and lag frozen before later-drive scoring.",
   "limitations": [
-    "Internal kinematic consistency, not independent physical-target acceleration truth.",
+    "Internal kinematic consistency (the reference is the radar's own velocity).",
     "Lateral velocity in the derivative uses provisional .15 m/s/code.",
-    "Common-support lag cohorts exclude life boundaries.",
-    "Route-specific calibration outliers remain; no control gate or raw measurement claim."
+    "Common-support lag cohorts cover the settled part of a track's life.",
+    "Route-specific calibration outliers exist; the result is an analysis of filtered acceleration-like values."
   ],
   "lateral_acceleration": [
     {

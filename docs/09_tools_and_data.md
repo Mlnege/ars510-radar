@@ -19,7 +19,7 @@
 ```bash
 python tools/decode_log.py data/sample/highway_following_30s.csv.gz -o points.csv
 python tools/decode_log.py rlog.zst -o points.csv            # needs openpilot's LogReader on PYTHONPATH
-python tools/decode_log.py rlog.zst --profile all-tracks     # every track, no age gate; reports CRC failures
+python tools/decode_log.py rlog.zst --profile all-tracks     # every track from age 1, with the radar's own IDs; reports CRC failures
 python tools/decode_log.py data/sample/highway_acc_anchor_24s.csv.gz --profile fused    # fused, raw (default) or all-tracks
 ```
 
@@ -100,7 +100,7 @@ python tools/fork_lead/fork_report.py replay drive1 drive2 --json fork_lead_hand
 python tools/fork_lead/fork_synth.py --sunnypilot ~/sunnypilot --frogpilot ~/frogpilot --starpilot ~/starpilot --template drive1
 ```
 
-Pass only the forks you have. The result is a proxy for the planner (a demand number on the lead trajectory each fork
+Pass the forks you have. The result is a proxy for the planner (a demand number on the lead trajectory each fork
 gives its MPC), suited to comparing forks and profiles; the planner's own request comes from the replay above. Its tests
 (`tests/test_fork_lead_tools.py`) run without a fork checkout.
 
@@ -111,7 +111,7 @@ until the last.
 
 1. **See it on the samples.** `data/sample/` has three real captures: steady following, a short excursion, and an
    excursion with the radar's ACC target. Copy a panel of [`tools/make_profile_figures.py`](../tools/make_profile_figures.py)
-   and plot your idea against the current profile; synthetic CAN for events the samples lack is built the same way.
+   and plot your idea against the current profile; synthetic CAN builds events outside the samples the same way.
 2. **Add it as an option, off by default.** A field in `NativeInterfaceConfig` ([`ars510/interface.py`](../ars510/interface.py))
    with a comment saying what it fixes, plus a test in `tests/test_interface.py` built from synthetic slots
    (`encode_slot`), including a case where it must leave the track alone.
@@ -172,4 +172,4 @@ equipment, required references and interpretation limits. [15](15_pcs_testing.md
 - Short CAN excerpts of interesting events (radar addresses plus bus-0 0xB4, times rebased to 0, like `data/sample/`):
   a clear velocity excursion, a stopped-car approach, a lane change.
 
-Keep route IDs, dongle IDs, GPS and video private unless you mean to share them.
+Keep route IDs, dongle IDs, GPS and video private; share them when you mean to.

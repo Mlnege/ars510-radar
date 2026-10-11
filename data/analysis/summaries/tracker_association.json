@@ -634,7 +634,7 @@
    "events": 167,
    "radar_only_per_h": 0.22,
    "radar_only_on_gas_per_h": 0.0,
-   "note": "summary-attached tracks taking the summary range: no count changes and no measurable change of the lead distance; not part of fused"
+   "note": "summary-attached tracks taking the summary range: the hard / episode / target / radar-added counts equal those of the summaries-off step (held-out 30 / 11 / 4 / 1; lead-source switches 1242 -> 1236) and the lead distance is equal within measurement; the variant stays out of fused"
   }
  },
  "published_lead_distance_vs_vision_lead": {

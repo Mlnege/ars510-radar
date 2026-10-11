@@ -82,9 +82,9 @@ More: [05 ACC target](05_acc_target_and_support.md), [12](12_kalman_filter.md#ma
 
 ## 5. Two profiles: `acc` and the `fused` Kalman filter
 
-**`acc`** publishes without a filter: the radar's tracker has already chosen, converged and filtered the one car Toyota's ACC follows.
-Its speed follows the slope of its own distance with no delay (best lag −0.06 s, gain 1.00; `acc_target_parser.json`), so the point goes to
-openpilot as sent. Every other car reaches the planner through the camera.
+**`acc`** publishes the radar's tracker output as sent: the tracker has already chosen, converged and filtered the one car Toyota's ACC follows.
+Its speed follows the slope of its own distance (best lag −0.06 s, gain 1.00; `acc_target_parser.json`), so the point goes to
+openpilot unfiltered. Every other car reaches the planner through the camera.
 
 **`fused`** keeps the whole object list and estimates each car's speed over ground with one small Kalman filter per track.
 Each reading is weighted by its own uncertainty: the object list by 0.045 m/s × `240|7`, the ACC target by 0.13 m/s. A reading the
@@ -103,8 +103,8 @@ each weighted by the camera's uncertainty, then checks only distance and speed. 
 the only candidate, so the camera's lead decides every other car. With `fused` the gates below choose among all tracks:
 
 - Beyond 15 m, a track more than 2.5 m from the path the car is driving (predicted from yaw rate and speed) is withheld; closer in,
-  cars moving into the lane stay visible. Far out the camera's lateral uncertainty is wide, so without this gate a car in the next lane
-  can become the lead.
+  cars moving into the lane stay visible. Far out the camera's lateral uncertainty is wide, so this gate keeps a car in the next lane
+  from becoming the lead.
 - Within 15 m, stationary tracks (under 0.5 m/s) are gated to 1.5 m of the path.
 - Beyond 60 m only the track matched to the ACC target is published.
 - The track matched to the ACC target is exempt from all three gates.
@@ -127,7 +127,7 @@ moments ([`lead_choice_guards.json`](../data/analysis/summaries/lead_choice_guar
 
 Every part was removed on its own and in combination, then replayed on 27 drives. Every hard brake was judged
 against the radar's raw range, the camera and the driver. Each part kept earns its place: removing it adds unjustified
-braking or destabilises the lead; the ego-speed alignment is braking-neutral and costs no line.
+braking or destabilises the lead; the ego-speed alignment is braking-neutral (onset +12 ms) and adds 0 code lines.
 
 ![what each part is worth](img/analysis/kalman_ablation.png)
 
@@ -136,7 +136,7 @@ upstream PR could drop:
 
 ![parts ledger](img/analysis/guide_parts_ledger.png)
 
-`acc` is the other end of the scale: 26 code lines, one constant, no gates. Each of `fused`'s parts rebuilds a piece of the
+`acc` is the other end of the scale: 26 code lines, one constant, the radar's target-present flags as its only gate. Each of `fused`'s parts rebuilds a piece of the
 decision the radar's tracker has already made ([10](10_research_directions.md#the-acc-target-alone--candidate)).
 More: [12](12_kalman_filter.md#what-each-part-is-worth), [10](10_research_directions.md#parts-of-the-openpilot-file).
 
@@ -159,12 +159,12 @@ controlling speed):
 | share of lead time on a radar lead | 0 | 86.6 % | 83.1 % | 84.8 % |
 | flips between a radar and a vision lead, per hour | 0 | 939 | 347 | 318 |
 
-`acc`'s extra hard ticks are holds at standstill (52 of 66): a stopped car 0.7-4.8 m behind an object the camera
-reports no lead for, where radard's low-speed rule keeps it stopped.
+`acc`'s extra hard ticks are holds at standstill (52 of 66): a stopped car 0.7-4.8 m behind an object the radar sees
+and the camera leaves out of its lead (a wall, a fence), where radard's low-speed rule holds it stopped.
 
 Vision only has its own errors, so a second reference helps. openpilot's own planner fed a hindsight lead (the
 radar's ACC target and smoothed range, checked with the camera) gives the seconds of unnecessary and missed braking
-below. Its reference range comes mostly from the ACC target, which favours designs built on that target; hard ticks and onset are independent of it.
+below. Its reference range comes mostly from the ACC target, which favours designs built on that target; hard ticks and onset are judged against the raw range, the camera and the driver.
 
 | unnecessary / missed braking, seconds (set) | vision only | `fused` | `acc` | source |
 |---|---|---|---|---|
@@ -195,7 +195,7 @@ More: [11 Profiles compared](11_profiles_compared.md), [08](08_openpilot_integra
   replay shows what openpilot would have *asked for*.
 - **The 27 drives.** 20 held-out drives, 4 further drives and 3 owner sunnypilot drives. Limits for a change are
   written down before it is replayed, and a change is tuned on other drives than the one that motivated it.
-- **Judging a brake.** A radar-only brake is checked against references independent of the radar's speed: its raw
+- **Judging a brake.** A radar-only brake is checked against references taken from outside the radar's speed: its raw
   range, the camera, and whether the driver slowed too ([12](12_kalman_filter.md#what-each-part-is-worth)).
 - **Confidence marks.** ● confirmed, ◐ likely, ○ candidate, used throughout the topic docs.
 

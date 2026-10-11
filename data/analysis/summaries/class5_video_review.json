@@ -3,7 +3,7 @@
   "provenance": {
     "scope": "700 previously exposed one-minute atlas segments; existing rare-class inventory; captured full/low resolution video and retained long-route wide MP4",
     "prior_use": true,
-    "manual_association": "provisional; nominal bearing aid, not certified physical radar identity",
+    "manual_association": "provisional; a nominal bearing aid (physical radar identity: \u25cb)",
     "generic_name_support_gate_met": false
   },
   "inventory": {
@@ -57,8 +57,8 @@
       "independently_decoded_images": 16,
       "largest_rendered_sof_offset_s": 0.022020795000571525,
       "independent_projection_max_error_px": 4.18367562815547e-10,
-      "packet_limit": "Packet-size sequence, not compressed-payload hash equality."
+      "packet_limit": "Equality of the packet-size sequence."
     }
   },
-  "consumer_limit": "Class and maximum confidence code do not certify physical target identity; no runtime behavior change."
+  "consumer_limit": "Class and maximum confidence code are raw labels for offline review; runtime behaviour is unchanged."
 }

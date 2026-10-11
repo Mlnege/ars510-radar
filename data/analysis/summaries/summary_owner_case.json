@@ -67,10 +67,10 @@
     }
   },
   "comparison": {
-    "controlled_change": "Summary speed sigma 0.5 to 10000 m/s; same parser with relinking disabled in both cases. Suppression is negligible precision, not literal removal.",
+    "controlled_change": "Summary speed sigma 0.5 to 10000 m/s; same parser with relinking disabled in both cases. Suppression sets the summary's precision to a negligible weight.",
     "local_control": "Retained-summary and full fused saved fields match exactly over 119 ticks around the event.",
     "target_episode": "Planner acceleration <= -1 m/s^2 while captured vision >= -0.3 m/s^2 and ego speed > 1 m/s; contiguous gaps < 0.1 s, duration >= 0.3 s.",
-    "scope": "Saved radard lead and planner output. The native cache identifies an earlier eligible summary update; the summary's timing is its receipt time (the summary range history was not saved).",
+    "scope": "Saved radard lead and planner output. The native cache identifies an earlier eligible summary update; the summary's timing is its receipt time (the saved history holds the applied timing).",
     "trace": "summary_owner_case.csv; relative event time; zero distance denotes absent lead."
   },
   "source_history": {
@@ -101,10 +101,10 @@
     },
     "cached_rows": 390,
     "saved_fused_mean_max_abs_check": 0.0,
-    "scope": "Cache source identity and clock align structurally with saved replay. Applied summary timing is observed; underlying range samples and effective LS observation time are unavailable. Fixed recurrence states are distinct from saved consumer lead values."
+    "scope": "Cache source identity and clock align structurally with saved replay. Applied summary timing is observed; the effective LS observation time is modelled in summary_window_time.json. Fixed recurrence states are distinct from saved consumer lead values."
   },
   "relink_control": {
-    "scope": "Completed owner O1 route only; wider noS suite not scored in this check. One owner episode already rejects this removal under the frozen zero-episode gate.",
+    "scope": "Scored on the completed owner O1 route. One owner episode exceeds the frozen zero-episode gate, which rejects this removal.",
     "summary_sigma_mps": 10000,
     "relink_max_gap_s": 3.5,
     "target_episodes": 1,

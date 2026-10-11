@@ -75,7 +75,7 @@
     "no_strict_exit_observed": 258,
     "nonzero_to_zero_strict_edges": 0,
     "zero_to_zero_strict_edges": 0,
-    "note": "No strict exit is a continuity/support limit, not a physical target-loss label."
+    "note": "A strict exit is a lifecycle marker of the capture's continuity/support (5,516 exits at age 2; 258 slots show no strict exit)."
   },
   "partition_counts": [
     {

@@ -1,7 +1,7 @@
 {
   "provenance": {
     "source": "research-workspace SCR-167 and SCR-168",
-    "scope": "Imported aggregate evidence, not bundled reruns; all routes previously studied for other questions.",
+    "scope": "Imported aggregate evidence; all routes were studied for other questions before.",
     "presence_summary_sha256": "856a669bfe48a539f78834e14a2ba17d1c6cb670fed069ad91ad17cb7671bba7",
     "further_scores_sha256": "c7660fccef9c73517922baf4076193508c0459eae6b5cf21e1866a2debbf87e5"
   },

@@ -2,7 +2,7 @@
 
 openpilot drives the **Toyota RAV4 TSS2 2022 / 2023** (`TOYOTA_RAV4_TSS2_2022` / `_2023`) on camera alone, because the
 car's front radar, a **Continental ARS510** (firmware `8821F0R03100` at 0x750 / 0x0f), speaks its own
-segmented object-list format, which stock openpilot leaves unused. This repo decodes that radar and plugs it into openpilot and its forks, so radard gets radar leads with
+segmented object-list format, so stock openpilot takes its leads from the camera. This repo decodes that radar and plugs it into openpilot and its forks, so radard gets radar leads with
 measured distance and speed. It contains the decoder, an installer, the evidence behind every decoded field, and
 replay comparisons against vision only.
 
@@ -60,10 +60,9 @@ against a hindsight lead ([11](docs/11_profiles_compared.md)). `acc` (default) a
   waits 3.6 s ([11](docs/11_profiles_compared.md#why-acc-is-the-default)). `fused` keeps every radar car within 60 m and
   has road drives behind it; `acc` has replays.
 - **On some real slowdowns the radar sees the closing first** (curves, far leads); on others vision does.
-- **A car closing fast beyond 60 m** that the radar's ACC has not picked yet reaches the planner through the camera
-  until the radar picks it, about 1 s later than with the object list
-  ([12](docs/12_kalman_filter.md#far-cars-beyond-60-m)).
-- **Second car.** Replayed on a second car never used for tuning (6.19 moving h) both profiles start braking within 0.05 s of
+- **A car closing fast beyond 60 m** reaches the planner through the camera until the radar's ACC picks it, about 1 s
+  later than with the object list ([12](docs/12_kalman_filter.md#far-cars-beyond-60-m)).
+- **Second car.** Replayed on a second car held out of all tuning (6.19 moving h) both profiles start braking within 0.05 s of
   vision's onset with far less unnecessary braking (vision 56.5 s; `acc` 9.9 s, `fused` 15.5 s;
   [11](docs/11_profiles_compared.md#acc-and-fused-head-to-head)), and the radar's speed noise matches the owner's unit
   ([06](docs/06_accuracy.md#velocity)).
@@ -82,7 +81,7 @@ car its ACC function follows: the ACC target. The two profiles use these differe
 | range of the followed car | ACC distance, 0.025 m per code | ACC distance (other tracks: object-list range) |
 | gates | the radar's target-present flags | path gate beyond 15 m, 60 cycles of age, speed std ≤ 0.75 m/s, far rule beyond 60 m |
 | code | 26 code lines + a two-message, 7-signal DBC | 187 code lines in one openpilot file |
-| strength | smallest and closest to Toyota's own ACC; no object-list noise | every radar car; the filter handles object-list speed excursions |
+| strength | smallest and closest to Toyota's own ACC; speed and range come from the ACC target alone | every radar car; the filter handles object-list speed excursions |
 
 `fused` runs the filter as:
 
@@ -140,7 +139,7 @@ filter with replay evidence for every part: [docs/12](docs/12_kalman_filter.md).
 | **Object attributes**: lane assignment, class and its confidence, size, heading, lateral speed and acceleration, existence, uncertainties, camera association | ◐ decoded; some physical names and scales ○ ([03](docs/03_slot_fields.md)) |
 | **Radar's ACC target** (0x235 / 0x237 / 0x239 / 0x23B, 50 Hz) | ● mapped bit for bit: closing speed 0.125 m/s, relative acceleration 0.125 m/s² and distance 0.025 m per code, class, cycle timestamp; ◐ lateral 0.01 m per code, lateral speed and acceleration, in-path state, width; ◐ sent by the radar itself ([05](docs/05_acc_target_and_support.md)) |
 | **Target summaries** (0x190-0x194) | ● 0x192 / 0x194 = position of one internal track in the object list's encoding (range ●, lateral unit ◐); ● 0x190 counts them; ◐ 0x191 / 0x193 carry the class template (car / truck size) ([05](docs/05_acc_target_and_support.md)) |
-| **Car-bus target report** (0x366, 5 Hz) | ◐ mostly the ACC target, also reports without one: relative speed 0.5 km/h, distance ≈ 0.8 m, lateral 0.34 m per code ([13](docs/13_car_bus_messages.md)) |
+| **Car-bus target report** (0x366, 5 Hz) | ◐ the ACC target while one exists, plus other states: relative speed 0.5 km/h, distance ≈ 0.8 m, lateral 0.34 m per code ([13](docs/13_car_bus_messages.md)) |
 | **Single-object stream** (0x680, 2 Hz) | ● range at 1/32 m; ◐ one tracked object, mostly stationary roadside objects: lateral position and speed, stationary / oncoming / moving flags ([05](docs/05_acc_target_and_support.md)) |
 | **Event pair** (0x195 / 0x196) | ● raw payloads; ◐ a short-time-to-collision state ([05](docs/05_acc_target_and_support.md#0x195--0x196-event-pair)) |
 | **Metadata cells** (0x85) | ◐ ten lane / road-boundary curves; remaining cell fields raw ([04](docs/04_metadata_record_0x85.md)) |
@@ -265,7 +264,7 @@ One owner's 2022 RAV4, logged with openpilot: three reference drives (A developm
 with camera and odometry references; 399 one-minute segments from 24 drives for field statistics; 27 drives replayed
 through openpilot against the driver (20 held-out routes with 4.6 h of driver-controlled speed, 4 further drives, 3
 owner sunnypilot drives); 8 later drives held back for fresh checks; and closed-loop drives on FrogPilot,
-StarPilot and sunnypilot. The repo carries anonymised drives only: no route IDs, dongle IDs, GPS positions or full video.
+StarPilot and sunnypilot. The repo carries anonymised drives (A/B/C, D1-D4, O#, U#, S#) and decoded values.
 
 ## Contributing
 

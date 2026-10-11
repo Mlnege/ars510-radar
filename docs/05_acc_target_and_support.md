@@ -95,15 +95,14 @@ while the ACC target holds −0.75 to −0.9 m/s until about 18.7 s (`highway_ac
     the radar.
 - **Its distance and closing speed are filtered estimates sent on the radar clock** (◐, [summary](../data/analysis/summaries/acc_target_camera.json)).
   The slot's camera-association state `112|3` ([03](03_slot_fields.md#camera-association)) ends between 40 and 60 m by
-  day, so the same cars are followed with and without the camera's association. At 40-60 m both have the same ACC
+  day, so the same cars are followed at association states 0 and non-zero. At 40-60 m both have the same ACC
   distance and speed jitter and the same agreement with openpilot's vision lead, and at 216 association onsets and
   losses the ACC distance and speed hold steady (+0.06 / +0.03 m, −0.01 / −0.05 m/s) while the object-list range of the
   same track moves by 0.8-1.7 m. An association-linked pull toward the camera is therefore at most about 4 % of distance
   and 6 % of speed (measured against openpilot's vision lead). The observations are identical for any constant camera
   share (exact mixture identities, [summary](../data/analysis/summaries/acc_camera_identifiability.json)), so the camera's
   total weight in the target is a research question ([10](10_research_directions.md)).
-- **Target choice follows the radar's listed objects:** all 539 daytime acquisitions beyond 60 m happen without the camera's
-  association, and the radar follows the nearest moving in-lane object as often at 60-70 m as at 20-40 m (0.93 / 0.92).
+- **Target choice follows the radar's listed objects:** all 539 daytime acquisitions beyond 60 m happen at camera-association state 0, and the radar follows the nearest moving in-lane object as often at 60-70 m as at 20-40 m (0.93 / 0.92).
   At the camera's daytime range limit (40-50 m), 66 of 357 acquisitions (18.5 %) come within 0.25 s after the camera
   associates the object, against about 27 expected by chance: the camera helps pick the target there, or both
   react to the same scene ([summary](../data/analysis/summaries/acc_camera_identifiability.json)). The camera
@@ -195,9 +194,9 @@ word (it crosses 4096 continuously).
 ACC speed when both describe the same car (correlation 0.98, median difference 0.18 m/s). During object-list velocity
 excursions it stays with the ACC speed in every tested cycle (490 of 490 for 0x192, 98 of 98 for 0x194), and against
 a camera optical reference it is closer than the object list out to about 80 m (false closings > 2.5 m/s at 60-80 m:
-14.9 % → about 10 %; closer in 97 % of object-list false closings). The summaries also describe far cars: present without an
-ACC target at a median 60 m (0x194: 79 m)
-([`summary_tracks.json`](../data/analysis/summaries/summary_tracks.json)). They carry position only, so a speed comes
+14.9 % → about 10 %; closer in 97 % of object-list false closings). The summaries also describe far cars while the ACC target is idle,
+at a median 60 m (0x194: 79 m)
+([`summary_tracks.json`](../data/analysis/summaries/summary_tracks.json), block `current_units_recompute`). They carry position only, so a speed comes
 from the range slope and lags by about half a second.
 
 `parse_0x192()` returns the raw codes plus `Target192.d_rel` and `Target192.y_rel` in metres (0x194 has the same
@@ -307,10 +306,10 @@ ACC target (◐). `support.parse_0x680` decodes it (big-endian fields, MSB-first
 - **A witness for far tracks:** against it, the object-list track at the same position reads more than 2.5 m/s too closing
   on 1 % of frames below 40 m, 5 % at 40-60 m, 17-19 % at 60-110 m and 44 % at 110-170 m, and its range is a median 3 m
   short at 60-110 m and 14 m short at 110-170 m ([06](06_accuracy.md#distance), [07](07_velocity_excursions.md)). The
-  fixes are sparse (about one a minute on tracks without the ACC target or a summary).
+  fixes are sparse (about one a minute on tracks that only the object list reports).
 - **Content while driving:** a stationary roadside object in 83% of frames (typically 8 m to the side), a
-  same-direction vehicle in 13%, an oncoming one in 3%. While driving the 0x80 object list drops most new stationary objects
-  ([02](02_object_list.md#what-the-radar-lists)); 0x680 reports them, one at a time.
+  same-direction vehicle in 13%, an oncoming one in 3%. While driving, the 0x80 object list holds the moving objects
+  ([02](02_object_list.md#what-the-radar-lists)); 0x680 reports the stationary ones, one at a time.
 - **Idle** payload `00 00 08 00 80 00 80 0A` appears in 0.12% of frames above 5 m/s and at most 1.0 s at a time
   in 7.8 h, so a long idle run while driving is a candidate "radar sees nothing" indicator
   ([10](10_research_directions.md)).

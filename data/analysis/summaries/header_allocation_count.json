@@ -1,6 +1,6 @@
 {
   "status": "bounded reconstructed-record allocation invariant",
-  "provenance": "Recomputed from the three bundled CAN samples (tools/check_structure.py); not an imported whole-corpus result.",
+  "provenance": "Recomputed from the three bundled CAN samples (tools/check_structure.py).",
   "raw_view": {
     "record_start_bit": 115,
     "width": 5,

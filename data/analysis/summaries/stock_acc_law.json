@@ -1,5 +1,5 @@
 {
- "description": "Toyota's stock ACC command (0x343 ACCEL_CMD from the radar) against the radar's ACC target on two cars: U1 (229 s following at 30-43 m) and the second car's stock-ACC drive (138 s scoreable: cruise on, no gas or brake, >= 2 s after gas, ACC target present). Law: u = c_d d + c_v vEgo + c_vr vRel + c_ar aRel + c0 through a dead time, first-order lag and rate limit fitted on U1, simulated free-running from the inputs; optional set-speed cap u = min(u, k (v_set - v) + c). Exploratory.",
+ "description": "Toyota's stock ACC command (0x343 ACCEL_CMD from the radar) against the radar's ACC target on two cars: U1 (229 s following at 30-43 m) and the second car's stock-ACC drive (138 s scoreable: cruise on, gas and brake released, >= 2 s after gas, ACC target present). Law: u = c_d d + c_v vEgo + c_vr vRel + c_ar aRel + c0 through a dead time, first-order lag and rate limit fitted on U1, simulated free-running from the inputs; optional set-speed cap u = min(u, k (v_set - v) + c). Exploratory.",
  "u1_law": {
   "lag_s": 0.1,
   "tau_s": 2.5,
@@ -13,7 +13,7 @@
  "second_car": {
   "cmd_passes_filter": {
    "mini_car_equals_acc_present_cruise_on": 0.9998,
-   "note": "the second car has a board in the radar's car-bus line; on stock ACC it passes the radar's 0x343 unchanged"
+   "note": "the second car has a board in the radar's car-bus line; on stock ACC it forwards the radar's 0x343 as sent"
   },
   "set_speed_minus_vego_median": {
    "second_car": -0.3,
@@ -103,10 +103,10 @@
     "vision_x": 53.5
    }
   },
-  "lead_changes": "three ACC-target switches, all under gas override or at the set-speed cap: not usable"
+  "lead_changes": "three ACC-target switches, all under gas override or at the set-speed cap: left out of the fit"
  },
  "u1_standstill_hold": {
-  "note": "not engaged, stopped (< 0.5 m/s) behind a lead (MINI_CAR 1): ACCEL_CMD value shares",
+  "note": "ACC disengaged, stopped (< 0.5 m/s) behind a lead (MINI_CAR 1): ACCEL_CMD value shares",
   "stopped_by_mini_car": {
    "0": {
     "n": 2026,

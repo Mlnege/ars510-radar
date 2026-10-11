@@ -83,7 +83,7 @@ Four closed-loop drives with the object-list radar feeding radard (owner's early
 ![excursion sigma scale](img/analysis/excursion_sigma_scale.png)
 
 - Against the radar's own ACC target, the object-list speed error grows with the reported uncertainty `240|7`
-  ([03](03_slot_fields.md#kinematics)): RMS ≈ 0.04-0.06 m/s per count (≈ 0.9 m/s at code 15, 1.2-1.3 m/s at code 30;
+  ([03](03_slot_fields.md#kinematics)): RMS ≈ 0.04-0.06 m/s per count (≈ 0.8 m/s at code 15, 1.2-1.3 m/s at code 30;
   [`acc_unit_recompute.json`](../data/analysis/summaries/acc_unit_recompute.json)).
   Codes grow with range, so far tracks carry a 1-3 m/s error scale.
 - A Gaussian with σ = 0.045 × code predicts the share of far records inside an excursion (5.3% observed vs 6.5%
@@ -111,7 +111,7 @@ Four closed-loop drives with the object-list radar feeding radard (owner's early
 ![object-list velocity disagreement with the optical reference](img/analysis/video_truth_excursions.png)
 
 - Reference: `−(native range + 1.52 m) × d ln(scale)/dt` from ECC registration of the lead's rear over 0.5-1 s. It
-  is independent of the radar's velocity and takes its metric scale and association from the radar's range.
+  derives speed from the image scale change and takes its metric scale and association from the radar's range.
 - 2,657 two-second windows of the object list in five bins (10-30 / 30-50 / 50-70 / 70-90 / 90-130 m): native more closing than the reference by > 2.5 m/s in
   0.2 / 2.2 / 10.6 / 15.0 / 20.9% of windows; the opposite in 0 / 0.2 / 0.6 / 2.2 / 1.4%
   ([`video_truth.json`](../data/analysis/summaries/video_truth.json)).
@@ -135,8 +135,8 @@ rougher than vision; around radar/vision disagreements (20% of the time) +0.032,
 
 `fused` handles excursions with one Kalman filter per track that weights the object list and the radar's
 ACC target by their own uncertainty. The model, every constant, what each part contributes and
-the variants tested are in [12 Kalman speed filter](12_kalman_filter.md). `acc` (the default) avoids the object list
-altogether: the ACC target's speed is the speed radard sees ([11](11_profiles_compared.md#why-acc-is-the-default)).
+the variants tested are in [12 Kalman speed filter](12_kalman_filter.md). `acc` (the default) reads the ACC target
+alone: the ACC target's speed is the speed radard sees ([11](11_profiles_compared.md#why-acc-is-the-default)).
 
 ## Radar-internal signals that move with an excursion
 

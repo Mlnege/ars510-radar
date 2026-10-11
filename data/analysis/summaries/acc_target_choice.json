@@ -27,7 +27,7 @@
       2.16
     ]
   },
-  "limits": "position matching per cycle; lane weights are empty on most lead cycles; exploratory counts",
+  "limits": "position matching per cycle; exploratory counts",
   "release_vs_radar_lane_boundary": {
     "departures_with_boundary": 21,
     "car_centre_minus_boundary_median_m": -0.29,

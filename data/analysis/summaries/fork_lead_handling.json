@@ -1,10 +1,10 @@
 {
- "description": "How the radar's lead is consumed by the radard and MPC lead handling of sunnypilot, FrogPilot and StarPilot, and what that does with this radar. Each fork's own source is executed unmodified on recorded drives U1 (stock ACC, 21 min) and U2 (openpilot alpha longitudinal, 26 min) and on synthetic scenarios (tools/fork_lead). Radar profiles: raw and fused as of ars510 2.5.0, 'acc' = the radar's own ACC target (0x235 / 0x237) as the only radar point, the reference (the radar's own ACC tracker). 'Demand' is a proxy, not the planner: the constant deceleration that keeps the MPC's lead-based safety distance over 10 s, applied to the lead trajectory each fork hands its MPC; 'nominal' starts the ego at the desired spacing so it isolates what the lead's predicted speed and acceleration ask for, independent of the gap the driver kept. Open loop; the MPC solver and the rest of each planner are not run. Section keys: A lead supplier, B added by radar noise against the ACC-target reference, C braking added or removed against the same fork on vision only, D StarPilot lead paths, E leads only FrogPilot accepts, F first braking request in 10 lead-braking events (a hint: one proxy, 10 events; on the openpilot path it contradicts the real-planner replay of docs/08), E1 / E2 synthetic.",
+ "description": "How the radar's lead is consumed by the radard and MPC lead handling of sunnypilot, FrogPilot and StarPilot, and what that does with this radar. Each fork's own source is executed unmodified on recorded drives U1 (stock ACC, 21 min) and U2 (openpilot alpha longitudinal, 26 min) and on synthetic scenarios (tools/fork_lead). Radar profiles: raw and fused as of ars510 2.5.0, 'acc' = the radar's own ACC target (0x235 / 0x237) as the only radar point, the reference (the radar's own ACC tracker). 'Demand' is a proxy for the planner: the constant deceleration that keeps the MPC's lead-based safety distance over 10 s, applied to the lead trajectory each fork hands its MPC; 'nominal' starts the ego at the desired spacing so it isolates what the lead's predicted speed and acceleration ask for, independent of the gap the driver kept. Open loop; the proxy stands in for the MPC solver and the rest of each planner. Section keys: A lead supplier, B added by radar noise against the ACC-target reference, C braking added or removed against the same fork on vision only, D StarPilot lead paths, E leads only FrogPilot accepts, F first braking request in 10 lead-braking events (a hint: one proxy, 10 events; on the openpilot path it contradicts the real-planner replay of docs/08), E1 / E2 synthetic.",
  "fork_sources": {
   "sunnypilot": {
    "branch": "master",
    "commit": "3323aaf",
-   "note": "radard equals openpilot's for a Toyota (its change is Hyundai-only)"
+   "note": "radard equals openpilot's for a Toyota (its change applies to Hyundai)"
   },
   "frogpilot": {
    "branch": "FrogPilot-Staging",
@@ -24,7 +24,7 @@
    "note": "FrogPilot and StarPilot: LeadDetectionThreshold default 35, user range 25-50"
   },
   "frogpilot_human_following": "LongitudinalTune and HumanFollowing default on; default model version v9, which selects the long_mpc model-trajectory path",
-  "starpilot_uncertainty_and_panic_bypass": "0 / off (the model-uncertainty inputs to its filter time are not replayed)"
+  "starpilot_uncertainty_and_panic_bypass": "0 / off (the replay sets the model-uncertainty inputs to its filter time to zero)"
  },
  "code_facts": {
   "lead_accel_tau_s": {
@@ -36,16 +36,16 @@
    "filter_tau_s": 0.5,
    "threshold": 0.63,
    "requires": "moving > 1 m/s, between the model's lane lines, nearer than the model path end",
-   "applies": "only when no lead was matched and low_speed_override is set (leadOne)"
+   "applies": "when no lead was matched and low_speed_override is set (leadOne)"
   },
-  "frogpilot_model_path": "radar sets dRel and vLead at t=0; the model supplies the deltas; aLeadK / aLeadTau unused; no braking-lead exception",
+  "frogpilot_model_path": "radar sets dRel and vLead at t=0; the model supplies the deltas; aLeadK / aLeadTau ignored; braking leads take the same path",
   "starpilot_model_path": {
    "max_lead_brake_m_s2": 0.5,
    "max_closing_ttc_s": 7.0,
    "min_model_prob": 0.5,
    "legacy_path": "radar lead used as in openpilot, through lead_v_filter / lead_a_filter"
   },
-  "starpilot_lead_filter_time_s": "0 below 47 mph, rising to 1.2 at 65 mph and above; both filters start at 0 and update only on the legacy path",
+  "starpilot_lead_filter_time_s": "0 below 47 mph, rising to 1.2 at 65 mph and above; both filters start at 0 and update on the legacy path",
   "starpilot_dynamic_t_follow_max_extra_s": 0.162,
   "starpilot_vision_lead_caps_bypassed_for_radar_leads": 11
  },

@@ -1,5 +1,5 @@
 {
- "description": "2.6 (beyond 60 m only the ACC target's track; stationary tracks path-gated close in too; ACC sigma 0.13 m/s) and its steps against 2.5, 2.4 and vision only. Unchanged openpilot card -> radard -> planner replays in 6-segment chunks of every replay drive set (first 30 s of each chunk dropped); hard = request <= -2 m/s2 while vision only >= -0.5; mild = <= -1 while vision >= -0.3; unnecessary / missed = confident seconds against the hindsight-lead oracle (oracle_reference.json); onset = first request <= -0.5 m/s2 minus vision's on the oracle's confident braking episodes (negative = earlier).",
+ "description": "2.6 (beyond 60 m only the ACC target's track; stationary tracks path-gated close in too; ACC sigma 0.13 m/s) and its steps against 2.5, 2.4 and vision only. Unchanged openpilot card -> radard -> planner replays in 6-segment chunks of every replay drive set (each chunk scored from 30 s in); hard = request <= -2 m/s2 while vision only >= -0.5; mild = <= -1 while vision >= -0.3; unnecessary / missed = confident seconds against the hindsight-lead oracle (oracle_reference.json); onset = first request <= -0.5 m/s2 minus vision's on the oracle's confident braking episodes (negative = earlier).",
  "by_version_and_set": {
   "vision only": {
    "27 replay drives": {
@@ -375,7 +375,7 @@
     1.6
    ]
   },
-  "note": "[episodes, seconds] where the request differs by > 0.3 m/s2 for >= 0.3 s; the costs are <= 0.5 m/s2 and never make later braking harder"
+  "note": "[episodes, seconds] where the request differs by > 0.3 m/s2 for >= 0.3 s; the costs are <= 0.5 m/s2"
  },
  "cost": "a fast real closing far ahead without an ACC target waits for the radar to make the car its ACC target: about 1 s later on one owner drive (95 m, closing 4.5 m/s) and 0.8 s on the second car (86 m, closing 8.8 m/s); vision only braked at the same time or later in both, and Toyota's own ACC holds for several seconds on a far closing car (it first braked at 66 m on a car acquired at 94 m)",
  "held_out_driver_agreement": "20 held-out drives (2.6): anticipation at -1 m/s2 44.9 % (2.5 42.5 %), onset vs vision -0.013 s, radar-only braking 0 /h (2.5 0.22), driver overrides radar closer / further 7 / 0 (2.5 4 / 1), lead flips 347 /h (494), radar share of lead time 83 % (87 %); 27-drive hard ticks held-out / further / owner 16 / 0 / 0 (2.5 29 / 1 / 0)",
@@ -389,7 +389,7 @@
    0.25,
    0.28
   ],
-  "note": "[road, replay drives]; the other tracks are 4-6 % of far lead time and carry 31-39 % real closings too, and no per-track field separates the two"
+  "note": "[road, replay drives]; the other tracks are 4-6 % of far lead time and carry 31-39 % real closings too, and the best single slot field reaches AUC 0.65 between false and real closings (frame_trust_classifier.json)"
  },
  "stationary_gate": "stationary tracks (|over-ground speed| < 0.5 m/s) path-gated at every range (1.5 m from the path curved with max(v, 2 m/s)): on video the hard radar-only episodes it removes are parked cars at the curb while turning and a parked car alongside, picked up by radard's low-speed rule; hard 12 -> 8 (ticks 30 -> 16), mild 49 -> 26, unnecessary and missed unchanged",
  "route_bootstrap_2_6_vs_2_5_per_moving_h": {
@@ -429,9 +429,9 @@
    ]
   ]
  },
- "remaining_hard_2_6": "8 episodes, all on the 27 replay drives (none on road, second car, fresh); 2 last longer than one 50 ms tick (7 and 3 ticks) and both are real closings the oracle also brakes for (-2.9, -1.7 m/s2); the rest are single-tick requests (crossing truck, a work-zone truck, lead switches)",
+ "remaining_hard_2_6": "8 episodes, all on the 27 replay drives (road, second car and fresh drives: 0); 2 last longer than one 50 ms tick (7 and 3 ticks) and both are real closings the oracle also brakes for (-2.9, -1.7 m/s2); the rest are single-tick requests (crossing truck, a work-zone truck, lead switches)",
  "untouched_drives": {
-  "set": "12 second-car routes and one owner route never used for development (1.98 moving h; 0.74 h above 20 m/s)",
+  "set": "12 second-car routes and one owner route held out from development (1.98 moving h; 0.74 h above 20 m/s)",
   "2.6": {
    "hard_radar_only": 0,
    "mild_radar_only": 2,

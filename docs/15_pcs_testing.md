@@ -14,16 +14,14 @@ supplies the safety setup.
 
 ## 1. Isolate and identify the target
 
-U3 had an inflatable decoration and a pickup behind it. The object list tracked the pickup and left the inflatable
-unlisted, so the warning's intended target stays partly ambiguous
+U3 had an inflatable decoration and a pickup behind it. The object list tracked the pickup and held 0 entries for the inflatable, so either object may be the warning's intended target
 ([13](13_car_bus_messages.md#a-recorded-stock-pcs-alarm-u3)). A new experiment controls the target separately.
 
 - Use a facility-approved, radar-characterized ADAS soft target for a radar-target experiment, and as the only object on
-  the approach path (people, real parked vehicles and homemade reflector assemblies stay off it).
+  the approach path; keep people, real parked vehicles and homemade reflector assemblies off it.
 - Keep the target's background free of other plausible reflectors; record the complete scene and surveyed positions.
 - Measure the target's position and motion independently and demonstrate association before interpreting a PCS edge.
-- Read a target missing from the object list as an association limit: a below-threshold radar detection or an unlogged
-  camera input remain possible sources of the warning.
+- Read a target absent from the object list as an association limit: a radar detection below threshold or a camera input outside the log can each be the source of the warning.
 
 ## 2. Record the complete event
 
@@ -40,19 +38,18 @@ controller configuration. Record the target alias, radar/filter state, longitudi
 
 Verify that the original car-bus outputs reach the log, whatever filter or openpilot configuration is installed. Map
 CAN receipt time, video SOF and reference acquisition time to one clock with a measured offset; wall-clock notes and
-visual overlap give an approximate alignment only.
+visual overlap give an approximate alignment.
 
 ## 3. Conditions to request from a facility
 
 | Condition | Setup to document | Question |
 |---|---|---|
 | A: isolated radar-visible target | facility-approved target, radar enabled | whether the alarm and bus-1 0x100 association repeat on a uniquely identified target |
-| B: target-visibility control | a separately characterized target with no competing background reflector | whether warning behavior differs with radar visibility; input source needs independent evidence |
+| B: target-visibility control | a separately characterized target, the only reflector in the scene | whether warning behavior differs with radar visibility; input source needs independent evidence |
 | C: brake-stage capture | facility-managed warning, brake-assist, pre-fill and autonomous-braking conditions, labelled separately | which car-bus commands and radar-bus values mark each stage |
 | D: disabled-output condition | facility-approved control/logging setup with the radar's car-bus output disabled | whether bus-1 threat/alarm signaling remains available; the car's warning or braking is recorded as observed |
 
-Keep runs that produce no warning or braking, labelled **not exercised**: they describe the conditions tried and leave the
-decision paths of a disabled radar open. The facility separates driver braking, brake assist and autonomous action; the
+Keep runs without warning or braking, labelled **not exercised**: each records the conditions tried. The facility separates driver braking, brake assist and autonomous action; the
 actuator source comes from the brake-pressure/force fields and stage labels, since a pedal press or deceleration trace is
 common to all three.
 
@@ -71,6 +68,6 @@ replication is described as replication.
 
 Open a [research finding](https://github.com/ds-sebastian/ars510-radar/issues/new?template=research_finding.yml)
 with the condition table, firmware/configuration, relative event times, observed stages, reference uncertainty
-and results that show no warning. Offer rlogs and video privately; the maintainer arranges transfer.
+and runs labelled not exercised. Offer rlogs and video privately; the maintainer arranges transfer.
 Keep route/dongle IDs, VINs, GPS and identifying footage out of public posts. The public repo carries anonymous
 signal summaries and reproduction instructions.

@@ -1,11 +1,11 @@
 {
-  "provenance": "Imported from research-workspace SCR-149; not a bundled rerun",
+  "provenance": "Imported from research-workspace SCR-149; the rerun stays in the research workspace",
   "status": "raw_prefix_relationship_only",
   "runtime_changed": false,
   "limits": [
-    "not acquisition timestamps",
-    "not cell-object identity",
-    "not body freshness"
+    "the pairing is a raw-prefix relationship between records",
+    "unique pairs: ambiguous_pairs 0 and duplicate80/85 keys 0 in all three splits",
+    "shifted_counter_matches 0 in all three splits"
   ],
   "splits": [
     {

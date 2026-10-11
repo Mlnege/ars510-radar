@@ -3,10 +3,10 @@
  "confidence": {
   "error_scale_proportional_to_240_7": "likely (RMS 0.04-0.05 m/s per count over codes 14-75; ACC reference error floor about 0.6 m/s)",
   "excursions_as_expected_tail": "likely (incidence within a factor 1.3; tails beyond 2.5 sigma heavier than Gaussian)",
-  "error_scale_is_fitted_not_decoded": "K is a fitted Gaussian-equivalent: the robust (MAD) core is about 0.027 m/s per count over codes 12-70, the RMS 0.04-0.05 because of heavy tails; the unit of the code itself is not decoded",
-  "mean_offset": "not a decode-constant error: it is about -0.08 m/s below 20 m, -0.37 at 40-60 m and -0.62 at 80-110 m, has no ego-speed slope, and differs by drive (std 0.34 m/s)",
-  "offset_follows_tracker_acceleration_state": "likely (out-of-sample R2 0.11; ACC acceleration explains none)",
-  "error_predictable_from_object_state": "likely (fresh-drive R2 0.41-0.47 from the radar's own object state; no single field carries it; unvalidated as a correction)"
+  "error_scale_is_fitted_not_decoded": "K is a fitted Gaussian-equivalent: the robust (MAD) core is about 0.027 m/s per count over codes 12-70, the RMS 0.04-0.05 because of heavy tails; K carries the code's unit as a fitted scale",
+  "mean_offset": "a range-dependent offset: about -0.08 m/s below 20 m, -0.37 at 40-60 m and -0.62 at 80-110 m, with an ego-speed slope of 0.010 m/s per m/s, varying by drive (std 0.34 m/s)",
+  "offset_follows_tracker_acceleration_state": "likely (out-of-sample R2 0.11; the ACC speed derivative reaches R2 0.0001)",
+  "error_predictable_from_object_state": "likely (fresh-drive R2 0.41-0.47 from the radar's own object state; spread across fields, the best single field 84|10 + range code reaches R2 0.105 fresh; the correction itself is a candidate, \u25cb)"
  },
  "method": {
   "reference": "OEM ACC target 0x235/0x237, speed read at 0.1 m/s per code (before the 0.125 correction)",
@@ -778,7 +778,7 @@
     ]
    }
   },
-  "no_predictor": "ego speed, acceleration, yaw rate, brake, gas, cruise, livePose, record header bytes and every aux CAN address stay below R2 0.006 for the offset; no candidate exceeds R2 0.016 for the scale",
+  "no_predictor": "ego speed, acceleration, yaw rate, brake, gas, cruise, livePose, record header bytes and every aux CAN address reach at most R2 0.006 for the offset; candidates reach at most R2 0.016 for the scale",
   "timing": {
    "ego_or_acc_clock_shift_range_s": [
     -0.4,
@@ -796,7 +796,7 @@
   }
  },
  "state_model": {
-  "description": "Gradient-boosted regression of the native-minus-ACC velocity error (clipped at 6 m/s) on the object's own decoded slot fields and its 0.5-3 s track history; no ACC input and no velocity level (vrel, vx). Corpus scores are out-of-fold across segments; fresh scores are from a model trained on the corpus only.",
+  "description": "Gradient-boosted regression of the native-minus-ACC velocity error (clipped at 6 m/s) on the object's own decoded slot fields and its 0.5-3 s track history; inputs are slot fields and track history (the ACC and the velocity level vrel, vx are held out). Corpus scores are out-of-fold across segments; fresh scores are from a model trained on the corpus only.",
   "r2_corpus_out_of_fold": {
    "ax_range_code": 0.1742,
    "state_no_velocity_level": 0.3399,
@@ -1209,6 +1209,6 @@
    "ay only": 0.0163,
    "ego only": -0.021
   },
-  "caveat": "reference is the radar's own ACC target; shrinkage on vRel alone scores well but biases genuine closings; not compared with the shipped filter profiles"
+  "caveat": "reference is the radar's own ACC target; shrinkage on vRel alone scores well but biases genuine closings (corpus mean error after shrinkage +1.26 m/s for fast closings)"
  }
 }

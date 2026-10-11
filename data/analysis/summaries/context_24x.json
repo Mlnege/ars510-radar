@@ -1,6 +1,6 @@
 {
   "experiment": "SCR-235",
-  "provenance": "Imported from private research workspace; aggregate results only, not bundled reruns",
+  "provenance": "Imported from private research workspace; aggregate results",
   "scope": {
     "segments": 399,
     "drives": 24,

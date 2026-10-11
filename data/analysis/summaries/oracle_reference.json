@@ -1,9 +1,9 @@
 {
- "description": "Each version's planner request against an oracle: openpilot's unchanged radard + planner fed a hindsight reference lead (identity from the in-path ACC target, else the camera; range from the ACC target, else the raw object list within 1 m lateral, plus the camera when on the same car; Rauch-Tung-Striebel smoothing within each stretch of one car, split at range jumps, ACC-target ID changes and lateral jumps > 1.5 m), through an interface that publishes only that lead. Owner 2.1 road drives and a second car's two drives, open loop.",
+ "description": "Each version's planner request against an oracle: openpilot's stock radard + planner fed a hindsight reference lead (identity from the in-path ACC target, else the camera; range from the ACC target, else the raw object list within 1 m lateral, plus the camera when on the same car; Rauch-Tung-Striebel smoothing within each stretch of one car, split at range jumps, ACC-target ID changes and lateral jumps > 1.5 m), through an interface that publishes only that lead. Owner 2.1 road drives and a second car's two drives, open loop.",
  "definitions": {
   "unnecessary": "request below the oracle's by > 0.5 m/s2 for >= 0.3 s",
   "missed": "oracle <= -1 m/s2 while the version > -0.5 for >= 0.3 s",
-  "confident": "reference from the radar (ACC target or object list), radar and camera agree, and not within 2 s after the ACC target dropped a lead the camera still follows (a lead turning out of the lane); camera-only moments are judged with video, not scored; the car moving (>= 1 m/s): at standstill the planner's stop-and-go logic dominates and an object seen only by the ACC target may be a car or a wall"
+  "confident": "reference from the radar (ACC target or object list), radar and camera agree, and more than 2 s after any ACC-target drop of a lead the camera still follows (a lead turning out of the lane); camera-only moments are judged with video and left out of the score; the car moving (>= 1 m/s), since at standstill the planner's stop-and-go logic dominates and an object seen by the ACC target alone may be a car or a wall"
  },
  "confident": {
   "vision": {
@@ -99,7 +99,7 @@
  "turning_lead_case": "video and optical looming: the in-lane lead slowed to turn off (about -3 m/s at 105-115 m) then left the lane; 2.1 braked -1.54 m/s2 for a car a lane over whose radar speed read a false -7 m/s; 2.3 -0.29; vision -0.08",
  "suite_34_drives": {
   "hours": 6.72,
-  "note": "the 27 replay drives (20 held-out, 4 further, 3 owner); 4 chains have no lead data in their logs and are not scored",
+  "note": "the 27 replay drives (20 held-out, 4 further, 3 owner); the 4 chains whose logs hold no lead data are left out of the scoring",
   "confident": {
    "vision": {
     "unnecessary": {
@@ -182,8 +182,8 @@
   }
  },
  "hours_road": 7.65,
- "note_2_4": "2.4 = 2.3 without the radar's target summaries (the openpilot version's filter)",
- "note_2_5": "2.5 = 2.4 with the ACC target's speed weighted at 0.3 m/s instead of 0.5. The reference takes its range from the ACC target, so it partly favours a heavier ACC weight (acc_weight.json)",
+ "note_2_4": "2.4 = 2.3 with the radar's target summaries off (the openpilot version's filter)",
+ "note_2_5": "2.5 = 2.4 with the ACC target's speed weighted at 0.3 m/s (2.4: 0.5). The reference takes its range from the ACC target, so it partly favours a heavier ACC weight (acc_weight.json)",
  "note_2_6": "2.6 = 2.5 with only the ACC target's track beyond 60 m, stationary tracks path-gated close in, and the ACC target speed weighted at 0.13 m/s (far_acc_only.json)",
  "note_acc": "acc = the acc profile (upstream/ars510_acc_target.py): only the radar's ACC target as one point. Same fast-suite replays and scoring as the 2.6 rows. The reference takes its range from the ACC target, so it partly favours this profile; on the road set 2.35 of acc's 10.8 missed seconds are one cut-in where it asks -0.51 and 2.6 -0.53 m/s2 against the -0.5 threshold"
 }

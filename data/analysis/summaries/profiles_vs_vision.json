@@ -1,11 +1,11 @@
 {
- "description": "Every radar profile against vision only (stock openpilot leads on this car) on the same 27 replay drives, unchanged openpilot card -> radard -> planner, judged against the human driver with the pre-registered definitions: driver-brake events (anticipation within 3 s before the brake press, onset = first request <= -0.5 m/s2 in [-3, +2] s, hard slowdowns = driver <= -2 m/s2 or a stop), braking requests only one system made (<= -1 m/s2 for >= 0.3 s) with what the driver did, and driver overrides (whose request was closer to what the driver then did). fused: release 2.6.0 (beyond 60 m only the ACC target's track; stationary tracks path-gated close in; ACC target speed weighted at 0.13 m/s; no summaries).",
+ "description": "Every radar profile against vision only (stock openpilot leads on this car) on the same 27 replay drives, unchanged openpilot card -> radard -> planner, judged against the human driver with the pre-registered definitions: driver-brake events (anticipation within 3 s before the brake press, onset = first request <= -0.5 m/s2 in [-3, +2] s, hard slowdowns = driver <= -2 m/s2 or a stop), braking requests that exactly one system made (<= -1 m/s2 for >= 0.3 s) with what the driver did, and driver overrides (whose request was closer to what the driver then did). fused: release 2.6.0 (beyond 60 m only the ACC target's track; stationary tracks path-gated close in; ACC target speed weighted at 0.13 m/s; summaries off).",
  "profiles": {
-  "raw": "BASE_CONFIG (formerly 'stock', the unfiltered radar decode)",
+  "raw": "BASE_CONFIG (the unfiltered radar decode)",
   "steady": "STEADY_CONFIG",
   "anchor": "ANCHOR_CONFIG",
   "fused": "FUSED_CONFIG",
-  "fused_no_trackers": "FUSED_CONFIG of 2.0 with the ACC target and summary readings ignored (acc/summary sigma 1e4): the Kalman filter on the object list alone",
+  "fused_no_trackers": "FUSED_CONFIG of 2.0 with the ACC target and summary readings at sigma 1e4: the Kalman filter on the object list alone",
   "acc": "the acc profile (upstream/ars510_acc_target.py, install.py --profile acc): only the radar's ACC target (0x235 / 0x237) as one point, read straight from the two frames"
  },
  "heldout_events": {
@@ -540,7 +540,7 @@
    "heldout_hard_episodes_moving": 4,
    "heldout_hard_ticks_standstill": 52,
    "further_hard_ticks_moving": 7,
-   "note": "standstill = ego below 0.5 m/s: the request holds the stopped car 0.7-4.8 m behind an object the camera reports no lead for (radard low-speed rule; on video a wall, a fence, a junction island); fused 2.6 on the same split: 16 moving / 0 standstill held-out, 0 further. The further-drive moving episode is a real object drifting a lane over at 82 m that radard matches to the camera lead 27 m further on"
+   "note": "standstill = ego below 0.5 m/s: the request holds the stopped car 0.7-4.8 m behind an object while the camera's lead list is empty (radard low-speed rule; on video a wall, a fence, a junction island); fused 2.6 on the same split: 16 held-out ticks, all moving, and 0 further-drive ticks. The further-drive moving episode is a real object drifting a lane over at 82 m that radard matches to the camera lead 27 m further on"
   }
  },
  "fused_note": "fused rows: corrected ACC / summary units (0x235 at 0.125 m/s per code; summaries (code - 160) / 16 m), lateral unit 0.015 m, ACC target and summaries matched by position, ACC distance as the followed car's range (tracker_association.json); owner target episodes: 0 in 2.4 and 2.5; ACC sigma 0.13 m/s since 2.6 (0.3 in 2.5, acc_weight.json); beyond 60 m only the ACC target's track since 2.6 (far_acc_only.json)",

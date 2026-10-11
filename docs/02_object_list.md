@@ -35,7 +35,7 @@ flowchart LR
 ![raw records](img/analysis/record_raster.png)
 
 *Left: 30 s of the bundled highway drive, one row per record, one pixel per byte (orange = slot boundaries, green = CRC32). Unused slots
-repeat the idle template (vertical stripes). Right: one slot's bits 0-111 over time: low bits flicker, high bits hold. These carry
+repeat the idle template (vertical stripes). Right: one slot's bits 0-111 over time: low bits flicker, high bits hold. Carry
 chains mark the field boundaries.*
 
 | record bytes | content |
@@ -77,8 +77,8 @@ The decoder builds `trackId` from **slot + continuous age run** (`ars510/tracks.
 - a new occupant of a reused slot gets a new ID, and each ID lives in one slot.
 
 The `raw` profile (`BASE_CONFIG`) also re-links an ID when the radar re-initialises a car it lost for up to 3.5 s near
-its predicted position, so radard keeps its per-track filter. `fused` runs without the relink: on 27 drives its replays give the same braking
-counts, with 1,770 lead switches without the relink and 1,772 with it ([12](12_kalman_filter.md#what-runs-before-and-around-the-filter)).
+its predicted position, so radard keeps its per-track filter. `fused` leaves the relink off: on 27 drives its replays give the same braking
+counts, with 1,770 lead switches with the relink off and 1,772 with it on ([12](12_kalman_filter.md#what-runs-before-and-around-the-filter)).
 The `acc` profile uses the radar's own target ID.
 
 ![slot occupancy](img/analysis/slot_occupancy_and_tracks.png)
@@ -91,7 +91,7 @@ The `acc` profile uses the radar's own target ID.
 
 A slot's life, as the fields show it ([03](03_slot_fields.md) has every field):
 
-1. **Birth.** Age 1, motion code 5 (initializing), class 1 (not yet classified). The startup code `8|5` counts down
+1. **Birth.** Age 1, motion code 5 (initializing), class 1 (new). The startup code `8|5` counts down
    30, 30, 30, 30, 20, 13, 9, 6, 4, 2, 1, 1, 0 while the motion code stays 5.
 2. **Settling.** Range and velocity converge over the first ~60 cycles (3.6 s). `raw` and `fused` publish from age 60; `acc` publishes
    the target the radar's tracker selects.
@@ -112,8 +112,8 @@ The object list behaves like an ACC list (◐): it lists **moving objects** and 
 - **Objects first seen moving keep their track after they stop** (motion code 7, [03](03_slot_fields.md#lifecycle-and-confidence)), so stopped leads in a
   queue are tracked through the stop.
 - Objects moving faster than 0.8 m/s over ground are kept 78-85 % at every ego speed.
-- Objects that were never seen moving hold a long-lived track on 9 % of the cases with ego below 1 m/s and 6 % at 1-3 m/s; none at higher ego speed
-  (653 never-moving tracks, [summary](../data/analysis/summaries/stationary_listing_rule.json)).
+- Objects seen only at rest hold a long-lived track on 9 % of the cases with ego below 1 m/s, 6 % at 1-3 m/s and 0 % above 3 m/s
+  (653 tracks of objects seen only at rest, [summary](../data/analysis/summaries/stationary_listing_rule.json)).
 
 | ego speed | new object < 0.2 m/s kept | 0.2-0.4 m/s | 0.4-0.8 m/s | > 0.8 m/s |
 |---|---|---|---|---|
@@ -137,7 +137,7 @@ when it came into view (a stalled car, the tail of a queue that stopped out of r
 
 ## Young tracks
 
-Tracks younger than about 50-60 cycles carry unconverged range and velocity:
+Tracks younger than about 50-60 cycles carry range and velocity that are still converging:
 - median |vRel − camera closing speed| (2 s box growth, 3-80 m, drives A-C) by age: 1.6 / 1.4 / 1.0 / 1.0 m/s for ages 11-25 / 26-50 / 51-80 / 81-125, and
   0.6 m/s at the saturated age 126 (camera pairs start at age 11; figure below, recomputed from `camera_pairs.parquet`);
 - about a quarter of age-1 samples (26% over 700 segments) are an initialization template with a placeholder

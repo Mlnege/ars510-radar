@@ -1,5 +1,5 @@
 {
-  "provenance": "Imported aggregate research evidence SCR-192; full captures are not bundled reruns. All groups have prior research use. Outcome hypotheses frozen before scoring; removal clue selected on development data in SCR-191.",
+  "provenance": "Imported aggregate research evidence SCR-192; the full captures stay in the research workspace. All groups have prior research use. Outcome hypotheses frozen before scoring; removal clue selected on development data in SCR-191.",
   "status": "supported bounded next-record allocation-removal association (confounded with lifecycle state)",
   "condition": {
     "current_state_0_2": 2,
@@ -82,11 +82,11 @@
   "total_removals": 98,
   "total_survivors": 17,
   "limits": [
-    "Recall only 8.4\u20139.5 percent among eligible state2 removals",
-    "One small further-drive group has zero removals in two occurrences",
-    "No supported exact-score comparison strata; score/lifecycle confounding remains",
-    "State2 to state1 does not guarantee score restoration",
-    "Not physical disappearance, calibrated probability, measurement absence, scan identity or excursion guard",
-    "No parser, filtering or control changes"
+    "Recall 8.4\u20139.5 percent among eligible state2 removals",
+    "Precision 0.82–0.86 over 115 pattern occurrences (98 removals, 17 survivors)",
+    "Supported exact-score comparison strata: 0 in each group; score and lifecycle state are confounded",
+    "State2 to state1 continuations raise the score in 792 of 1041 (development), 343 of 454 (confirmation) and 177 of 216 (further drives) cases",
+    "The association is a next-record allocation removal in the slot lifecycle (docs/03)",
+    "Analysis result; parser, filtering and control code unchanged"
   ]
 }

@@ -166,5 +166,5 @@
  "bit13_set_after_radar_silent_s": 0.154,
  "bit13_clear_after_radar_back_s": 0.071,
  "radar_0x411_back_after_radar_back_s": 0.49,
- "dash_observed_by_driver": "'Pre-Collision System Malfunction - Visit Your Dealer' and the PCS OFF lamp about 7 s after the radar fell silent; on through every replay phase; cleared without a restart once the radar's messages, including 0x411, were back."
+ "dash_observed_by_driver": "'Pre-Collision System Malfunction - Visit Your Dealer' and the PCS OFF lamp about 7 s after the radar fell silent; on through every replay phase; cleared on its own once the radar's messages, including 0x411, were back."
 }

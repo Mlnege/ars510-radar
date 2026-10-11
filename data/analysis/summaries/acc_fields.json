@@ -81,7 +81,7 @@
       0
     ],
     "new_late_response": 1,
-    "fresh_window_gate": "fails once (route brakes -1.95 -> -2.40)",
+    "fresh_window_gate": "exceeded once (one route brakes -2.40 against -1.95)",
     "max_dRel_change_m": 12.1,
     "decision": "option, off"
   },

@@ -1,6 +1,6 @@
 {
-  "status": "Contiguous 10-bit raw view with carry evidence and a large-step exception; physical meaning uncalibrated",
-  "provenance": "Imported research-workspace SCR-284, full 700-segment census of previously used recordings; original 399-segment subset exactly reproduced. Original captures are not bundled.",
+  "status": "Contiguous 10-bit raw view with carry evidence and a large-step exception; physical meaning nominal (\u25cb)",
+  "provenance": "Imported research-workspace SCR-284, full 700-segment census of previously used recordings; original 399-segment subset exactly reproduced. Original captures stay in the research workspace.",
   "address": "0x195",
   "msb_first_start": 18,
   "width": 10,
@@ -50,7 +50,7 @@
     "can_log_gap_s": 0.060176109000167344,
     "both_endpoints_other_other": true,
     "context": {
-      "reference": "Seconds relative to the code jump in CAN log time; no acquisition-time or target identity claim.",
+      "reference": "Seconds relative to the code jump in CAN log time (a log-time offset).",
       "samples": [
         {
           "time_s": -0.956266842000332,

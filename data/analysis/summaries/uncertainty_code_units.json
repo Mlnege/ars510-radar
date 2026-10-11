@@ -93,11 +93,11 @@
   }
  },
  "confidence": {
-  "240|7": "likely: .043 m/s per count, same as the excursion_sigma_scale fit (.045); a fitted Gaussian-equivalent over heavy tails, not a decoded unit",
-  "232|7": "likely: .10 m per count and constant across range bands (.10-.12); codes run only 0-9, so it is coarse near 0",
-  "224|7": "candidate: .23 m per count overall (.24 at 5-40 m), falling to .15 (40-80 m) and .05 (80+ m) while the floor rises to 4-8 m: beyond 40 m most of the range error is not graded by the code",
+  "240|7": "likely: .043 m/s per count, same as the excursion_sigma_scale fit (.045); a fitted Gaussian-equivalent over heavy tails (an empirical scale)",
+  "232|7": "likely: .10 m per count and constant across range bands (.10-.12); codes run 0-9, so it is coarse near 0",
+  "224|7": "candidate: .23 m per count overall (.24 at 5-40 m), falling to .15 (40-80 m) and .05 (80+ m) while the floor rises to 4-8 m: beyond 40 m most of the range error sits in the floor term",
   "248|7": "candidate: .37 m/s per count; the reference mixes ground lateral speed with the ACC's relative lateral speed",
-  "256|8": "candidate: follows the frame scatter of 84|10 (.0062 m/s^2 per count, plus a .045 floor); no reference acceleration exists, so no error unit"
+  "256|8": "candidate: follows the frame scatter of 84|10 (.0062 m/s^2 per count, plus a .045 floor)"
  },
  "limits": "The reference is the radar's own ACC estimate: these are relative units of a disagreement, in which errors shared by both estimates cancel (docs/03, reference scope). 256|8, 264|8 and 200|7 carry frame-scatter scales only.",
  "frame_scatter_k_per_count": {
@@ -157,6 +157,6 @@
    ]
   }
  },
- "frame_scatter_axis_spearman": "|scatter| against the code within range bands: yRel~232|7 .19-.27, lateral speed~248|7 .16-.19, 84|10~256|8 .13-.23 (the only consistent link), vRel~240|7 .29 at <=25 m falling to ~0 beyond 70 m, dRel~224|7 weak (.28 at <=25 m, negative beyond 70 m); 264|8 follows lateral speed (.08-.18), not 84|10 or yRel.",
+ "frame_scatter_axis_spearman": "|scatter| against the code within range bands: yRel~232|7 .19-.27, lateral speed~248|7 .16-.19, 84|10~256|8 .13-.23 (the consistent link), vRel~240|7 .29 at <=25 m falling to ~0 beyond 70 m, dRel~224|7 .28 at <=25 m, negative beyond 70 m; 264|8 follows lateral speed (.08-.18).",
  "scatter_to_error_ratio": "Per-count frame scatter is about 20 % of the ACC-referenced error (232|7 .021 vs .104; 240|7 .008 vs .043; 224|7 .063 vs .227): the codes describe temporally correlated tracker error, of which record-to-record jitter is a fifth."
 }

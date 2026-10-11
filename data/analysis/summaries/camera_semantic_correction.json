@@ -1,7 +1,7 @@
 {
   "study": "SCR-215",
   "date": "2026-09-28",
-  "provenance": "Imported research-workspace correction audit using previously researched camera pairs; original full logs and videos not bundled",
+  "provenance": "Imported research-workspace correction audit using previously researched camera pairs; original full logs and videos stay in the research workspace",
   "class_confidence": {
     "legacy_rows": 56296,
     "corrected_rows": 56656,
@@ -606,8 +606,8 @@
     }
   },
   "limits": [
-    "Class and confidence mapping kept as candidates; no new physical signal promoted.",
-    "Conditional variance assumes independent errors and excludes bias (not RMSE).",
+    "Class and confidence mapping kept as candidates (\u25cb); every signal keeps its existing confidence mark.",
+    "Conditional variance assumes independent errors and covers the random part of the RMSE.",
     "Image size proxies share radar range; the historical heavy indicator is the detector's non-car class.",
     "Historical narrower field cuts are kept for reproduction.",
     "Identity, far-range calibration, occlusion and event-level braking classifications are outside this file."

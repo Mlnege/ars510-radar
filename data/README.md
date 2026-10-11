@@ -10,14 +10,14 @@ Three short highway captures, used by the tests and figures:
 | `highway_vrel_excursion_25s.csv.gz` | 25 s | drive A: a settled lead at ~48 m, slowly opening (41 → 57 m over the capture), whose over-ground speed falls 33.5 → 25.0 m/s within ~1.4 s and recovers within ~1.2 s ([docs/07](../docs/07_velocity_excursions.md)) |
 | `highway_acc_anchor_24s.csv.gz` | 24 s | drive E: includes the radar's ACC target (0x235 / 0x237); from ~17 s the lead's object-list speed falls to about −6 m/s and its range slides 46 → 32 m in 2 s while the ACC target holds −0.75 to −0.9 m/s until ~18.7 s ([docs/12](../docs/12_kalman_filter.md#the-model)) |
 
-Format `t_s,bus,address,data_hex`, times rebased to 0. Only bus 1 0x80 / 0x81 / 0x85 / 0x86 / 0x192 (and 0x235 / 0x237 in
-the drive E sample) and bus 0 0xB4 are included; no GPS positions, video, route or device identifier.
+Format `t_s,bus,address,data_hex`, times rebased to 0. The rows are bus 1 0x80 / 0x81 / 0x85 / 0x86 / 0x192 (and 0x235 / 0x237 in
+the drive E sample) and bus 0 0xB4 frames: CAN bytes at relative times.
 
 ## `analysis/`: anonymised analysis dataset
 
 Three drives: **A** (development, 24 min decoded, mixed), **B** (city, 40 min), **C** (highway, 24 min). Segment labels
-`A00` … `C23` are one-minute files in order; `t*` columns are seconds from each segment's first record. No route or
-dongle IDs, dates or GPS.
+`A00` … `C23` are one-minute files in order; `t*` columns are seconds from each segment's first record, so the files carry anonymous
+labels and relative times.
 
 | file | rows | content |
 |---|---|---|
@@ -30,15 +30,15 @@ dongle IDs, dates or GPS.
 | `brake_events/E*_*.csv` | | drive-A brake-event windows: replay ticks, radar lead track, camera pair |
 | `fault_injection.csv` | 82 | ghost / fault scenarios through radard and the planner |
 | `summary_owner_case.csv` | 476 | relative-time owner-drive O1 comparison under `fused` 2.0: summaries off / on, and captured vision; saved planner and lead outputs, anonymous lead T1 |
-| `lead_choice_cases.csv.gz` | 500 | two road moments for [docs/00](../docs/00_start_here.md#6-choosing-which-tracks-openpilot-sees) (`case`, relative `t`): planner request and published lead (range, radar flag) under vision only, `fused` 2.1 and 2.3 (2.4 asks the same), plus the camera lead range, the radar's ACC target range and ego speed; owner drives, no identifiers |
+| `lead_choice_cases.csv.gz` | 500 | two road moments for [docs/00](../docs/00_start_here.md#6-choosing-which-tracks-openpilot-sees) (`case`, relative `t`): planner request and published lead (range, radar flag) under vision only, `fused` 2.1 and 2.3 (2.4 asks the same), plus the camera lead range, the radar's ACC target range and ego speed; owner drives, anonymised |
 | `stats.json`, `STATS.md` | | descriptive statistics from `tools/compute_stats.py` |
 
 `slots.parquet` is radar-only. The camera files are references with their own limits: tracker swaps at range, hood
 clipping below ~8 m, a flat-road assumption, and metric camera velocity that takes its scale from radar range.
 
 `init_template` marks **869 allocation placeholders** among the 173,691 rows: age 1 with zero length and width
-codes. Their `x = 0` is a placeholder, so exclude them from position, velocity and physical-object statistics.
-Keep them for raw allocation/lifecycle analysis. The decoder already withholds these rows from publication.
+codes. Their `x = 0` is a placeholder: position, velocity and physical-object statistics use the rows with `init_template` false,
+raw allocation/lifecycle analysis uses all rows. The decoder withholds these rows from publication.
 `tools/mark_init_templates.py` adds or refreshes this column after a dataset rebuild; the dataset counts are in
 [`init_templates_dataset.json`](analysis/summaries/init_templates_dataset.json).
 
@@ -62,7 +62,7 @@ replay routes and closed-loop drives. The full captures are held in the research
 | [06 Accuracy](../docs/06_accuracy.md) | `figure_numbers` (velocity MSE, range walks; written by `tools/make_analysis_figures.py`), `camera_semantic_correction` (three-cornered hat, sizes), `far_range_camera_correction`, `far_range_distance`, `camera_identity_correction`, `review_followup` (stopped targets), `radar_only_scales`, `lane_peaks`, `lateral_units`, `native_speed_alignment` (fixed speed conventions against the dependent ACC witness; empirical setting and physical-calibration scope), `encoding_calibration`, `second_unit_noise` (object-list and ACC-target speed noise on a second radar unit against the owner's) |
 | [07 Velocity excursions](../docs/07_velocity_excursions.md) | `acc_unit_recompute` (error per `240\|7` code and excursion incidence at 0.125 m/s per code), `excursion_sigma_scale` (the same analysis at the 0.1 m/s ACC unit: per-code curves for the figure, signal scan, state model), `frame_trust_classifier`, `waveform_source`, `video_truth` (optical reference), `jitter_problem_figures` (real-drive census, roughness), `jitter_source_and_interface_limit` |
 | [08 openpilot integration](../docs/08_openpilot_integration.md) | `road_v21` (fused 2.1.0 on the road and issue #66), `openpilot_integration_replay`, `driver_agreement_preregistered` (the pre-registered radar-vs-vision test), `radard_vision_fusion` (the optional radard patch) |
-| [10 Research directions](../docs/10_research_directions.md) | `openpilot_file_parts` (each part of the openpilot file: code lines, cost of removing it, upstream status), `stock_acc_law` (Toyota's 0x343 command against its ACC target on two cars: fitted law, set-speed cap, far-lead response), `acc_target_parser` (`acc` against `fused` 2.6: file size, every drive set, ablations, stock-ACC spans on two cars, never-fitted drives, every drive, close cut-ins, DBC version check), `radard_side_options` (the radar's acceleration, vision fusion and per-point variance in a patched radard) |
+| [10 Research directions](../docs/10_research_directions.md) | `openpilot_file_parts` (each part of the openpilot file: code lines, cost of removing it, upstream status), `stock_acc_law` (Toyota's 0x343 command against its ACC target on two cars: fitted law, set-speed cap, far-lead response), `acc_target_parser` (`acc` against `fused` 2.6: file size, every drive set, ablations, stock-ACC spans on two cars, drives outside every fit, every drive, close cut-ins, DBC version check), `radard_side_options` (the radar's acceleration, vision fusion and per-point variance in a patched radard) |
 | [11 Profiles compared](../docs/11_profiles_compared.md) | `profiles_vs_vision` (`raw`, `fused` and `acc` against vision only on the 27 replay drives) |
 | [12 Kalman speed filter](../docs/12_kalman_filter.md) | `fused_filter` (parameters, ablations and combinations of fused 2.0, radard cascade, ACC weight at the 0.1 m/s ACC unit), `acc_weight` (the ACC target's weight: 0.5 / 0.3 / 0.13 m/s in 2.4 / 2.5 / 2.6), `far_acc_only` (2.6: beyond 60 m only the ACC target's track; all drive sets), `hard_braking_review`, `tracker_association`, `lead_choice_guards` (the 0.4 x ACC match and the path gate; 2.3 and 2.4 replays), `oracle_reference`, `kalman_variants`, `kalman_response`, `summary_owner_case`, `second_car_replay` (2.5 and the slim variants, including the 2.6 far rule, on a second car's 8.8 h, gates fixed before the runs) |
 | [13 Car-bus messages](../docs/13_car_bus_messages.md) | `stock_acc_law` (0x343 through a car-bus filter board, standstill hold), `radar_car_bus_messages`, `target_366_coding`, `target_366_coverage`, `target_366_speed_domain`, `pcs_flag_0x344` (0x320 bit 13 by replayed message on O5, dash warning timing), `pcs_activation_u3` (the recorded stock PCS alarm on U3: car-bus and radar-bus edges, 50 ms timeline, store-wide 0x100 scan), `object_size_provenance` (object-list class / size against camera association; the ACC target's width and class code over every stored log) |

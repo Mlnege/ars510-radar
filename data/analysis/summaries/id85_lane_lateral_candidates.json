@@ -2,7 +2,7 @@
   "status": "supported_candidate_with_handover_dependent_assignments",
   "provenance": {
     "source": "research-workspace SCR-165",
-    "kind": "imported aggregate evidence, not bundled rerun",
+    "kind": "imported aggregate evidence",
     "prior_use": "all drive groups previously studied for other questions",
     "source_summary_sha256": "dba1ae4df0a7bcaf6693385a1d7a6cad629c8218371e939a48840fc827ef8bc9"
   },

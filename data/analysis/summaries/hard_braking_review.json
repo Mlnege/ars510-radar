@@ -1,8 +1,8 @@
 {
- "description": "Were the hard radar-only braking requests real? Every hard episode (planner <= -2 m/s2 while the vision-only replay of the same drive asks >= -0.5) in each 27-drive replay, judged without the radar speed. Runs: fused 2.0 and its variants (docs/12).",
+ "description": "Were the hard radar-only braking requests real? Every hard episode (planner <= -2 m/s2 while the vision-only replay of the same drive asks >= -0.5) in each 27-drive replay, judged by the driver's response and the measured gap closing. Runs: fused 2.0 and its variants (docs/12).",
  "method": {
   "justified": "the driver braked or slowed at <= -1 m/s2 within [-1, +4] s, and the gap was really closing (< -1 m/s): radar raw range of the same object decoded from the original CAN, else the camera lead distance of the vision-only replay",
-  "unjustified": "the driver did not slow, and the real closing needed less than 0.5 m/s2 of braking (closing^2 / 2 (gap - 4 m)) or the gap was opening",
+  "unjustified": "the driver slowed gently or kept speed, and the real closing needed less than 0.5 m/s2 of braking (closing^2 / 2 (gap - 4 m)) or the gap was opening",
   "unclear": "otherwise"
  },
  "by_run": {
@@ -416,7 +416,7 @@
   "radar_only_per_h": 0.88
  },
  "summaries_planner_effect": {
-  "definition": "fused vs fused without summaries, ticks where one requests >= 0.3 m/s2 more braking; camera range closing (< -1 m/s) or not; about 5 h of driving",
+  "definition": "fused vs fused without summaries, ticks where one requests >= 0.3 m/s2 more braking; split by camera range closing (< -1 m/s) and range holding or opening; about 5 h of driving",
   "totals": {
    "noS_harder": {
     "ticks": 143,
@@ -435,6 +435,6 @@
   }
  },
  "owner_case_without_summaries": {
-  "note": "owner drive at the -1.11 m/s2 episode (0.5 s, lead about 100 m): radar and camera range then fell from about 104 to 80 m in 4.5 s and vision-only asked for -1.37 m/s2 4.5 s later: an early reaction to a real slowdown, not a false brake"
+  "note": "owner drive at the -1.11 m/s2 episode (0.5 s, lead about 100 m): radar and camera range then fell from about 104 to 80 m in 4.5 s and vision-only asked for -1.37 m/s2 4.5 s later: an early reaction to a real slowdown"
  }
 }

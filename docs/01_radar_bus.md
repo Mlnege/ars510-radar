@@ -76,7 +76,7 @@ Start-up times: `object_stream_0x680.json` (object records, 0x101 / 0x197) and `
 On the RAV4 2022 / 2023 the radar itself sends the car's ACC command: opendbc marks the platform `RADAR_ACC`, so openpilot
 longitudinal (alpha long) switches the radar's car-bus output off with UDS CommunicationControl `28 01 01` (receive
 on, transmit off) to 0x750 / 0x0F, then keeps it off with tester-present `3E 00` every ~0.2 s. That request switches off bus 0
-only; **bus 1 keeps running unchanged** (●, one drive without CAN filter or other bus-1 hardware, firmware `8821F0R03100`;
+only; **bus 1 keeps running unchanged** (●, one drive with the radar line unfiltered, firmware `8821F0R03100`;
 [`radar_disable_unfiltered.json`](../data/analysis/summaries/radar_disable_unfiltered.json)):
 
 | | before the request | after (26 min, openpilot longitudinal engaged 8 min) |
@@ -93,6 +93,6 @@ off, including the radar's PCS / AEB brake request, are described in [13](13_car
 ## Ego speed
 
 The object-list velocities are **over ground**, so the `raw` and `fused` profiles subtract ego speed. Toyota 0xB4 reads about 1-1.5% below
-GPS and wheel speed; both profiles read the radar speed at 0.149 m/s per code (`vground_scale = 0.149 / 0.15` on the nominal 0.15)
+GPS and wheel speed; those profiles read the radar speed at 0.149 m/s per code (`vground_scale = 0.149 / 0.15` on the nominal 0.15)
 and subtract 0xB4 speed ([06](06_accuracy.md#velocity)). The `acc` profile publishes the ACC target's closing speed (0.125 m/s per code,
 [05](05_acc_target_and_support.md#units-of-the-acc-target)), which is already relative to the car.

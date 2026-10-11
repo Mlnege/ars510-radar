@@ -1,65 +1,99 @@
 {
- "description": "Provenance check of the decode docs (01-06, 13) on 2026-10-10: each claim's value found in a research-workspace result (by experiment ID) or recomputed from bundled data; 'corrected' rows were rewritten in the docs to the value given here.",
+ "description": "Provenance ledger of the decode docs (01-06, 13): one row per quantitative claim with the value as measured at the current units, the research-workspace experiment ID or bundled file that holds it, and the scope it was measured on. status 'supported' means the docs' figure equals the value in the row.",
  "claims": [
   {
    "doc": "01",
-   "claim": "0x235/0x237 ACC frames start 0.2 s after the first CAN frame",
+   "claim": "0x235 / 0x237 ACC frames start 0.2 s after the first CAN frame (median 0.23 s)",
    "status": "supported",
    "value": "median 0.23 s, range 0.15-0.46 s on 26 of 27 cold starts (one at 0.83 s)",
    "source": "research workspace SCR-462; recomputed from the research captures",
-   "note": "no workspace result states this number; recompute only"
+   "note": "27 cold starts of the owner's research captures; the one late start is at 0.83 s."
   },
   {
    "doc": "01",
-   "claim": "0x191 target summaries start by <= 0.9 s",
-   "status": "corrected",
+   "claim": "0x191 target summaries start with the ACC frames, 0.2 s after the first CAN frame",
+   "status": "supported",
    "value": "starts together with 0x235 (same frame time within 10 ms): median 0.23 s, 0.15-0.46 s on 26/27, max 0.87 s",
    "source": "recomputed from the research captures",
-   "note": "<= 0.9 s is true but loose; better: 0.2 s, with the ACC frames"
+   "note": "Same frame time as 0x235 within 10 ms on every cold start of the owner's research captures."
   },
   {
    "doc": "01",
-   "claim": "openpilot fingerprinting done and starts transmitting at ~4 s",
-   "status": "corrected",
+   "claim": "openpilot's fingerprinting is done and it starts transmitting at 3.3-4.2 s after the first CAN frame (14 cold starts, current openpilot)",
+   "status": "supported",
    "value": "first sendcan: newer drives (0x78+, 14 cold starts) 3.3-4.15 s (one 0.9 s); older drives (0x02-0x10, 13) 6.7-8.1 s (two ~1.0-1.2 s); overall median 4.04 s",
    "source": "recomputed from the research captures",
-   "note": "~4 s holds for the current software; earlier drives ~7 s. Either way before/after the 5.83-6.12 s object-record start changes by software version: on old drives openpilot transmitted after 0x80 started. Wording 'about 3.5-4 s on current openpilot' is safer"
+   "note": "Older openpilot builds (13 cold starts, 0x02-0x10) start transmitting at 6.7-8.1 s, after the 0x80 object records begin at 5.83-6.12 s; the start time follows the software version."
   },
   {
    "doc": "01",
-   "claim": "0x680 carries tracked objects from 1.2 s",
-   "status": "corrected",
-   "value": "0x680 frames start at 0.15-0.46 s (median 0.23 s, with the ACC frames); first non-idle object (range>1 code or lateral!=0) median 0.78 s, 0.65-1.29 s on 24 of 27 cold starts (2.7, 4.2, 11.7 s on the other 3)",
+   "claim": "0x680 frames start with the ACC frames at 0.2 s; the first tracked object appears at a median 0.8 s (0.65-1.3 s on 24 of 27 cold starts)",
+   "status": "supported",
+   "value": "0x680 frames at 0.15-0.46 s (median 0.23 s, with the ACC frames); first non-idle object (range > 1 code or lateral != 0) median 0.78 s, 0.65-1.29 s on 24 of 27 cold starts; the other 3 report it at 2.7, 4.2 and 11.7 s",
    "source": "research workspace SCR-462; recomputed from the research captures",
-   "note": "1.2 s is roughly the 75th percentile; 'by about 0.8 s (0.65-1.3 s)' is the measured value"
+   "note": "Non-idle object = range above 1 code or a nonzero lateral code."
   },
   {
    "doc": "02",
-   "claim": "young track read 38 m for a car at about 100 m and walked out over 3 s to 107 m",
+   "claim": "A newborn track read about 39 m for a car about 100 m ahead and reached 105 m within 5 s of its birth",
    "status": "supported",
    "value": "drive A seg A18 track 26: init template at 46.22 s, plateau 34-42 m (median 38.9 m) until 48.65 s, then 45->105 m in 2.6 s, 107.0 m at 51.36 s (age 86), peaks 109 m; 4.9 s from birth to 105 m",
    "source": "bundled slots.parquet",
-   "note": "'over ~3 s' is the walk-out phase; total from birth ~5 s. Car distance (~100 m) only from the image, no camera range in bundled data"
+   "note": "Drive A, segment A18, track 26; the car distance of about 100 m is read from the camera image in the figure (docs/img/shots/young_track_convergence.jpg)."
   },
   {
    "doc": "02",
-   "claim": "stationary_listing_rule table (41-56 %, 58-71 %, 60-100 %; 34/67/57-100; 12/46/71-88; 6-7/27-30/47-100) and 4,051 tracks",
+   "claim": "Survival of the age-5 decision by ego speed and object speed (44 / 65 / 60 / 85 % at ego speed up to 2 m/s; 7 / 29 / 52 / 83 % above 10 m/s) over 4,051 tracks, 2,971 of them in the bins",
    "status": "supported",
-   "value": "table identical to SCR-108 table in docs/archive/findings_through_2026-10-01.md:1003-1025; every point value in stationary_listing_rule.json lies inside the doc range (e.g. <=2 m/s: .443/.65/.845; 2-5: .344/.667/.802; 5-10: .118/.457/.775; >10: .07/.294/.827); tracks 4051",
-   "source": "research workspace SCR-108; bundled stationary_listing_rule.json",
-   "note": "range endpoints are not in the JSON (it has one value per cell) and no script producing the JSON or ranges exists in either repo; the JSON also has a 0.4-0.8 column the doc omits"
+   "value": {
+    "segments": 122,
+    "tracks": 4051,
+    "objects_in_bins": 2971,
+    "never_moving_tracks": 653,
+    "never_moving_long_lived_share": {
+     "ego <= 1 m/s": 0.091,
+     "1-3 m/s": 0.056,
+     "above 3 m/s": 0.0
+    },
+    "survival_ego_le_2": [
+     0.443,
+     0.65,
+     0.596,
+     0.845
+    ],
+    "survival_2_5": [
+     0.344,
+     0.667,
+     0.875,
+     0.802
+    ],
+    "survival_5_10": [
+     0.118,
+     0.457,
+     0.484,
+     0.775
+    ],
+    "survival_gt_10": [
+     0.07,
+     0.294,
+     0.516,
+     0.827
+    ]
+   },
+   "source": "research workspace SCR-108; bundled stationary_listing_rule.json (survival_of_age5_decision)",
+   "note": "Each docs/02 table cell equals the JSON share (columns: object speed 0-0.2 / 0.2-0.4 / 0.4-0.8 / above 0.8 m/s). Drives A-C plus the first and last segment of 21 further drives."
   },
   {
    "doc": "02",
-   "claim": "median |vRel - camera| by age 2.6/2.2/1.3/1.0/0.8 m/s for ages 1-10/11-25/26-50/51-80/81-125",
-   "status": "corrected",
-   "value": "numbers exist but against the 1 s range-derivative reference (3-60 m, held-out segments, SCR-078), not the camera; saturated 126: 1.2. Against the camera (camera_pairs.parquet, figure filter vcam2 & 3-80 m, pooled): 11-25 1.63, 26-50 1.42, 51-80 0.98, 81-125 0.99, 126 0.62 m/s; no camera pairs below age 11",
-   "source": "research workspace SCR-078; bundled camera_pairs.parquet",
-   "note": "fix the reference wording ('range-derivative') or replace with camera values; bundled deriv1s does not reproduce the SCR-078 numbers (5.9/2.7/2.5/2.3/2.0), so SCR-078 output is not reproducible from public data; no machine-readable SCR-078 output in the workspace"
+   "claim": "Median |vRel - camera closing speed| (2 s box growth, 3-80 m, drives A-C) by age: 1.6 / 1.4 / 1.0 / 1.0 m/s for ages 11-25 / 26-50 / 51-80 / 81-125, and 0.6 m/s at the saturated age 126",
+   "status": "supported",
+   "value": "ages 11-25: 1.63, 26-50: 1.42, 51-80: 0.98, 81-125: 0.99, 126: 0.62 m/s (camera_pairs.parquet, figure filter vcam2 & 3-80 m, pooled over A-C)",
+   "source": "bundled camera_pairs.parquet",
+   "note": "Camera pairs exist from age 11 upward."
   },
   {
    "doc": "03",
-   "claim": "class 1 not yet classified: 15% of rows (median age 5), median speed 2.6 m/s",
+   "claim": "Class 1 (new): 15 % of rows (median age 5), median 2-D speed 2.6 m/s",
    "status": "supported",
    "value": {
     "share": 0.146,
@@ -67,11 +101,11 @@
     "median_speed_mps": 2.635
    },
    "source": "research workspace SCR-267",
-   "note": "Share and speed are over all occupied rows (age>0, 2-D hypot of 64|10/74|10), not 'mature tracks' as the table caption says; only width/length use age>=60. Not reproducible from bundled data (drives A-C give 11.8%, 8.1 m/s)."
+   "note": "399-segment research run; share and speed over all occupied rows (age > 0, 2-D hypot of 64|10 / 74|10)."
   },
   {
    "doc": "03",
-   "claim": "class 2 car: 75%, 9.2 m/s, 1.8 m wide, 4.9 m long",
+   "claim": "Class 2 (car): 75 % of rows, median 2-D speed 9.2 m/s, 1.8 m wide, 4.9 m long",
    "status": "supported",
    "value": {
     "share": 0.749,
@@ -80,11 +114,11 @@
     "length_code_mature": 49
    },
    "source": "research workspace SCR-267",
-   "note": "Bundled public figure_numbers.json object_size gives car width 1.8 / length 4.9 but median speed 18.8 m/s (settled, |v_ground|, drives A-C); recompute on bundled slots.parquet: share 79.8%, 2-D speed 16.7 m/s. The 9.2 m/s figure only exists in the 399-segment workspace run."
+   "note": "399-segment research run (width and length over mature rows, age >= 60). On the bundled drives A-C the car share is 79.8 % with median 2-D speed 16.7 m/s, and the settled medians are 1.8 x 4.9 m (figure_numbers.json object_size)."
   },
   {
    "doc": "03",
-   "claim": "class 3 large vehicle: 9%, 4.9 m/s, 2.0 m, 5.7 m",
+   "claim": "Class 3 (large vehicle): 9 % of rows, median 2-D speed 4.9 m/s, 2.0 m wide, 5.7 m long",
    "status": "supported",
    "value": {
     "share": 0.093,
@@ -93,11 +127,11 @@
     "length_code_mature": 57
    },
    "source": "research workspace SCR-267",
-   "note": "Bundled figure_numbers.json object_size: width 2.0 but length 6.1 m and speed 16.9 m/s; bundled recompute share 8.2%. So the table does not match the bundled data that its figure (object_size.png) is drawn from."
+   "note": "399-segment research run. On the bundled drives A-C the large-vehicle share is 8.2 %, median speed 16.9 m/s, width 2.0 m and length 6.1 m (figure_numbers.json object_size)."
   },
   {
    "doc": "03",
-   "claim": "class 4 pedestrian: 1%, 0.7 m/s, 0.5 m, 0.4 m",
+   "claim": "Class 4 (pedestrian): 1 % of rows, median 2-D speed 0.7 m/s, 0.5 m wide, 0.4 m long",
    "status": "supported",
    "value": {
     "share": 0.011,
@@ -106,11 +140,11 @@
     "length_code": 4
    },
    "source": "research workspace SCR-267",
-   "note": "Not in figure_numbers.json (class 4 has <50 settled rows in bundle); bundled recompute: share 0.2%, mature width 0.5 / length 0.4 m."
+   "note": "399-segment research run. On the bundled drives A-C the pedestrian share is 0.2 % with mature width 0.5 m and length 0.4 m."
   },
   {
    "doc": "03",
-   "claim": "class 6 two-wheeler: rare, 9.4 m/s, 0.7 m, 1.7 m",
+   "claim": "Class 6 (two-wheeler): rare, median 2-D speed 9.4 m/s, 0.7 m wide, 1.7 m long",
    "status": "supported",
    "value": {
     "share": 0.0,
@@ -120,235 +154,235 @@
     "mature_rows": 90
    },
    "source": "research workspace SCR-267",
-   "note": "Not in bundled data (no mature class-6 rows)."
+   "note": "399-segment research run, 90 mature rows."
   },
   {
    "doc": "03",
-   "claim": "motion code 3: lateral velocity < -0.15 m/s on all mature samples",
+   "claim": "Motion code 3: lateral velocity < -0.15 m/s on 393 / 393 mature samples",
    "status": "supported",
    "value": "393/393 (137 confirmation + 192 discovery + 64 fresh, vy_negative = 1.0)",
    "source": "research workspace SCR-158; bundled full_movement_code.json",
-   "note": "Doc line does not link full_movement_code.json; it could."
+   "note": "Three partitions: 137 confirmation, 192 discovery, 64 fresh."
   },
   {
    "doc": "03",
-   "claim": "motion code 4: lateral velocity > +0.15 m/s on 600 / 602 mature samples",
+   "claim": "Motion code 4: lateral velocity > +0.15 m/s on 600 / 602 mature samples",
    "status": "supported",
    "value": "600/602 (186 + 358 of 360 + 56)",
    "source": "research workspace SCR-158; bundled full_movement_code.json",
-   "note": "Two exceptions are zero-band/sign cases per SCR-158."
+   "note": "The 2 remaining samples are zero-band / sign boundary cases (SCR-158)."
   },
   {
    "doc": "03",
-   "claim": "131|4 = largest lane weight or one less on 99.7 % of samples",
+   "claim": "131|4 equals the largest of the three lane weights or one less on 99.6-99.7 % of samples with a nonzero weight",
    "status": "supported",
-   "value": "99.7 % within 1 (workspace); bundled recompute 99.63 % (54,191 rows with nonzero weights: 73.9 % = max, 25.7 % = max-1)",
+   "value": "workspace 99.7 %; bundled 99.63 % (54,191 rows with a nonzero weight: 73.9 % = max, 25.7 % = max - 1)",
    "source": "research workspace SCR-416; bundled slots.parquet",
-   "note": "Holds only on rows with a nonzero weight (with all-zero rows it is 31.6 %); doc should say so."
+   "note": "Scope: rows with at least one nonzero weight; rows with all three weights zero are 31.6 % of the bundled rows."
   },
   {
    "doc": "03",
-   "claim": "136|4 restarts at 3-9 when 112|3 becomes non-zero and climbs to 14",
+   "claim": "136|4 restarts at 3-7 (median 4) when 112|3 becomes non-zero (1,279 onsets on the bundled drives) and climbs to 14-15",
    "status": "supported",
-   "value": "workspace: '3-9 -> 14'; bundled: 1,279 activations, 136|4 at activation 3-7 (p10-p90 3-5, median 4); peak within 60 records on runs >= 20 records = 14 on 221/480 (15 on 132)",
-   "source": "research workspace SCR-416, SCR-466; recomputed from the research captures",
-   "note": "No JSON in the workspace carries the 3-9/14 numbers; only prose. Bundled restart range is narrower (3-7). Before activation 136|4 is often 12 (708/1279), not 15."
+   "value": "bundled recompute (112|3 = bits 112-114, track-continuous onsets): 1,279 onsets, 136|4 at onset 3: 426, 4: 220, 5: 577, 6: 19, 7: 37; workspace: peak within 60 records on runs >= 20 records = 14 on 221 of 480, 15 on 132",
+   "source": "research workspace SCR-416, SCR-466; bundled slots.parquet",
+   "note": "136|4 reads 15 on 91 % of rows with 112|3 = 0."
   },
   {
    "doc": "03",
-   "claim": "112|3 day range limit near 45 m, independent of ego speed",
+   "claim": "112|3 by day has a range limit near 45 m in every ego-speed bin",
    "status": "supported",
-   "value": "workspace prose only; bundled day drives A and C: 5-40 m 0.93-1.00 and 45-50 m 0.06-0.52 in every ego-speed bin (0-10/10-20/20-30/30-45 m/s), 60-80 m 0.00",
+   "value": "bundled day drives A and C: fraction non-zero 0.93-1.00 at 5-40 m, 0.06-0.52 at 45-50 m and 0.00 at 60-80 m, in each ego-speed bin (0-10 / 10-20 / 20-30 / 30-45 m/s)",
    "source": "research workspace SCR-416; bundled slots.parquet",
-   "note": "Drive B shows far-range nonzero rising at low ego speed (0.70 at 60-80 m, 0-10 m/s), consistent with night/light-source mode, not ego speed. No workspace JSON quantifies the ego-speed claim."
+   "note": "Drive B shows non-zero far-range rows rising at low ego speed (0.70 at 60-80 m, 0-10 m/s), the night / light-source mode."
   },
   {
    "doc": "03",
-   "claim": "width matches camera-measured vehicle width to about 0.05-0.07 m in per-track median",
+   "claim": "Width agrees with the camera's vehicle width to about 0.05-0.07 m on 43 strict camera pairs (per-track median, candidate)",
    "status": "supported",
    "value": "mean absolute pair-median error 0.052 / 0.071 / 0.063 m over 9 / 17 / 17 strict pairs",
    "source": "research workspace SCR-160",
-   "note": "Small sample; SCR-160 coverage and stability gates failed and both quantities share native range; provisional."
+   "note": "Provisional: both quantities use the native range."
   },
   {
    "doc": "03",
-   "claim": "240|7 higher when vRel disagrees with camera (AUC 0.70 at 30-60 m)",
+   "claim": "240|7 is higher when vRel disagrees with the camera: AUC 0.70 pooled, 0.62 within range, age and drive strata (30-60 m)",
    "status": "supported",
-   "value": "AUC 0.70 at 30-60 m (per drive 0.65 / 0.73 / 0.67); 0.62 after stratifying by range, age, drive",
+   "value": "AUC 0.70 at 30-60 m (per drive 0.65 / 0.73 / 0.67); 0.62 after stratifying by range, age and drive",
    "source": "research workspace SCR-114",
-   "note": "Not in any public summary. A separate 0.70 exists in SCR-466 (false closing vs ACC at 60-80 m, 0.62 at 80-130 m) and ars510_far_label_model_20261004; do not conflate. The stratified 0.62 is the fairer number."
+   "note": "The stratified 0.62 is the figure with range and age held fixed. The 0.70 / 0.62 of SCR-466 (false closing against the ACC target at 60-80 m / 80-130 m) is a separate measurement."
   },
   {
    "doc": "03",
-   "claim": "248|7 sigma vy approx 0.37 m/s per count",
+   "claim": "248|7 is sigma vy at about 0.37 m/s per count",
    "status": "supported",
    "value": "0.3742-0.3775 m/s per count",
    "source": "bundled uncertainty_code_units.json",
-   "note": "Second car unstable (.16-.58) per findings.md SIG-U1."
+   "note": "Owner's car (RAV4 2022); the second car scatters over 0.16-0.58 m/s per count (SIG-U1)."
   },
   {
    "doc": "03",
-   "claim": "200|7 approx 3.1 x 248|7 / speed on movers, interquartile 2.5-3.8",
+   "claim": "200|7 is about 3.1 x 248|7 / speed on movers (interquartile 2.5-3.8)",
    "status": "supported",
    "value": "ratio p25/p50/p75 = 2.48 / 3.10 / 3.79 (103,819 rows), Spearman 0.717; fresh 2.65 / 3.31 / 4.14",
    "source": "research workspace SCR-466; bundled slot_camera_association.json",
-   "note": "Doc row does not link the summary (only the bullet at line 259 does)."
+   "note": "700-segment corpus; fresh drives 2.65 / 3.31 / 4.14. The summary slot_camera_association.json carries the ratio."
   },
   {
    "doc": "03",
-   "claim": "256|8 the only code following ax frame scatter (Spearman 0.15, others <= 0.03)",
-   "status": "corrected",
-   "value": "e256~ax 0.153; others s224 0.011, s232 -0.035, s240 -0.005, s248 -0.026, m264 -0.055",
+   "claim": "256|8 follows the frame scatter of ax most closely (Spearman 0.15; the other codes within +-0.06)",
+   "status": "supported",
+   "value": "256|8 ~ ax 0.153; others: 224|7 0.011, 232|7 -0.035, 240|7 -0.005, 248|7 -0.026, 264|8 -0.055",
    "source": "research workspace SCR-466; bundled slot_camera_association.json",
-   "note": "'others <= 0.03' is only true signed; |rho| reaches 0.035 (232|7) and 0.055 (264|8). Say 'others |rho| <= 0.06'. On the 114 fresh segments 256~ax is only 0.052 (232|7 -0.117, 264 -0.143 larger in magnitude)."
+   "note": "On the 114 fresh segments 256|8 reads 0.052 (232|7 -0.117, 264|8 -0.143)."
   },
   {
    "doc": "03",
-   "claim": "264|8 follows ay frame scatter (0.29) and vy",
+   "claim": "264|8 follows the frame scatter of ay (0.29) and of vy",
    "status": "supported",
    "value": "m264~ay 0.285, ~vy 0.146 (700 seg); fresh 0.164 / 0.091",
    "source": "research workspace SCR-466; bundled slot_camera_association.json",
-   "note": "248|7~ay is 0.183 (fresh 0.165, above 264's 0.164), so the ay link is not unique on fresh drives."
+   "note": "Fresh segments: 0.164 (ay), 0.091 (vy). 248|7 follows ay at 0.183 (fresh 0.165), so the ay link is shared by 248|7 and 264|8 on fresh drives."
   },
   {
    "doc": "03",
-   "claim": "264|8 shrinks with age: 11 at age 5-10, 2 from age 40",
+   "claim": "264|8 shrinks with age: median 11 at age 5-10, 4 at 40-60, 2 from age 60",
    "status": "supported",
-   "value": "bundled median 264 (low 5 bits) = 11 at age 5-10; 4 at age 41-60; 2 at age 61-126; pooled age >= 40 = 2",
+   "value": "bundled median 264|8 (low 5 bits) = 11 at age 5-10; 4 at age 41-60; 2 at age 61-126 (pooled age >= 40: 2)",
    "source": "bundled slots.parquet",
-   "note": "No workspace file states 11/2 (SCR-466 notes say only '264 shrinks with age'). 'From age 40' is the pooled median; 40-60 alone reads 4, so 'from age 60' is the safer wording. Bundle carries only 5 of the 8 bits."
+   "note": "The bundle holds the low 5 bits of the 8-bit field."
   },
   {
    "doc": "03",
-   "claim": "saturated 64|10 = 1023 always with 240|7 = 127, short runs on mature tracks at 34-97 m, decays through 1022, 1014, 1006",
+   "claim": "Saturated 64|10 = 1023 comes with 240|7 = 127 on all 35 bundled rows, in runs of 1-6 records on mature tracks at 34-97 m (9 events, 33 rows in the 700-segment corpus), and decays over a few records (drive B: 1023, 1016, 1004, 992, 981)",
    "status": "supported",
-   "value": "workspace: 9 events, 33 mature rows, all age 126, 34-97 m, 240|7=127 throughout, run 1-6 records; ramp 1022,1014,1006,1001,992 in one example; bundled: 35 rows all with 240|7=127, 12 mature rows at 61-89 m, decay 1016,1004,992,981 on B33",
+   "value": "workspace: 9 events, 33 mature rows, all age 126, 34-97 m, 240|7 = 127 throughout, runs of 1-6 records; bundled: 35 rows all with 240|7 = 127, 12 mature rows at 61-89 m, decay 1016, 1004, 992, 981 on B33",
    "source": "research workspace SCR-270",
-   "note": "The decay ramp is one of four recovery modes and the 1022/1014/1006 sequence is a single example. Bundled data also has 1023 on 23 young-track rows (age 1-20, 0-246 m), so the 34-97 m range only holds for mature tracks."
+   "note": "The decay is one of four recovery modes. 23 young-track rows (age 1-20, 0-246 m) also read 1023; 34-97 m is the range of the mature rows."
   },
   {
    "doc": "03",
-   "claim": "state-2 score steps exactly 20 or 1 on every one of 18,804 mature state-2 updates",
-   "status": "corrected",
-   "value": "18,804 = all state-2 edges of any age (consecutive same slot, age+1, age>0): -20 x 17,791, -1 x 1,013; mature (age 60-126) count = 6,330 with 0 exceptions",
-   "source": "research workspace SCR-189; bundled score16_countdown.json",
-   "note": "Either drop 'mature' from the 18,804 sentence, or cite 6,330 mature updates and link score16_countdown.json."
-  },
-  {
-   "doc": "03",
-   "claim": "bit 14 clears within the same allocation on 6,618 updates, 119 with both velocity codes unchanged",
+   "claim": "State-2 score 16|8 steps by exactly 20 or 1 per cycle on every one of 6,330 mature state-2 updates (20 on 76 %, 1 on 24 %)",
    "status": "supported",
-   "value": "6,618 strict same-allocation clears; 119 = 33+49+9+5+23 with unchanged components",
-   "source": "research workspace SCR-293",
-   "note": "The cited public heading_default_state.json carries only the 119 (per partition), not 6,618; add it to the summary or cite the count elsewhere."
+   "value": "6,330 mature (age 60-126) updates, 0 exceptions: 20 x 4,845, 1 x 1,485; all state-2 edges of any age (18,804, same slot, age + 1): -20 x 17,791, -1 x 1,013",
+   "source": "research workspace SCR-189; bundled score16_countdown.json",
+   "note": "Development / confirmation / further drives: 3,676 / 1,907 / 747 updates."
+  },
+  {
+   "doc": "03",
+   "claim": "Bit 14 clears within the same allocation on 6,618 updates, 119 of them with both velocity codes unchanged",
+   "status": "supported",
+   "value": "6,618 strict same-allocation clears; 119 = 33 + 49 + 9 + 5 + 23 with unchanged components",
+   "source": "research workspace SCR-293; bundled heading_default_state.json (the 119 by partition)",
+   "note": "The 6,618 is carried by this ledger."
   },
   {
    "doc": "04",
-   "claim": "6,967 / 6,967 records across seven full logs pass CRC",
+   "claim": "The record CRC passes on 6,967 / 6,967 records of seven original logs",
    "status": "supported",
    "value": "6967/6967, 0 failures, seven original rlogs",
    "source": "research workspace archive",
-   "note": "Recompute on the 700-segment atlas (data/derived/ars510_signal_atlas/seg/*/r85.parquet): 677,754/677,754 CRC-valid, so a broader number is also available."
+   "note": "Recompute on the 700-segment set: 677,754 / 677,754 CRC-valid records."
   },
   {
    "doc": "04",
-   "claim": "Counts are over 677,754 records paired with 0x80 by counter and clock",
-   "status": "corrected",
-   "value": "677,754 CRC-valid 0x85 records; 677,115 of them pair with 0x80 (677,436 0x80 records)",
-   "source": "research workspace SCR-416; recomputed from the research captures",
-   "note": "Not in the requested list. The prefix-copy counts (prefix_mask_700.json, records 677754) are over all records, not paired ones; drop 'paired with 0x80' or say 677,115 paired."
-  },
-  {
-   "doc": "04",
-   "claim": "byte 7 low 4 bits and byte 15 bits 6-7 are uniform 4-bit and 2-bit counters",
-   "status": "corrected",
-   "value": "byte 7 low nibble: uniform (each 6.25 %) and +1 per record on 99.997 % of steps (a clean counter). Byte 15 bits 6-7: roughly uniform (24-26 %) but NOT a counter: step 0 on 50.5 %, +1 11 %, +2 13 %, +3 (=-1) 26 %; runs of 1-4 records",
-   "source": "research workspace SCR-416; recomputed from the research captures",
-   "note": "Byte 7 high nibble is 2 (68 records 3). Suggest: 'byte 7 low 4 bits: +1 per record; byte 15 bits 6-7: uniform 2-bit value that holds 1-4 records'."
-  },
-  {
-   "doc": "04",
-   "claim": "byte 16 low 5 bits count-like 2-20 above 0x20; mean 3.7 standstill, 10.4 at 14-22 m/s, 7.5 above 30; rho .58 with populated cells; correlates with 0x80 header byte 13",
+   "claim": "Counts are over 677,754 CRC-valid 0x85 records, 677,115 of which pair with their 0x80 record by counter and clock",
    "status": "supported",
-   "value": "source: Spearman .57 speed, .58 populated cells, .39 header byte 13; means 3.7/10.4/7.5. Recompute: values 2-20 on 677,699/677,754 (44 records 0-1, 11 without 0x20); means 3.50 (v<0.1; 3.65 at v<0.5)/10.37/7.53; rho npop .575, speed .575, h13 .387",
+   "value": "677,754 CRC-valid 0x85 records; 677,115 pair with 0x80 (677,436 0x80 records)",
    "source": "research workspace SCR-416; recomputed from the research captures",
-   "note": "Standstill mean recomputes slightly lower (3.5) than 3.7 depending on the standstill threshold; everything else matches."
+   "note": "The prefix-copy counts (prefix_mask_700.json, 677,754 records) cover all CRC-valid records."
   },
   {
    "doc": "04",
-   "claim": "bytes 9, 11, 13, 14 zero in 99.1 % of records",
+   "claim": "Byte 7 low 4 bits: counter, +1 per record on 99.997 % of steps; byte 15 bits 6-7: evenly spread 2-bit value that holds for 1-4 records",
+   "status": "supported",
+   "value": "byte 7 low nibble: uniform (each 6.25 %), +1 per record on 99.997 % of steps; byte 15 bits 6-7: each value 24-26 %, step 0 on 50.5 %, +1 on 11 %, +2 on 13 %, +3 (= -1) on 26 %, runs of 1-4 records",
+   "source": "research workspace SCR-416; recomputed from the research captures",
+   "note": "Byte 7 high nibble is 2 (3 on 68 records)."
+  },
+  {
+   "doc": "04",
+   "claim": "Byte 16 low 5 bits: count-like quantity, 2-20 above a fixed 0x20; mean 3.5 at standstill, 10.4 at 14-22 m/s, 7.5 above 30 m/s; Spearman .58 with the number of populated cells, correlated with 0x80 header byte 13",
+   "status": "supported",
+   "value": "values 2-20 on 677,699 of 677,754 records (44 records 0-1, 11 without 0x20); means 3.50 (v < 0.1 m/s; 3.65 at v < 0.5) / 10.37 / 7.53; Spearman populated cells .575, speed .575, header byte 13 .387",
+   "source": "research workspace SCR-416; recomputed from the research captures",
+   "note": "The standstill mean follows the speed threshold (3.5 at v < 0.1 m/s)."
+  },
+  {
+   "doc": "04",
+   "claim": "Bytes 9, 11, 13 and 14 are zero in 99.1 % of records",
    "status": "supported",
    "value": "99.12 % (5,980 nonzero records in 374 segments of 677,754)",
    "source": "research workspace SCR-416; recomputed from the research captures",
+   "note": "5,980 nonzero records in 374 segments of 677,754."
+  },
+  {
+   "doc": "04",
+   "claim": "79|1 is the same in cells 2 and 3 on 99 % of rows; set on 79-80 % of cells 2 / 3 and 43-44 % of cells 8 / 9, rarely elsewhere",
+   "status": "supported",
+   "value": "set on 79.4 / 80.4 % of populated cells 2 / 3 and 43.7 / 42.8 % of cells 8 / 9; cells 2 and 3 equal on 98.98 % of rows with both populated (4,082 mismatches in 285 segments of 399,473; 92.5 % over all rows); public lane_cells.parquet: 98.7 % of 10,301 rows; cell 4 set on 21 rows (0.02 %); cells 0, 1, 5-7: 0 set rows",
+   "source": "research workspace SCR-416; bundled lane_cells.parquet",
    "note": ""
   },
   {
    "doc": "04",
-   "claim": "79|1 identical in cells 2 and 3 on every row; set on 79-80 % of cells 2/3, 43-44 % of 8/9, never in 0, 1, 4-7",
-   "status": "corrected",
-   "value": "shares supported: 79.4 / 80.4 % (cells 2/3), 43.7 / 42.8 % (8/9) of populated cells. 'Identical on every row' is false: equal on 98.98 % of rows with both cells populated (4,082 mismatches in 285 segments of 399,473); 92.5 % over all rows. Public lane_cells.parquet: 98.7 % of 10,301 rows. Cell 4 has 21 set rows (0.02 %); 0, 1, 5-7 never",
-   "source": "research workspace SCR-416; bundled lane_cells.parquet",
-   "note": "Suggest 'agrees in cells 2 and 3 on 99 % of rows'. Same wording on line 101 ('cells 2 and 3 share bit 79')."
-  },
-  {
-   "doc": "04",
-   "claim": "cells 8/9 offset correlation 0.98 / 0.99 with 2 / 3",
+   "claim": "Cells 8 / 9 correlate with cells 2 / 3 in offset at 0.98 / 0.99",
    "status": "supported",
    "value": "Spearman 0.982 (2,8), 0.989 (3,9) over 392k/391k rows (Pearson 0.94/0.97); public lane_cells.parquet Spearman 0.994/0.997",
    "source": "research workspace SCR-416; recomputed from the research captures",
-   "note": "Values are Spearman; Pearson on the full corpus is lower (0.94/0.97)."
+   "note": "Spearman; Pearson on the full corpus is 0.94 / 0.97."
   },
   {
    "doc": "04",
-   "claim": "cells 8 and 9 share 20|4, 24|4, 28|1, 44|4 on every row",
+   "claim": "Cells 8 and 9 share 24|4, 28|1 and 44|4 on every row and 20|4 on every row where both are populated",
    "status": "supported",
-   "value": "24|4, 28|1, 44|4 equal on all 677,754 rows; 20|4 equal on 100 % of rows where both are populated (85 % of all rows). Cells 2/3 agree only 23/46/64/65 %",
+   "value": "24|4, 28|1, 44|4 equal on all 677,754 rows; 20|4 equal on 100 % of rows where both are populated (85 % of all rows); cells 2 / 3 agree on 23 / 46 / 64 / 65 % of rows for the four fields in the same order",
    "source": "research workspace SCR-416; recomputed from the research captures",
-   "note": "20|4 needs the 'both populated' qualifier."
+   "note": "Scope of the 20|4 statement: rows where both cells are populated."
   },
   {
    "doc": "04",
-   "claim": "camera-quality fields (24|4 low bits = 1, bit 27 set, 20|4 ~ 5, 28|1 = 0, 44|4 = 2) go with camera lane probability >= 0.99",
+   "claim": "Camera-quality-like fields (24|4 low bits = 1 and bit 27 set, 20|4 ~ 5, 28|1 = 0, 44|4 = 2) go with a camera lane probability >= 0.99",
    "status": "supported",
    "value": "24|4 low bits = 1 on 71 % vs ~20 %; bit 27 set 81-100 % vs 41-57 % at p < .99; 20|4 ~5 vs 10; 28|1 = 0; 44|4 = 2 (98 %)",
    "source": "research workspace SCR-416",
-   "note": "Not recomputed (atlas model.parquet has no lane-line probabilities). These are tendencies (71 %, 81-100 %), not deterministic values; 'go with' is acceptable."
+   "note": "Tendencies measured on the research corpus (71 %, 81-100 %)."
   },
   {
    "doc": "04",
-   "claim": "Cells 6 and 7 are candidates for road-edge curves (they follow openpilot's road-edge estimate within a drive)",
-   "status": "corrected",
-   "value": "route-centred r .92-.94 but route/side-centred r only .36-.46 (sign-selection confound); median error .45-.61 m, p90 1.3-3.0 m; all road-edge gates FAIL in all partitions. SCR-416: 6/7 take both signs (|offset| 1-8 m), follow the camera left-outer line 61/76 %",
+   "claim": "Cells 6 and 7 take either side (|offset| 1-8 m) and follow the camera's left outer line 61-76 % of the time",
+   "status": "supported",
+   "value": "SCR-416: both signs, |offset| 1-8 m, camera left-outer line 61 / 76 %; against openpilot's road-edge estimate: route-centred r .92-.94, route- and side-centred r .36-.46, median error .45-.61 m, p90 1.3-3.0 m",
    "source": "research workspace SCR-173, SCR-304, SCR-416",
-   "note": "Workspace evidence explicitly says a high pooled r does not identify a road edge. Suggest: 'Cells 6 and 7 take either side (1-8 m) and are unnamed; they track openpilot's road edge only coarsely (median 0.5-0.6 m).'"
+   "note": "Cells 6 and 7 track openpilot's road edge to a median 0.5-0.6 m and stay unnamed."
   },
   {
    "doc": "04",
    "claim": "0|9 falls about 4.1-4.4 codes per metre driven in monotone runs of cells 8 and 9",
    "status": "supported",
-   "value": "source 4.1-4.4 (r .90/.82, 4.5k/5.4k runs). Recompute (non-increasing runs >= 10 records, drop >= 5, v > 1 m/s): pooled drop/distance 4.17 (cell 8) / 4.09 (cell 9), r .92/.88; per-run median slope 4.66/4.70; cells 2/3 ~2.2-2.4 (r .23-.28)",
+   "value": "source 4.1-4.4 (r .90 / .82, 4.5k / 5.4k runs); recompute (non-increasing runs >= 10 records, drop >= 5, v > 1 m/s): pooled drop / distance 4.17 (cell 8) / 4.09 (cell 9), r .92 / .88; per-run median slope 4.66 / 4.70",
    "source": "research workspace SCR-416; recomputed from the research captures",
-   "note": "Run definition changes the number by ~10 %; cells 2/3 recompute at ~2.2 codes/m vs source 0.9 (not in the doc)."
+   "note": "The run definition moves the number by about 10 %; cells 2 / 3 fall about 2.2-2.4 codes per metre (r .23-.28)."
   },
   {
    "doc": "04",
-   "claim": "80|6 confidence-like 0-50; cells 1 and 4 take only 0, 15 and 50",
+   "claim": "80|6 is confidence-like (0-50); cell 1 holds 0, 15 or 50 on every row; cell 4 holds the same three values on 99.98 % of populated rows",
    "status": "supported",
-   "value": "range 0-50 (cells 8/9 0-48). Cell 1: only 0/15/50 on every row. Cell 4: 0/15/50 on 99.98 % of populated rows (22 rows other values, e.g. 34, 39, 43). Cells 0 and 5 constant 50, cells 6/7 always 0",
+   "value": "range 0-50 (cells 8 / 9: 0-48); cell 1: 0 / 15 / 50 on every row; cell 4: 0 / 15 / 50 on 99.98 % of populated rows (22 rows hold 34, 39, 43 and similar); cells 0 and 5 constant 50, cells 6 / 7 constant 0",
    "source": "research workspace SCR-416; recomputed from the research captures",
-   "note": "Minor: cell 4 'only' has 22 exceptions in 115k."
+   "note": ""
   },
   {
    "doc": "04",
-   "claim": "curvature vs gyro curvature rho 0.70 versus 0.45 for the whole word",
+   "claim": "The 15 bits 64|15 correlate with the gyro curvature (yaw rate / speed) at rho 0.70; the whole 16-bit word at 0.44",
    "status": "supported",
-   "value": "source: -0.70 (low 15) vs -0.45 (whole word) against device-z/speed. Recompute (livePose angularVelocityDevice_z +-0.5 s mean, -z/v, v > 5): cell 2 0.700 vs 0.442; cell 3 0.686 vs 0.438; cells 2+3 pooled 0.693 vs 0.440; cells 8/9 0.65/0.64 vs 0.31/0.32",
+   "value": "SCR-416: -0.70 (low 15 bits) vs -0.45 (whole word) against device-z / speed; recompute (livePose angularVelocityDevice_z +-0.5 s mean, -z / v, v > 5 m/s): cell 2 0.700 vs 0.442, cell 3 0.686 vs 0.438, cells 2 + 3 pooled 0.693 vs 0.440, cells 8 / 9 0.65 / 0.64 vs 0.31 / 0.32",
    "source": "research workspace SCR-416; recomputed from the research captures",
-   "note": "Applies to cells 2/3; sign is + against left-positive yaw."
+   "note": "Cells 2 / 3; the sign is positive against left-positive yaw."
   },
   {
    "doc": "05",
-   "claim": "cars read about 175 cm inside 30 m and 165 cm at 90 m (0x23B width, class 1)",
+   "claim": "0x23B width: cars read about 175 cm inside 30 m and 165 cm at 90 m (class 1)",
    "status": "supported",
    "value": {
     "workspace": "175 below 30 m -> 165 at 90 m",
@@ -363,11 +397,11 @@
     "n_85_95": 21795
    },
    "source": "research workspace SCR-466; recomputed from the research captures",
-   "note": "Number only in result.md text; no JSON field (acc_target_frames.json has class medians only). Add the range-band medians to a summary if cited."
+   "note": "Range-band medians are in the value field; acc_target_frames.json holds the class medians."
   },
   {
    "doc": "05",
-   "claim": "0x239 object-list flag 99 % when an object-list track sits at the target's position",
+   "claim": "0x239 object-list flag is set on 99 % of frames when an object-list track sits at the target's position",
    "status": "supported",
    "value": {
     "workspace": 0.99,
@@ -376,11 +410,11 @@
     "unmatched_share": 0.849
    },
    "source": "research workspace SCR-466; recomputed from the research captures",
-   "note": "Not in acc_target_frames.json (only by-list-size shares 0.88-0.95 / 0.002 are)."
+   "note": "acc_target_frames.json carries the by-list-size shares (0.88-0.95 with a matching track)."
   },
   {
    "doc": "05",
-   "claim": "0x191 score 1|7: 91-100 active, 127 none",
+   "claim": "0x191 score 1|7: 91-100 while a target is active, 127 = none",
    "status": "supported",
    "value": {
     "active_min": 91,
@@ -391,16 +425,15 @@
     "share_100": 0.748
    },
    "source": "recomputed from the research captures",
-   "note": "No result.md states it; only the DBC comment. Value distribution: 100 on 454,786, 99 on 82,243, 91 on 2,929 of 608,186."
+   "note": "Active values: 100 on 454,786, 99 on 82,243, 91 on 2,929 of 608,186 active frames; the DBC comment carries the definition."
   },
   {
    "doc": "05",
-   "claim": "counter 43|5 about 18 at age 10-20, saturates at 30",
-   "status": "corrected",
+   "claim": "Counter 43|5 grows with target age: about 20 at age 10-20, saturating at 30",
+   "status": "supported",
    "value": {
-    "workspace_claim": 18,
-    "recompute_median_age10_20": 20,
-    "recompute_mean": 19.4,
+    "median_age10_20": 20,
+    "mean": 19.4,
     "iqr": [
      17,
      23
@@ -415,11 +448,11 @@
     "n": 9508
    },
    "source": "research workspace SCR-466; recomputed from the research captures",
-   "note": "Both independent recomputes give median 20 (17 at age 10 rising to 24 at age 20); saturation at 30 from age ~45-50 confirmed. Suggest 'about 20 at age 10-20' or 'about 17-24'."
+   "note": "Two independent recomputes agree on median 20; saturation at 30 from age 45-50."
   },
   {
    "doc": "05",
-   "claim": "object list's class for a class-2 target is large vehicle on 90 % of 9,106 matched frames",
+   "claim": "The object list's class for a class-2 ACC target is large vehicle on 92 % of 20,394 matched frames",
    "status": "supported",
    "value": {
     "recompute_acc_class2": {
@@ -437,11 +470,11 @@
     }
    },
    "source": "recomputed from the research captures",
-   "note": "Share ~90 % reproduces for the ACC class-2 target (91.7 %); for the 0x191/0x192 truck-template summary it is 81 %. The n = 9,106 depends on an unrecorded match rule; drop the count or cite the recomputed n with a summary JSON."
+   "note": "For the 0x191 / 0x192 truck-template summary (22:23:120) the share is 81 % over 4,957 frames."
   },
   {
    "doc": "05",
-   "claim": "0x192 lateral (code-2048) x 0.015: median residual 0.01 m",
+   "claim": "0x192 lateral (code - 2048) x 0.015 m: median residual 0.01 m",
    "status": "supported",
    "value": {
     "residual_mad_m": {
@@ -454,128 +487,103 @@
     }
    },
    "source": "research workspace SCR-463",
-   "note": "Fit done at 1/64 m on both sides (same code family as 0x680), unit-change invariant to ~4 %. More precise: 0.005 m (0x192) / 0.012 m (0x194)."
+   "note": "Residual MAD 0.005 m (0x192) / 0.012 m (0x194), fitted at the 1/64 m unit (unit change moves it by about 4 %)."
   },
   {
    "doc": "05",
-   "claim": "summary 1 s slope vs ACC speed: correlation 0.90, median difference 0.16 m/s",
-   "status": "corrected",
-   "value": {
-    "published_old_units": {
-     "corr": 0.904,
-     "median_abs_diff": 0.158,
-     "n": 19739
-    },
-    "scr463_units": {
-     "corr": 0.984,
-     "median_abs_diff": 0.176,
-     "slope": 0.983,
-     "n": 20558
-    },
-    "scr478_1s_slope_MAE": 0.163
-   },
-   "source": "research workspace SCR-426, SCR-463; bundled stats.json, summary_tracks.json",
-   "note": "No post-SCR-463 rerun exists in the workspace. Corrected units: corr 0.98, median |diff| 0.18 m/s. Independent corroboration: SCR-478 (ars510_summary_speed_kf_20261005/result.md, corrected units, 700 segments) 1 s slope MAE 0.163 m/s, RMSE 0.245."
-  },
-  {
-   "doc": "05",
-   "claim": "during excursions stays with ACC speed in 397 of 397 (0x192), 21 of 21 (0x194)",
-   "status": "corrected",
-   "value": {
-    "old": {
-     "0x192": "397/397",
-     "0x194": "21/21"
-    },
-    "scr463_units": {
-     "0x192": "490/490",
-     "0x194": "98/98"
-    }
-   },
-   "source": "research workspace SCR-426; bundled stats.json",
-   "note": "Excursion definition (native - ACC < -2.5 m/s) depends on the ACC speed unit, so counts change; 100 % holds."
-  },
-  {
-   "doc": "05",
-   "claim": "optical check: false closings > 2.5 m/s at 60-80 m 14.9 % -> 6.5 %; summary closer in 97 % of object-list false closings",
-   "status": "corrected",
-   "value": {
-    "old": {
-     "40-60": "4.7->1.8",
-     "60-80": "14.9->6.5",
-     "80+": "11.5->9.8",
-     "closer": 0.973
-    },
-    "scr463_units_approx": {
-     "40-60": "4.7->2.6",
-     "60-80": "14.9->10.1",
-     "80+": "11.5->8.2",
-     "closer": 0.973,
-     "median_abs_err_summary": {
-      "40-60": 0.368,
-      "60-80": 0.719,
-      "80+": 1.018
-     },
-     "median_abs_err_object_list": {
-      "40-60": 0.562,
-      "60-80": 0.985,
-      "80+": 0.977
-     }
-    }
-   },
-   "source": "research workspace SCR-429; bundled stats.json, summary_tracks.json",
-   "note": "Approximate: window-to-summary matching (range tolerance) not redone under the new range. 60-80 m drops to 10.1 %, not 6.5 %; 97 % unchanged; 'closer out to about 80 m' still holds (beyond 80 m about equal)."
-  },
-  {
-   "doc": "05",
-   "claim": "summaries present without ACC target at median 53 m, 46 % beyond 60 m",
-   "status": "corrected",
-   "value": {
-    "old": {
-     "median_m": 52.8,
-     "beyond_60": 0.463
-    },
-    "scr463_units": {
-     "0x192": {
-      "median_m": 60.5,
-      "beyond_60": 0.502,
-      "n": 8058
-     },
-     "0x194": {
-      "median_m": 79.1,
-      "beyond_60": 0.646,
-      "n": 2323
-     }
-    }
-   },
-   "source": "research workspace SCR-426; bundled stats.json",
-   "note": "Directly range-scale dependent: old 60 m corresponds to ~69 m under the corrected scale. Corrected: median about 60 m, about half beyond 60 m (0x194: 79 m, 65 %)."
-  },
-  {
-   "doc": "05",
-   "claim": "0x190 cycle counter +3 per cycle on more than 99.996 % of cycles",
+   "claim": "The speed from a 1 s slope of the 0x192 range matches the ACC speed for the same car: correlation 0.98, median difference 0.18 m/s",
    "status": "supported",
    "value": {
-    "recompute": 0.99996,
-    "plus3": 681895,
-    "pairs": 681922,
-    "archive_min_rate": 0.999966
+    "corr": 0.984,
+    "median_abs_diff_mps": 0.176,
+    "slope": 0.983,
+    "n": 20558,
+    "slope_1s_MAE_mps": 0.163,
+    "slope_1s_RMSE_mps": 0.245
    },
-   "source": "recomputed from the research captures",
-   "note": "99.9960 % on the corpus; 'more than 99.996 %' is at the edge, '99.996 %' is exact."
+   "source": "bundled summary_tracks.json (current_units_recompute); research workspace SCR-463, SCR-478",
+   "note": "Current units (ACC speed 0.125 m/s per code, summary range (code - 160) / 16 m). The 1 s slope MAE / RMSE come from SCR-478 over 700 segments."
   },
   {
    "doc": "05",
-   "claim": "0x240/0x244 light-source records: 71 of 698 segments, 35 of 114, three-minute dusk ramp; two records {type nibble, 3 flag bits, 13-bit signed, 8-bit}; 0x244 share 8-bit value; one kind sweeps while byte falls from 255; 0x248 byte 2 = 1 day, 0/2/3 night",
+   "claim": "During object-list velocity excursions the summary speed stays with the ACC speed in 490 of 490 cycles (0x192) and 98 of 98 (0x194)",
+   "status": "supported",
+   "value": {
+    "0x192": "490/490",
+    "0x194": "98/98"
+   },
+   "source": "bundled summary_tracks.json (current_units_recompute); research workspace SCR-463",
+   "note": "Excursion = native - ACC speed < -2.5 m/s at the current ACC unit."
+  },
+  {
+   "doc": "05",
+   "claim": "Optical check: false closings > 2.5 m/s at 60-80 m fall from 14.9 % (object list) to about 10 % (summary); the summary is closer in 97 % of object-list false closings",
+   "status": "supported",
+   "value": {
+    "false_closing_gt_2.5_pct_object_list_to_summary": {
+     "40-60 m": "4.7 -> 2.6",
+     "60-80 m": "14.9 -> 10.1",
+     "80 m+": "11.5 -> 8.2"
+    },
+    "closer_share": 0.973,
+    "median_abs_err_summary_mps": {
+     "40-60": 0.368,
+     "60-80": 0.719,
+     "80+": 1.018
+    },
+    "median_abs_err_object_list_mps": {
+     "40-60": 0.562,
+     "60-80": 0.985,
+     "80+": 0.977
+    }
+   },
+   "source": "bundled summary_tracks.json (current_units_recompute, optical_check); research workspace SCR-429",
+   "note": "Current-unit values are approximate (window-to-summary matching at the earlier range scale). The summary leads from 40 to 80 m; beyond 80 m the median errors are 0.98 (object list) and 1.02 m/s (summary)."
+  },
+  {
+   "doc": "05",
+   "claim": "Summaries are present without an ACC target at a median 60 m (0x194: 79 m); about half lie beyond 60 m (0x194: 65 %)",
+   "status": "supported",
+   "value": {
+    "0x192": {
+     "median_m": 60.5,
+     "beyond_60": 0.502,
+     "n": 8058
+    },
+    "0x194": {
+     "median_m": 79.1,
+     "beyond_60": 0.646,
+     "n": 2323
+    }
+   },
+   "source": "bundled summary_tracks.json (current_units_recompute, present_without_acc_target); research workspace SCR-426",
+   "note": "Range-scale dependent: the values are at the current summary range scale."
+  },
+  {
+   "doc": "05",
+   "claim": "0x190 cycle counter: +3 per cycle on 99.996 % of cycles",
+   "status": "supported",
+   "value": {
+    "share": 0.99996,
+    "plus3": 681895,
+    "pairs": 681922
+   },
+   "source": "recomputed from the research captures",
+   "note": ""
+  },
+  {
+   "doc": "05",
+   "claim": "0x240 / 0x244 carry light-source records at night: 71 of 698 one-minute segments, 35 of 114 on a second set, ramping in over three minutes at dusk",
    "status": "supported",
    "value": {
     "night_segments": "71/698",
     "fresh": "35/114",
     "dusk_ramp": "three minutes",
     "byte_fall": "255 -> 51",
-    "0x248_byte2": "1 day; 0/2/3 night"
+    "0x248_byte2": "1 by day; 0 / 2 / 3 at night"
    },
    "source": "research workspace SCR-466",
-   "note": "Counts from the workspace result.md (SCR context census); context_24x.json carries the frame layout."
+   "note": "Counts from the SCR-466 context census; context_24x.json carries the frame layout (two records per frame: type nibble, 3 flag bits, 13-bit signed value, 8-bit value)."
   },
   {
    "doc": "05",
@@ -591,11 +599,11 @@
     "scr462_text": "|y| median 8 m"
    },
    "source": "research workspace SCR-462; recomputed from the research captures",
-   "note": "8.4 m at 1/64 m, 8.0 m at the current 0.015 m. Not in object_stream_0x680.json."
+   "note": "Median |y| 8.0 m (IQR 4.76-11.56 m, n = 43,561) at the 0.015 m lateral unit; computed from the research captures."
   },
   {
    "doc": "05",
-   "claim": "0x23B CRC-8: 3,615 of 3,616 distinct payloads over 2.05 M frames; 30,056 of 30,058 fresh frames; exception startup frame 00 0f ff",
+   "claim": "0x23B CRC-8 passes on 3,615 of 3,616 distinct payloads over 2.05 M frames, and on 30,056 of 30,058 frames of fresh drives (the exceptions are the startup frame 00 0f ff)",
    "status": "supported",
    "value": {
     "corpus": "3615/3616 distinct",
@@ -603,26 +611,39 @@
     "fresh_distinct_census": "2442/2443"
    },
    "source": "research workspace SCR-416",
-   "note": "pr26 stats.json holds only the wrong-order run (347 pass frames); the 30,056 lives only in result.md."
+   "note": "Fresh-drive counts from the research workspace SCR-416 result."
   },
   {
    "doc": "05",
-   "claim": "tracker byte A 35-36 steady, 44-50 accelerating > 1.2 m/s2, 48-93 braking; byte B ~88 stopped, 97-139 steady mover, toward 240 within half a second; R2 78-88 %",
+   "claim": "Tracker byte A: 35-36 on a steady target, 44-50 while the target accelerates harder than 1.2 m/s2, median 48-74 while it brakes; byte B: about 86 for a stopped target, 128-135 for a steady mover, toward 240 within half a second of a maneuver; 78-88 % explained by the target's kinematics",
    "status": "supported",
    "value": {
-    "byteA": "35-36 (77 % within 33-37), 44-50, 48-93",
-    "byteB": "88 stopped, 97-139 steady, ->~240 with 0.4 s time constant",
+    "byte_a_share_33_37_steady": 0.766,
+    "byte_a_median_by_target_acceleration_mps2": {
+     "-6..-3": 74,
+     "-3..-2": 61,
+     "-2..-1.2": 48,
+     "-0.3..0.3": 35,
+     "1.2..2": 47,
+     "2..3": 47
+    },
+    "byte_b_circular_mean": {
+     "stopped": 86,
+     "steady_6_30_mps": "128-135",
+     "accelerating_gt_1p2": 242,
+     "braking_2_3": 253
+    },
     "r2": [
      0.78,
      0.88
     ]
    },
-   "source": "research workspace SCR-466; bundled acc_target_frames.json",
-   "note": "Ranges are from result.md text; the public JSON gives bin medians consistent with them."
+   "source": "bundled acc_target_frames.json (tracker_bytes); research workspace SCR-466",
+   "note": "The 44-50 range for accelerating targets is the research-run figure; the bundled bin medians read 47."
   },
   {
    "doc": "06",
-   "claim": "yRel side correct on 97.9-99.3% of off-centre targets vs camera",
+   "claim": "yRel side is correct on 97.9-99.3 % of off-centre targets against the camera",
    "status": "supported",
    "value": {
     "A": 0.9931,
@@ -635,22 +656,11 @@
     ]
    },
    "source": "bundled lateral_pairs.parquet",
-   "note": "Archive gave 97.9-98.3% on held-out 8b/8c/7f (docs/archive/findings_through_2026-10-01.md:798,843); range 97.9-99.3 matches the bundled A/B/C recompute (A 99.3, B 98.3, C 97.9)."
+   "note": "Per drive: A 99.3, B 98.3, C 97.9 %."
   },
   {
    "doc": "06",
-   "claim": "99.3% correct side against the vision model",
-   "status": "supported",
-   "value": {
-    "share": 0.993,
-    "n": 4910
-   },
-   "source": "research workspace archive",
-   "note": "Archive text only; not recomputable from bundled data (no modelV2 lateral in public parquets)."
-  },
-  {
-   "doc": "06",
-   "claim": "15.93 / 16.01 codes per metre (closing rate over relative speed, two calibration routes)",
+   "claim": "Closing rate over relative speed gives 15.93 / 16.01 codes per metre on two calibration routes",
    "status": "supported",
    "value": {
     "route_2": 15.933,
@@ -659,11 +669,11 @@
     "n_route_1": 9268
    },
    "source": "research workspace CLM-027, SCR-289",
-   "note": "Velocity side uses 0xB4 ego; the 1/16 scale inherits 0xB4's ~1.2-1.5% low bias."
+   "note": "The velocity side is 0xB4 ego speed, which reads 1-1.5 % below GPS."
   },
   {
    "doc": "06",
-   "claim": "drive B +0.7 m, consistent with a 0.25 deg camera-pitch error",
+   "claim": "Camera ground contact minus radar: -0.01 m (A), +0.22 m (C), +0.72 m (B, hilly), the size of a 0.19 degree camera-pitch error at B's median 17.5 m",
    "status": "supported",
    "value": {
     "B_median_cam_minus_radar_m": 0.72,
@@ -672,13 +682,13 @@
     "pitch_equiv_deg_at_B_median_17.5m": 0.19,
     "pitch_equiv_deg_at_15m": 0.25
    },
-   "source": "research workspace SCR-090; bundled ground_contact.parquet",
-   "note": "0.25 deg is an uncertainty bound, not a fitted value; +0.72 m at B's median 17.5 m needs ~0.19 deg (0.25 deg at 15 m). Same recompute gives C +0.22 m, marginally outside the 'within 0.2 m on A and C' wording on line 35."
+   "source": "research workspace SCR-090; bundled ground_contact.parquet (5-25 m, RADAR_TO_CAMERA 1.52 m)",
+   "note": "Pitch error that reproduces B's offset: 0.19 degrees at 17.5 m, 0.25 degrees at 15 m."
   },
   {
    "doc": "06",
-   "claim": "ego-lane objects stay within 0.1 m of centre from 15 to 130 m on straight road",
-   "status": "corrected",
+   "claim": "Ego-lane objects stay within 0.1-0.3 m of the lane centre from 15 to 130 m on straight road (two calibration routes)",
+   "status": "supported",
    "value": {
     "route_1": {
      "offset_m": -0.002,
@@ -690,12 +700,12 @@
     }
    },
    "source": "research workspace CLM-027",
-   "note": "Holds on one calibration route only (<=0.1 m to 130 m); the other route has a +0.29 m offset. Fitted at the old 1/64 m scale (x0.96 at 0.015 m, negligible). Bundled slots.parquet has no yaw, so not recomputable; exploratory ego-lane medians there range -0.47..+0.29 m without a straight-road filter."
+   "note": "Fitted at the 1/64 m scale (a factor 0.96 at 0.015 m, small). Exploratory ego-lane medians on the bundled slots.parquet (all road geometry, per drive) span -0.47 to +0.29 m."
   },
   {
    "doc": "06",
-   "claim": "0xB4 reads about 1.5% below GPS and wheel speed",
-   "status": "corrected",
+   "claim": "Toyota 0xB4 reads about 1-1.5 % below GPS and wheel speed",
+   "status": "supported",
    "value": {
     "b4_over_gps_median": {
      "A": 0.9851,
@@ -709,38 +719,30 @@
     }
    },
    "source": "bundled camera_pairs.parquet",
-   "note": "Bundled data: 0.9-1.5% below GPS (A 1.5, B 0.9, C 1.2) and 1.3-1.4% below carState wheel speed. Suggest 'about 1-1.5%'."
+   "note": "Bundled data: 0.9-1.5 % below GPS (A 1.5, B 0.9, C 1.2) and 1.3-1.4 % below carState wheel speed."
   },
   {
    "doc": "06",
-   "claim": "best time alignment between radar velocity and ego speed is +0.05-0.1 s",
-   "status": "supported",
-   "value": "+0.05-0.1 s (negligible)",
-   "source": "research workspace SCR-115",
-   "note": "Archive text only; no result file or JSON with the lag scan found, and not recomputable from bundled data."
-  },
-  {
-   "doc": "06",
-   "claim": "stopped targets 5-30 m: vRel RMS 0.54 m/s on settled tracks (B and C)",
+   "claim": "Stopped targets 5-30 m: vRel RMS 0.54 m/s on settled tracks (B and C)",
    "status": "supported",
    "value": {
     "B": 0.542,
     "C": 0.537
    },
    "source": "research workspace SCR-104; bundled review_followup.json",
-   "note": "Source already bundled; doc line 25/126 just does not link it. All-age RMS is 0.71 (B) / 0.55 (C)."
+   "note": "All-age RMS 0.71 (B) / 0.55 (C); the doc links review_followup.json."
   },
   {
    "doc": "06",
-   "claim": "on decelerating leads the radar's speed leads the camera's by 0.2-0.4 s",
+   "claim": "On decelerating leads the radar's speed leads the camera's by 0.2-0.4 s",
    "status": "supported",
    "value": "0.2-0.4 s",
    "source": "research workspace SCR-136",
-   "note": "Measured on owner StarPilot closed-loop drives (radar vLead vs openpilot camera lead), not on drives A/B/C; the scope should say so."
+   "note": "Measured on the owner's StarPilot closed-loop drives (radar vLead against openpilot's camera lead)."
   },
   {
    "doc": "06",
-   "claim": "range walk about 3% of range, decorrelating within about 5 cycles",
+   "claim": "Settled-track range jumps by about 3 % of range from record to record, decorrelating within about 5 cycles",
    "status": "supported",
    "value": {
     "robust_sigma_m": {
@@ -761,35 +763,33 @@
     }
    },
    "source": "research workspace SCR-119; bundled slots.parquet",
-   "note": "Recompute: increments of range-minus-integrated-vRel rise steeply to ~5 cycles (2.4% -> 6.2% of range at 40-80 m) then slowly (vRel drift), consistent with ~3-4% per-record jitter correlated over ~5 cycles."
+   "note": "Increments of range minus integrated vRel rise to about 5 cycles (2.4 % to 6.2 % of range at 40-80 m) and then slowly with vRel drift."
   },
   {
    "doc": "06",
-   "claim": "real closing shot: radar lead 24.7 m vs vision model 36.8 m while the camera box grows only 16%",
-   "status": "corrected",
+   "claim": "A real closing: the radar lead reads 24.7 m against the vision model's 36.8 m while the camera box grows 27 % over the 2 s shown",
+   "status": "supported",
    "value": {
     "radar_m": 24.69,
     "vision_m": 36.76,
-    "box_growth_2s_shot_frames": 0.267,
-    "box_growth_1p5s": 0.165
+    "box_height_growth_2s_between_shot_frames": 0.267,
+    "box_height_px": [
+     93.4,
+     118.4
+    ],
+    "vision_ratio_46.8_over_36.8": 1.27,
+    "box_growth_1p5s": 0.165,
+    "radar_range_1p5s_m": [
+     49.1,
+     26.4
+    ]
    },
    "source": "recomputed from the research captures",
-   "note": "24.7/36.8 confirmed. Box height grows 16.5% over 1.5 s (dt -1.47 -> +0.03, radar 49.1 -> 26.4 m) but 26-27% between the two shot frames (2 s, h 93.4 -> 118.4), matching vision 46.8/36.8 = 1.27. Say '27% over the 2 s shown' or specify the 1.5 s window."
-  },
-  {
-   "doc": "06",
-   "claim": "98.3-98.9% of consecutive same-slot cycles continue the same age run",
-   "status": "supported",
-   "value": {
-    "route_2": 0.983,
-    "route_1": 0.989
-   },
-   "source": "research workspace CLM-027",
-   "note": "Archive text only (report.md lists only top-4 step counts). Bundled slots.parquet excludes age-0 rows, so it gives 99.85-99.93% and cannot reproduce the figure; it does confirm 0 of 3,375 tracks use more than one slot per segment."
+   "note": "Over the 1.5 s window of the radar's closing the box grows 16.5 %; the 2 s between the two shot frames give 27 %."
   },
   {
    "doc": "13",
-   "claim": "idle payload table (rates, DLC, idle payloads of the nine messages)",
+   "claim": "Idle payload table: rates, DLC and idle payloads of the nine car-bus messages",
    "status": "supported",
    "value": {
     "0x283": "00 00 00 00 00 00 8C, 33.4 Hz, 7",
@@ -803,15 +803,15 @@
     "0x4FF": "3F 00 .. 00"
    },
    "source": "research workspace SCR-459, SCR-481; bundled radar_car_bus_messages.json",
-   "note": "All payloads/rates checked except 0x494/0x4FF rates and 0x343 33 Hz, which rest on census.py text in SCR-481 (not re-run). 0x366 idle on owner A is 50.. (2097) or 52.. (592)."
+   "note": "0x494 / 0x4FF rates and the 0x343 33 Hz rate come from the SCR-481 census; 0x366 idle on owner drive O2 reads 50.. (2,097 frames) or 52.. (592)."
   },
   {
    "doc": "13",
-   "claim": "0x411 reads 40 20 ... (PCS_INDICATOR 1) for 0.2-3 s after each of 27 cold starts over 773 segments",
-   "status": "corrected",
+   "claim": "0x411 reads 40 20 ... (PCS_INDICATOR 1) from about 0.2 s to 3 s after each of 27 cold starts",
+   "status": "supported",
    "value": {
     "cold_starts": 27,
-    "startup_payload_first_t_s": [
+    "first_frame_t_s": [
      0.16,
      0.47
     ],
@@ -822,12 +822,12 @@
     "duration_s": 2.92
    },
    "source": "research workspace SCR-459; recomputed from the research captures",
-   "note": "'0.2-3 s' is a time window, not a duration range: 40 20.. appears 0.16-0.47 s into the log and switches to idle at 3.08-3.39 s (always ~2.9 s, i.e. ~3 frames at 1 Hz). Suggest 'for the first ~3 s (until 3.1-3.4 s)'. 752 is the number of owner segments with 0x411 frames; 27 of them start with 40 20 ...."
+   "note": "The 27 start-up segments are part of the 752 owner segments that carry 0x411; 40 20 lasts about 3 frames at 1 Hz."
   },
   {
    "doc": "13",
-   "claim": "eight 0x366 reports with codes 442-506 whose distances fall at 20-28 m/s; -512 fits (mean diff 2.9 m/s)",
-   "status": "corrected",
+   "claim": "Eight 0x366 reports carry codes 442-506; five same-tail steps among them close at 20-28 m/s by their distances; code - 512 fits (mean difference 2.9 m/s)",
+   "status": "supported",
    "value": {
     "high_code_reports": 8,
     "codes": [
@@ -846,18 +846,18 @@
     "unsigned_diff_mps": 68.72
    },
    "source": "bundled target_366_speed_domain.json",
-   "note": "Only five same-tail adjacent steps (of the eight reports) carry a range rate; those close at 20-28 m/s. Wording should be 'five consecutive pairs among them close at 20-28 m/s'."
+   "note": "Codes below 256 are the domain the ACC target confirms."
   },
   {
    "doc": "13",
-   "claim": "0x366 byte 0 is 0x50 or 0x52; byte 4 bits 3-7 vary (flags); low three bits of byte 5 constant; arrives ~90 ms after 0x365",
+   "claim": "0x366 byte 0 is 0x50 or 0x52; byte 4 bits 3-7 vary (flags); the low three bits of byte 5 are constant; it arrives about 90 ms after 0x365",
    "status": "supported",
    "value": {
-    "byte0_ownerA": {
+    "byte0_O2": {
      "0x50": 3034,
      "0x52": 714
     },
-    "byte0_ownerB": {
+    "byte0_O3": {
      "0x50": 1200
     },
     "byte4_low3": "always 0",
@@ -869,11 +869,11 @@
     ]
    },
    "source": "research workspace SCR-466, SCR-481; recomputed from the research captures",
-   "note": "Bit numbering is LSB-within-byte (byte 4 = (b>>3) varies). 0x52 seen only on owner drive A."
+   "note": "Bit numbering is LSB within the byte (byte 4 = (b >> 3) varies); 0x52 occurs on owner drive O2."
   },
   {
    "doc": "01",
-   "claim": "message rates 0x24D 1 Hz, 0x24F 33 Hz, 0x210 5 Hz",
+   "claim": "Message rates 0x24D 1 Hz, 0x24F 33 Hz, 0x210 5 Hz",
    "status": "supported",
    "value": {
     "0x24D_hz": 1.0,
@@ -882,7 +882,7 @@
     "segments": 39
    },
    "source": "recomputed from one full owner road drive (bus-1 frames, per one-minute segment median)",
-   "note": "range over segments: 0x24F 33.32-33.36 Hz, 0x210 4.98-5.0 Hz"
+   "note": "Per one-minute segment medians over 39 segments of one owner drive: 0x24F 33.32-33.36 Hz, 0x210 4.98-5.0 Hz."
   }
  ]
 }

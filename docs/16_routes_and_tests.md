@@ -42,7 +42,7 @@ The recording specification and target controls are in [15](15_pcs_testing.md).
 
 Keep complete **rlogs**, with adjacent segments before/after each event, and road video plus its frame indices
 and SOF timestamps. Original full-CAN rlogs carry the evidence; qlogs, screenshots and decoded lead CSVs serve as indexes
-into them. Preserve every bus/address, including periods with no lead. Particularly useful groups are:
+into them. Preserve every bus/address, including lead-free periods. Particularly useful groups are:
 
 - Radar bus: `0x80/85`, `0x100`, `0x190`–`0x196`, `0x235/237/239/23B`, `0x680`, camera/context messages.
 - Car bus: `0xB4`, `0x343/344`, `0x283`, `0x320`, `0x33E/365/366/411`.
@@ -79,18 +79,18 @@ and broadcast status ([13](13_car_bus_messages.md)). Catalog DID meanings are ca
 2. Arrange the guarded read-only diagnostic kit with the maintainer before using it. The kit lives outside this repo's
    normal installer. The prepared probe takes exclusive Panda access with openpilot stopped, permits the specified
    DID reads and documented session/keepalive services, and restores no-output mode on exit. Check its on-car setup
-   first and run only those reads (broad scan, write, reset and calibration commands are outside the kit).
+   first and run only those reads (the kit carries read commands alone).
 3. With ignition on and ego secured, collect baseline → covered → uncovered, 60 seconds each. Use a removable
-   shield on a stand clear of the radar emblem, with a clean surface and no adhesives. Note messages and condition edges.
-   If no state changes, record **not exercised** and stay parked.
+   shield on a stand clear of the radar emblem, with a clean surface, held by the stand alone. Note messages and condition edges.
+   If the state holds constant, record **not exercised** and stay parked.
 4. Keep raw responses, negative responses/timeouts, request/response times and session mode. After a successful
    contrast, repeat the parked sequence once and verify recovery. Keep default/extended-session captures separate.
 
 The prepared diagnostic probe saves responses and B4 (the radar CAN comes from a separate logger). A simultaneous broadcast comparison
 needs a separate compatible passive logger on a shared clock; otherwise record a separate normal-logging condition
 sequence and describe timing at the session level. Restart normal logging and verify recovery before normal use.
-Missing-message faults, blockage and object-list silence are three conditions; record each as it occurs, and leave
-electrical faults to the car's own events.
+Missing-message faults, blockage and object-list silence are three conditions; record each as it occurs, and the car's
+own events cover electrical faults.
 
 ## T02: radar-reported ego speed
 
@@ -153,7 +153,7 @@ before changing constants; nominal decoding, physical calibration and parser tun
 4. Use T06 to examine update behavior. Observation-free intervals come from authenticated metadata or an independently
    established observation-free state; visual occlusion and `107|1` are indicators for it.
 
-Unexercised axes and codes stay uncalibrated; acceleration and heading units come from their own measurements.
+Calibration covers the exercised axes and codes; acceleration and heading units come from their own measurements.
 
 ## T06: identity, prediction and lifecycle
 
@@ -213,8 +213,8 @@ independence are three separate questions, and physical truth comes from the T03
 3. If functional outputs exist in both conditions, repeat matched target paths clear–covered–covered–clear,
    acquiring fresh tracks. Compare selection separately from kinematic errors against the independent reference.
 
-Function shutdown is evidence of dependency, and association transitions leave the total camera weight open
-([`acc_camera_identifiability.json`](../data/analysis/summaries/acc_camera_identifiability.json)). The camera's total
+Function shutdown is evidence of dependency. The owner-car association transitions fit every camera weight from 0 to 0.9 equally
+(maximum error 7e-15 on 2,501 rows; [`acc_camera_identifiability.json`](../data/analysis/summaries/acc_camera_identifiability.json)), so the camera's total
 contribution comes from a professional facility test or access to the actual input channel when a parked case is unexercised.
 
 ## T10: class, scores and dimensions
@@ -260,7 +260,7 @@ decoded stock events, and a missing-message replica is described as a replica.
 
 1. Record the actual installed version/profile (`acc`, `fused` or another) and the [install check](../openpilot/README.md). On the first normal drive,
    verify radar-backed leads and communication health from logs; installer success and road validation are separate steps.
-2. Keep fresh city/queue and highway/curve drives, ordinary night/wet conditions when encountered, empty/no-lead
+2. Keep fresh city/queue and highway/curve drives, ordinary night/wet conditions when encountered, lead-free
    periods and bookmarked unwanted braking, sticky/adjacent leads, far pickup, loss and recovery.
 3. Assign discovery/confirmation roles before reviewing error results. Freeze proposed behavior/gates before
    confirmation; previously tuned routes count as tuning data. Keep consumers unchanged for comparisons.
@@ -300,7 +300,7 @@ reconstructs continuous streams across segment edges.
 Submit a [drive report](https://github.com/ds-sebastian/ars510-radar/issues/new?template=drive_report.yml) for road
 behavior or a [research finding](https://github.com/ds-sebastian/ars510-radar/issues/new?template=research_finding.yml)
 for a controlled test. Include test ID, car/firmware/configuration, conditions, times relative to the session,
-intended contrast, reference accuracy, observed results including absence, and whether private logs are available.
+intended contrast, reference accuracy, observed results including runs labelled not exercised, and whether private logs are available.
 
 Keep route/dongle IDs, VINs, GPS, unit identifiers and identifying video out of public posts. Arrange private
 transfer with the maintainer; retain original instrument exports and quality flags. Anonymous summaries and

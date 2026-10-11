@@ -56,7 +56,7 @@ held out of all tuning):
 - **Equal braking onset.** Both start braking within 0.04 s of vision only and ask for ≤ −1 m/s² before the same 44.9 %
   of brake presses.
 - **Where they differ.** `acc` publishes one point; 52 of its 66 held-out hard ticks are standstill holds behind
-  objects for which the camera reports no lead ([11](11_profiles_compared.md)). `fused` publishes every track and carries the gates
+  objects the camera leaves out of its lead list ([11](11_profiles_compared.md)). `fused` publishes every track and carries the gates
   of the sections below. `acc` has the lower unnecessary braking on the second car and the held-out owner routes, `fused`
   the lower missed braking on the road drives and all sets.
 - **Reference.** The oracle takes its range from the ACC target, so it favours profiles built on that target; the
@@ -71,7 +71,7 @@ Each replay number below names its `fused` version. 2.6 is the current profile a
 | 2.0 | speed filter with the ACC target (σ 0.5 m/s) and the summaries, range fusion, track-ID relink, 0.25 × ACC match scale; the ablations and combinations |
 | 2.1 | ACC distance as the followed car's range; trackers matched by position |
 | 2.3 | path gate beyond 15 m (2.5 m); ACC match scale 0.4 × |
-| 2.4 | 2.3 without the summaries and the relink: the openpilot version at that time |
+| 2.4 | 2.3 without the summaries and the relink: the openpilot version of 2.4 |
 | 2.5 | 2.4 with the ACC target at σ 0.3 m/s |
 | 2.6 | 2.5 with the far rule (beyond 60 m only the ACC target's track), the stationary path gate and ACC σ 0.13 m/s |
 
@@ -147,7 +147,7 @@ target. Right: a new track's speed std against age; the 0.75 m/s line is the pub
 ![profiles on the bundled samples](img/analysis/profile_comparison.png)
 
 *`raw` and `fused` on the bundled excursions: on drive E `fused` (green) follows the radar's ACC target (which is what
-`acc` publishes); drive A has no ACC target, and there `fused` dips to −2.7 m/s where the object list reads −6.4.*
+`acc` publishes); on drive A, where the object list carries the lead alone, `fused` dips to −2.7 m/s where the object list reads −6.4.*
 
 **What `P` means.** The model assumes independent readings, while the ACC target and the object list are both
 estimates from the same radar, with persistent errors. So `√P` is a readiness measure in m/s: it sets the gain and the
@@ -190,8 +190,8 @@ The two filters run in series, so all replay numbers include their combined effe
   output range    = predicted range + 0.1 × (object-list range − predicted range)
   ```
 
-  It cuts 1.5 s range walks by about a third. Range stays a separate estimate: range rate and speed differ by
-  10-20 %, and a filter that coupled them ran 2-5 m short. For the track the ACC target describes, the measurement is
+  It cuts 1.5 s range walks by about a third. Range is its own estimate, separate from the speed state, because range rate and speed differ by
+  10-20 %. For the track the ACC target describes, the measurement is
   the radar's ACC distance instead of the object-list range ([below](#matching-the-radars-trackers-to-tracks)).
 
 ## Matching the radar's trackers to tracks
@@ -215,7 +215,7 @@ it describes. The summaries (a fork option) are matched the same way.
 - **The ACC distance is the followed car's range.** The matched track takes the ACC distance as the measurement of the
   range fusion: the radar's own smooth range (0.04 m jitter against 0.9 m,
   [`acc_fields.json`](../data/analysis/summaries/acc_fields.json)), which the vision lead agrees with. radard
-  receives a lead distance within a metre of the vision lead's median up to 90 m (it read 1-5 m short before), half as rough from
+  receives a lead distance within a metre of the vision lead's median up to 90 m (the object-list range reads 1-5 m short of it at 30-90 m), half as rough from
   tick to tick, and flips between a radar and a vision lead 30 % less often (1,764 → 1,231 on the 20 held-out drives,
   2.1 replays).
 - **New tracks can start far short.** 10-21 % of new in-lane tracks the ACC target follows read more than 10 m
@@ -273,7 +273,7 @@ Numbers: [`lead_choice_guards.json`](../data/analysis/summaries/lead_choice_guar
 
 radard stops for a radar point within 1 m laterally and 25 m ahead when ego is slower than 4 m/s, even without a
 camera lead ([14](14_forks.md)). Parked cars at the curb while ego turns past them, or a car parked alongside, then
-become a lead and raise hard radar-only requests. Parked cars and roadside objects stay in their place, so since 2.6 a
+become a lead and raise hard radar-only requests. Parked cars and roadside objects hold their position, so from 2.6 a
 stationary track (over-ground speed below 0.5 m/s) is path-gated at every range: within 1.5 m of the path curved with
 max(v, 2 m/s) up to 15 m, and by the 2.5 m gate beyond. Over every drive set this removes 4 of 12 hard and 23 of 49 mild
 radar-only episodes (hard ticks 30 → 16) with unchanged missed braking
@@ -282,7 +282,7 @@ radar-only episodes (hard ticks 30 → 16) with unchanged missed braking
 ## Far cars beyond 60 m
 
 Toyota's own ACC acts on its ACC target ([05](05_acc_target_and_support.md)), and the object list's false closings
-live on far tracks without one: beyond 40 m, a false closing (published vRel > 2 m/s more closing than the range-based
+live on far tracks other than its track: beyond 40 m, a false closing (published vRel > 2 m/s more closing than the range-based
 reference, measured on 2.3) is on the lead 0-0.1 % of the time when the lead is the ACC target's track and 25-28 % of
 the time when it is another track. Since 2.6, beyond 60 m the published track is the one the ACC target describes;
 radard takes other far cars from the camera.
@@ -365,8 +365,8 @@ owner drives:
 | the young-track factor | 30 | 11 | 0 | needed |
 | the speed-std publication gate | 30 | 8 | 0 | needed |
 | the age-60 publication gate (age 6) | 31 | 12 | 0 (radar-only braking ×3) | needed |
-| range fusion | 27 | 0 | 0 | braking-neutral; lead switches +39 %, held-out target episodes 4 → 6: kept for lead stability |
-| the ego-speed alignment (× 0.149/0.15) | 31 | 2 | 0 | neutral (onset +12 ms); one empirical setting, folded into the decode factor (no line) |
+| range fusion | 27 | 0 | 0 | same braking; lead switches +39 %, held-out target episodes 4 → 6: kept for lead stability |
+| the ego-speed alignment (× 0.149/0.15) | 31 | 2 | 0 | same braking (onset +12 ms); one empirical setting, folded into the decode factor (no line) |
 | the track-ID relink | 30 | 2 | 0 | same braking counts, lead switches 1,770 vs 1,772: off in `fused` |
 | the saturation guard | identical | identical | identical | off in `fused`: the robust update absorbs the sentinel |
 
@@ -430,11 +430,11 @@ any variant was run on it. The driver had flagged 11 false brakes made by an old
 
 - **`fused` 2.5** brakes at ≤ −1 m/s² on 1 of the 11 flagged moments (vision only 0 of 11). Its one hard brake is a
   lead at 86 m published at −7.3 m/s with no ACC target while the camera range opens. It also asks −1.78 m/s² for
-  a new track at 97 m while the ACC target and camera read −3.6 and about −3 m/s. Both are far tracks the
-  radar's ACC does not follow.
+  a new track at 97 m while the ACC target and camera read −3.6 and about −3 m/s. Both are far tracks carried by the
+  object list alone.
 - **The far rule** (2.6, [far cars beyond 60 m](#far-cars-beyond-60-m)) removes both. Four of
   the real closings keep their braking unchanged, and the car at 86 m closing at 8.8 m/s starts braking 0.8 s later than
-  with 2.5: the object list has the car 0.75 s before the radar picks it as its ACC target (vision only requests no braking
+  with 2.5: the object list has the car 0.75 s before the radar picks it as its ACC target (vision only asks 0 m/s²
   there). The owner car's 95 m closing shows the same delay (about 1 s).
 - **The young-track factor and std gate** belong on this car too: without them a new track at 31 m is published at
   −13 m/s for 0.15 s and the planner asks −2.9 m/s².
@@ -499,7 +499,7 @@ held-out / fresh / owner drives.
 | speed + acceleration state, with the ACC target's acceleration as a reading | 6.7 / 5.4 / 6.5 % (above `fused` on held-out and owner drives, below on fresh) | – |
 | noise learned from all slot fields (gradient boosting) | 5.7 / 5.5 / 5.2 %; the learned noise rebuilds `240\|7`, ego speed and `84\|10` | – |
 | object-list error as its own state (colored noise, τ 1.19 s), noise scaled by ego speed and `84\|10` | **5.1 / 4.8 / 5.8 %**: 14 % and 16 % fewer false closings on held-out and fresh drives, equal on owner drives; responds as fast to ACC-defined drops (below) | against 2.0: held-out 29 hard ticks vs 30, further drives 30 vs 2 (one far false closing held for seconds) |
-| retuned `fused` constants (σ per count 0.033, ACC σ 0.3, lead acceleration 1.0 / 2.0) | – | 8 fresh drives: only lead acceleration 2.0 passes every gate, and it scores no better than 1.5 ([`driving_claim_sources.json`](../data/analysis/summaries/driving_claim_sources.json)) |
+| retuned `fused` constants (σ per count 0.033, ACC σ 0.3, lead acceleration 1.0 / 2.0) | – | 8 fresh drives: only lead acceleration 2.0 passes every gate, and it scores the same as 1.5 ([`driving_claim_sources.json`](../data/analysis/summaries/driving_claim_sources.json)) |
 | ACC target weight (σ 0.13 in 2.6; 0.3 in 2.5; 0.5 before) | – | [above](#the-acc-targets-weight) |
 
 The colored-noise filter is the textbook fix for the object list's slow, correlated errors: an error time constant of

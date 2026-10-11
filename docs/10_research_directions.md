@@ -31,7 +31,7 @@ questions ([upstream interface](#towards-an-upstream-comma-interface), [parts](#
 3. **A controlled factory-camera comparison.** *What does the factory camera contribute to the ACC target's selection and
    kinematics?* The target's distance and speed hold steady where the camera's association (`112|3`) changes (steps at
    association onset: 0.06 m and −0.01 m/s), the camera's bus-1 frames arrive continuously (longest gap 0.78 s in 698
-   one-minute segments), and the radar takes far targets without association (539 day acquisitions beyond 60 m, none
+   one-minute segments), and the radar takes far targets without association (539 day acquisitions beyond 60 m, 0
    associated; [05](05_acc_target_and_support.md),
    [`acc_target_camera.json`](../data/analysis/summaries/acc_target_camera.json)). *Data:* a paired parked or
    controlled-site intervention, clear against covered, on matched target paths
@@ -89,7 +89,7 @@ from the first:
   target: about 0.02 m/s² per metre of gap error, 0.25 m/s² per m/s of closing speed, and a time gap of about 1.1 s (1-bar
   setting, U1). The command trails the target through a short dead time (0.1 s), a slow first-order lag and a rate limit.
   A second car's stock drive fits once a **set-speed cap** is added: at or above the set speed Toyota holds about 0
-  instead of closing a large gap (u1 law R² −0.69 → 0.58 on the second car, U1 unchanged at 0.66). One law with that cap
+  even with a large gap (u1 law R² −0.69 → 0.58 on the second car, U1 unchanged at 0.66). One law with that cap
   fits both cars (time gap 1.07 s). The law also explains Toyota's patience on far leads: a car closing at 3.5 m/s becomes
   the ACC target at 94 m, and Toyota holds +0.06 m/s² for 7 s. It first brakes at 66 m (about 15 s to contact) and
   reaches −0.83 m/s² at 52 m. The three recorded lead changes happened under gas override or at the set-speed cap; a lead
@@ -151,8 +151,9 @@ The goal: tell a velocity excursion from a real closing within about 1 s ([07](0
   known positions.
 - **What the camera association changes.** *What does `112|3` (association: inside 45 m by day, farther at night,
   [03](03_slot_fields.md#camera-association)) change in the radar's outputs?* *Data:*
-  [T09](16_routes_and_tests.md#t09-factory-camera-dependence) compares matched target paths while parked; association
-  transitions alone leave the total input weight open
+  [T09](16_routes_and_tests.md#t09-factory-camera-dependence) compares matched target paths while parked; the
+  observations fit every camera weight from 0 to 0.9 in exact mixture identities, so the total input weight needs the
+  paired parked test
   ([`acc_camera_identifiability.json`](../data/analysis/summaries/acc_camera_identifiability.json)).
 
 ## For the integration
@@ -172,6 +173,12 @@ decision to the car as 0x283 / 0x344, keep 0x344 running for the brake system's 
 while the relay is healthy. How it would work, and what is needed first, are in
 [13](13_car_bus_messages.md#aeb-without-a-can-filter); the first item is one recorded stock AEB activation with bus 0 and
 bus 1 logged ([15](15_pcs_testing.md)).
+
+*What does the radar's PCS alarm react to, and from what size of object?* U3's alarm came with a parked pickup tracked at
+14.5 m and an inflatable at the bumper that left the object list empty at its position
+([13](13_car_bus_messages.md#a-recorded-stock-pcs-alarm-u3)). The radar tracks pedestrians at 0.5 × 0.4 m, so the
+camera's link and a weak 77 GHz reflection are the two candidates. *Data:* a recorded series of alarms on radar-reflective
+soft targets of graded size with separately characterised target controls ([15](15_pcs_testing.md)).
 
 ## What radard gets from other radars
 
@@ -223,11 +230,10 @@ The `acc` proposal, [`upstream/opendbc_ars510.patch`](../upstream/opendbc_ars510
   `canError` when they stop (26 code lines; same file: [`upstream/ars510_acc_target.py`](../upstream/ars510_acc_target.py));
 - in `values.py` the radar DBC for the radar-ACC RAV4 2022 and 2023-25 platforms, and in `radar_interface.py` the
   dispatch to it;
-- in `interface.py` detection: the radar counts as available only with the known ARS510 firmware (`8821F0R03100`, for a
-  cold start) or its ACC target (0x235) seen on bus 1 at fingerprinting. Other radar-ACC RAV4 radars, such as the 2022
-  firmware `8821F0R01100` (not yet seen sending these frames), stay radarless, which keeps them from reporting a permanent
-  CAN error. Selecting the parser by the car's radar DBC name follows smasher816's routing branch
-  (fixed in #72);
+- in `interface.py` detection: the radar counts as available when the known ARS510 firmware (`8821F0R03100`, for a
+  cold start) or its ACC target (0x235) on bus 1 is present at fingerprinting. Other radar-ACC RAV4 radars, such as the 2022
+  firmware `8821F0R01100` (its frames await a capture), stay radarless and report a clean CAN state. Selecting the parser by the car's radar DBC name follows smasher816's routing branch
+  (PR #72);
 - `opendbc/car/toyota/tests/test_ars510_acc_target.py`: recorded and packed frames, the idle (no-target) payload, a stuck
   counter, a silent radar, the 20 Hz cadence and the detection.
 
@@ -263,7 +269,7 @@ What upstream review is likely to ask, from recent openpilot / opendbc radar PRs
    ([06](06_accuracy.md#velocity)). Drives on other cars and firmware, through `--profile openpilot`, are what upstream would weigh.
 4. **Process replay coverage.** A route segment with the radar in openpilot's process-replay tests.
 5. **Alpha longitudinal compatibility.** Covered for `8821F0R03100`: after openpilot's UDS radar-disable request the
-   radar stops only its car-bus messages and keeps sending bus 1 on an unfiltered radar line
+   radar's car-bus messages stop while bus 1 keeps sending on an unfiltered radar line
    ([01](01_radar_bus.md#openpilots-radar-disable)).
 
 ### Parts of the openpilot file
@@ -274,18 +280,18 @@ on the 27 replay drives, and its status for an upstream PR. The `acc` file has 2
 
 | part | code lines | since | without it | for upstream |
 |---|---|---|---|---|
-| transport, CRC, slot decode, track IDs, ego speed, RadarInterface wrapper | 103 | 1.0 | no radar | required |
+| transport, CRC, slot decode, track IDs, ego speed, RadarInterface wrapper | 103 | 1.0 | the car runs on vision only | required |
 | ACC target decode and association | 27 | 2.0 (range scale 0.4 x since 2.3) | +24 unjustified hard ticks on 27 drives; with the 0.25 x scale, one road late brake -1.47 -> -2.36 m/s2 | keep |
 | Kalman speed filter (one state, uncertainty-weighted) | 22 | 2.0 | hard radar-only ticks 48 with the filter alone against 93 for raw (20 held-out routes) | keep |
-| young-track factor | 3 | 2.0 | further-drive hard ticks 2 -> 11 (on 2.0); second car (with the std gate, with the far rule): a −2.9 m/s² brake on a young track | keep |
-| speed-std publication gate | 2 | 2.0 | further-drive hard ticks 2 -> 8 (on 2.0); second car: see the young-track factor | keep |
-| age-60 publication gate | 2 | 1.0 | radar-only braking x3 (age 6); age 40: further-drive hard ticks 1 -> 9; age 80: more missed braking against the hindsight-lead oracle (3.3 -> 3.7 s) | keep |
-| range fusion (incl. ACC distance as the followed car's range) | 9 | 2.0 (ACC distance 2.1) | braking neutral; lead flips +39 %, target episodes 4 -> 6; second car (with the far rule): braking neutral, flips +11 % | keep for lead stability; droppable at that cost |
-| ego-speed alignment (0.149 m/s per code instead of the DBC 0.15) | 0 | 1.x | neutral (onset +12 ms); folded into the decode factor, so it costs no line | keep (no line) |
-| state pruning | 7 | 2.0 | unbounded state | required |
-| path gate (yaw rate) | 6 | 2.3 (2.2 from 60 m) | back to 2.1 (removed with the 0.4 x match; on 2.4): held-out target episodes 3 -> 4, owner 0 -> 1, further hard ticks 1 -> 2; two road false brakes; second car with the far rule: braking neutral, flips +7 % | candidate: keep, or move into radard as a lateral gate |
+| young-track factor | 3 | 2.0 | further-drive hard ticks 2 -> 11; second car with the far rule (with the std gate): a -2.9 m/s2 brake on a young track | keep |
+| speed-std publication gate | 2 | 2.0 | further-drive hard ticks 2 -> 8; second car: see the young-track factor | keep |
+| age-60 publication gate | 2 | 1.0 | radar-only braking x3 (age 6); age 40: further-drive hard ticks 1 -> 9; age 80: more missed braking vs the oracle (3.3 -> 3.7 s on 2.3) | keep |
+| range fusion (incl. ACC distance as the followed car's range) | 9 | 2.0 (ACC distance 2.1) | braking neutral; lead flips +39 %, target episodes 4 -> 6; second car with the far rule: braking neutral, flips +11 % | keep for lead stability; droppable at that cost |
+| ego-speed alignment (0.149 m/s per code instead of the DBC 0.15) | 0 | 1.x | braking neutral (onset +12 ms); folded into the decode factor, so it costs 0 lines | keep (0 lines) |
+| state pruning | 7 | 2.0 | state grows with every track id seen | required |
+| path gate (yaw rate) | 6 | 2.3 (2.2 from 60 m) | back to 2.1 (removed with the 0.4 x match): held-out target episodes 3 -> 4, owner 0 -> 1, further hard ticks 1 -> 2; two road false brakes; second car with the far rule: braking neutral, flips +7 % | candidate: keep, or move into radard as a lateral gate |
 | far cars: only the ACC target's track beyond 60 m | 2 | 2.6 | 2.5 over all four drive sets (16.9 moving h): oracle unnecessary braking 21.6 -> 28.5 s, lead flips 334 -> 418 /h, second car 0 -> 1 hard; with it a fast far closing waits ~1 s for the radar to make the car its ACC target | keep |
-| stationary tracks path-gated close in too | 2 | 2.6 | all four drive sets: hard radar-only episodes 12 -> 8 (ticks 30 -> 16), mild 49 -> 26 with it; missed braking unchanged (parked cars at the curb while turning, a parked car alongside) | keep |
+| stationary tracks path-gated close in too | 2 | 2.6 | all four drive sets: hard radar-only episodes 12 -> 8 (ticks 30 -> 16), mild 49 -> 26 with it; missed braking the same (parked cars at the curb while turning, a parked car alongside) | keep |
 | fork compatibility (CP_SP argument, points assigned as a list) | 2 | 2.2 | crashes on sunnypilot | keep (harmless upstream) |
 
 Numbers: [`openpilot_file_parts.json`](../data/analysis/summaries/openpilot_file_parts.json), with the evidence file for
@@ -311,7 +317,8 @@ Passing the object list straight through gives hard braking, and so does one gat
 object. That model weights each reading by its own uncertainty, either over speed with a traffic prior, or over range
 and range rate with the measured 3 % range noise (research profiles `shared_speed` / `shared_range`). It brakes hard
 while moving 59 and 168 times against `fused`'s 8. Both object-list kinematic signals, speed and range, carry slow,
-correlated errors that inverse-variance weighting leaves in place; the radar's decision, the ACC target, is free of them. sunnypilot's
+correlated errors that inverse-variance weighting leaves in place; the ACC target's speed follows the slope of its own
+range (below), so the radar's decision carries consistent speed and range. sunnypilot's
 Hyundai camera-SCC interface publishes that car's ACC lead as its single point the same way.
 
 ![the ACC target alone against 2.6](img/analysis/guide_acc_target_parser.png)
@@ -321,9 +328,9 @@ Replayed over every drive set (16.9 moving h, 62 routes, unchanged radard and pl
   difference to 2.6 includes zero: hard, mild, oracle unnecessary and missed braking.
 - **Lead stability and onset.** Lead flips are lower (302 against 332 per hour). Braking starts 0.017 s before vision
   only on real closings (2.6: 0.010 s). The radar supplies the lead more often (88 % against 86 % of lead time),
-  because the ACC target is published without an age gate.
+  because the ACC target is published from the cycle it appears.
 - **While moving,** it has 5 hard and 22 mild radar-only episodes against 8 and 27. Its other 8 count as hard because
-  the car is stopped 0.7-4.8 m behind an object the camera reports no lead for: radard's low-speed rule holds
+  the car is stopped 0.7-4.8 m behind an object the camera leaves out of its lead list: radard's low-speed rule holds
   the car there, while vision only would ask to move off.
 - **One far case:** a real object braking and drifting a lane over at 82 m, still flagged in-path by the radar. radard
   matches it to the camera's lead 27 m further on; this is the 7 hard ticks `acc` has while moving on the 4 further drives,
@@ -332,7 +339,7 @@ Replayed over every drive set (16.9 moving h, 62 routes, unchanged radard and pl
 - **On Toyota's stock-ACC drives** its requests track Toyota's command as closely as 2.6's: on U1 RMS 0.249 m/s² for
   both (jerk p99 0.167 against 0.176 m/s³); on the second car's stock drive (140 s) the two differ by 0.007 m/s² RMS,
   with correlation to Toyota 0.76 for both against 0.68 for vision only. The remaining gap to Toyota is common to both files.
-- **Filter-free:** the ACC target's speed follows the slope of its own distance with no lag (best lag −0.06 s, gain 1.00), and its
+- **Filter-free:** the ACC target's speed follows the slope of its own distance (best lag −0.06 s, gain 1.00), and its
   fast noise (0.027 m/s on the second car, 0.025 on the owner's;
   [`second_unit_noise.json`](../data/analysis/summaries/second_unit_noise.json)) is a fifth of its 0.125 m/s code step, so a filter would add delay.
 - **On drives never used for development or tuning** (32 routes of both cars, 4.54 moving h) it brakes unnecessarily less
@@ -341,7 +348,7 @@ Replayed over every drive set (16.9 moving h, 62 routes, unchanged radard and pl
   starts earlier on real closings (−0.020 against −0.008 s vs vision).
 - **Close cut-ins** (the lead jumps at least 5 m closer to within 35 m; 450 in all drives): the radar's ACC target moves
   to the cut-in car after a median 0.2 s (0.3 s for a faster car). On the 120 where that car is faster than ego, `acc` and 2.6 differ by at most 0.3 m/s² (braking below −0.5 m/s² in 28 against 27, below −1 in 14 against 14; vision only 29 / 14).
-- **Over every drive** (94 routes, 21.45 moving h; it has no fitted constant, while 2.6 was tuned on most of them) it has
+- **Over every drive** (94 routes, 21.45 moving h; it carries protocol values only, while 2.6 was tuned on most of them) it has
   fewer lead flips (−22 per moving hour, −36…−7). While moving it has 5 hard and 31 mild radar-only episodes against 8 and 36,
   28.4 against 35.0 s of unnecessary and 22.9 against 20.3 s of missed braking; the route-bootstrap intervals of those four
   differences include zero.
