@@ -1,0 +1,176 @@
+{
+  "field": "64|10",
+  "nominal_scale_mps": 0.15,
+  "nominal_zero": 510.5,
+  "profile_scale_mps": 0.149,
+  "status": "Empirical parser setting; physical scale and factory zero unresolved.",
+  "scope": "Existing mature geometry-matched owner-car observations against the dependent ACC target; same B4 and timestamp in each paired equation.",
+  "selection": {
+    "min_age": 60,
+    "speed_code_range": [
+      1,
+      1022
+    ],
+    "ego_min_mps_exclusive": 3,
+    "acc_distance_m": [
+      5,
+      150
+    ],
+    "near_max_m_exclusive": 40,
+    "steady_abs_acc_vrel_max_mps_exclusive": 1
+  },
+  "metrics": [
+    {
+      "scope": "all",
+      "equation": "nominal",
+      "n": 229953,
+      "segments": 455,
+      "mean": 0.03633202581976821,
+      "mae": 0.8150469274639212,
+      "rmse": 1.3016058275918556
+    },
+    {
+      "scope": "all",
+      "equation": "aligned",
+      "n": 229953,
+      "segments": 455,
+      "mean": -0.1106423841683599,
+      "mae": 0.8035658854442237,
+      "rmse": 1.2970420049204465
+    },
+    {
+      "scope": "all",
+      "equation": "zero511",
+      "n": 229953,
+      "segments": 455,
+      "mean": -0.038667974180231796,
+      "mae": 0.8104011592707108,
+      "rmse": 1.3016731258453922
+    },
+    {
+      "scope": "all",
+      "equation": "aligned_zero511",
+      "n": 229953,
+      "segments": 455,
+      "mean": -0.1851423841683599,
+      "mae": 0.8104820627596849,
+      "rmse": 1.3055090684361932
+    },
+    {
+      "scope": "near",
+      "equation": "nominal",
+      "n": 78354,
+      "segments": 309,
+      "mean": 0.03600050199521782,
+      "mae": 0.5396617346345502,
+      "rmse": 0.7578703101762124
+    },
+    {
+      "scope": "near",
+      "equation": "aligned",
+      "n": 78354,
+      "segments": 309,
+      "mean": -0.058228484399861044,
+      "mae": 0.5347791405388083,
+      "rmse": 0.7599254594400348
+    },
+    {
+      "scope": "near",
+      "equation": "zero511",
+      "n": 78354,
+      "segments": 309,
+      "mean": -0.038999498004782196,
+      "mae": 0.5363721769859299,
+      "rmse": 0.7580186882572921
+    },
+    {
+      "scope": "near",
+      "equation": "aligned_zero511",
+      "n": 78354,
+      "segments": 309,
+      "mean": -0.13272848439986104,
+      "mae": 0.5418234834497567,
+      "rmse": 0.7692288333654214
+    },
+    {
+      "scope": "far",
+      "equation": "nominal",
+      "n": 151599,
+      "segments": 374,
+      "mean": 0.03650337403280931,
+      "mae": 0.9573798676479102,
+      "rmse": 1.5076312931180575
+    },
+    {
+      "scope": "far",
+      "equation": "aligned",
+      "n": 151599,
+      "segments": 374,
+      "mean": -0.13773252791905058,
+      "mae": 0.9424884153442818,
+      "rmse": 1.5011163888458996
+    },
+    {
+      "scope": "far",
+      "equation": "zero511",
+      "n": 151599,
+      "segments": 374,
+      "mean": -0.03849662596719064,
+      "mae": 0.952033141526146,
+      "rmse": 1.5076808713663197
+    },
+    {
+      "scope": "far",
+      "equation": "aligned_zero511",
+      "n": 151599,
+      "segments": 374,
+      "mean": -0.21223252791905062,
+      "mae": 0.949338350223653,
+      "rmse": 1.5097757480903222
+    },
+    {
+      "scope": "near_steady",
+      "equation": "nominal",
+      "n": 34384,
+      "segments": 202,
+      "mean": 0.0065365512383015025,
+      "mae": 0.49563871762059863,
+      "rmse": 0.6926286186119563
+    },
+    {
+      "scope": "near_steady",
+      "equation": "aligned",
+      "n": 34384,
+      "segments": 202,
+      "mean": -0.10402304043224307,
+      "mae": 0.48482311863398997,
+      "rmse": 0.692498292478098
+    },
+    {
+      "scope": "near_steady",
+      "equation": "zero511",
+      "n": 34384,
+      "segments": 202,
+      "mean": -0.0684634487616985,
+      "mae": 0.49139756540509794,
+      "rmse": 0.6959733620150714
+    },
+    {
+      "scope": "near_steady",
+      "equation": "aligned_zero511",
+      "n": 34384,
+      "segments": 202,
+      "mean": -0.17852304043224307,
+      "mae": 0.49382827930303513,
+      "rmse": 0.7075334395698097
+    }
+  ],
+  "algebra": "aligned minus nominal = -0.001*(code-510.5); for forward ground speed a downward factor makes a negative native-minus-reference residual more negative.",
+  "independent_check": "Scalar byte extraction and fsum reproduce all owner metrics within 1.3e-15.",
+  "limits": [
+    "ACC is a correlated radar witness; disagreement is not physical error.",
+    "Selection and timestamps are inherited from the input producers.",
+    "Previously used data, no confirmation or consumer/profile change.",
+    "Scale, zero, internal ego compensation, timing and target identity remain confounded."
+  ]
+}
