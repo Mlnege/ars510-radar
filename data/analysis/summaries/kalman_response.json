@@ -1,6 +1,6 @@
 {
   "description": "Corrected chronological response selection with fixed scalar RW and colored-noise speed models; object-list-only estimation against a hidden same-radar ACC witness.",
-  "units_note": "Windows and lags use the ACC target speed read at 0.1 m/s per code (the bench readings of kalman_variants.json), computed at that unit.",
+  "units_note": "cohorts: windows and lags with the ACC target speed read at 0.1 m/s per code (the first extraction of the bench readings); response_at_acc_unit_0p125 holds the same experiment at 0.125 m/s per code.",
   "status": "Exploratory comparison on reused cached routes with fixed model parameters.",
   "selection": {
     "order": "Enumerate eligible starts within native contiguous track segments, then sort all candidate starts chronologically within each route; apply one route-wide 4 s refractory interval across native track IDs; reset the refractory clock between routes.",
@@ -22,7 +22,7 @@
     "coded_miss_lag_s": 4,
     "shorter_than_4s_followup_windows": 6,
     "miss_containing_short_followup_windows": 2,
-    "negative_lag_meaning": "Estimator crosses before the ACC witness (a timing relation to the witness; physical anticipation: \u25cb)."
+    "negative_lag_meaning": "Estimator crosses before the ACC witness (a timing relation to the witness; physical anticipation: ○)."
   },
   "model_versions": {
     "RW": {
@@ -276,6 +276,42 @@
             0.012572279129314445
           ]
         }
+      }
+    }
+  },
+  "response_at_acc_unit_0p125": {
+    "description": "The corrected chronological selection rerun on the readings rescaled to the ACC speed at 0.125 m/s per code (same selector, same fixed RW and CN models, route-block bootstrap with 4000 draws, seed 510); the 0.1 m/s cohorts below reproduce with the same script.",
+    "windows": 276,
+    "routes": 34,
+    "lag_mean_s": {
+      "RW": 0.554,
+      "colored": 0.471,
+      "currentCN": 0.47
+    },
+    "lag_median_s": {
+      "RW": 0.31,
+      "colored": 0.24,
+      "currentCN": 0.24
+    },
+    "misses": {
+      "RW": 7,
+      "colored": 5,
+      "currentCN": 5
+    },
+    "paired_lag_difference_s": {
+      "colored_minus_RW": {
+        "mean": -0.083,
+        "route_block_bootstrap_95": [
+          -0.128,
+          -0.044
+        ]
+      },
+      "currentCN_minus_RW": {
+        "mean": -0.084,
+        "route_block_bootstrap_95": [
+          -0.129,
+          -0.045
+        ]
       }
     }
   }

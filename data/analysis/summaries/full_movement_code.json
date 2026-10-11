@@ -276,7 +276,7 @@
   "limits": [
     "native velocities are internal witnesses",
     "position/yaw and visual counterexamples retained",
-    "the full code reads per object; freshness and control gating are separate checks in the consumer",
+    "the full code is a per-object 3-bit field",
     "observed full codes are 0-5 and 7 (3-bit field at bit 109)"
   ]
 }

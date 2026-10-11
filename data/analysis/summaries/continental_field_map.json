@@ -60,23 +60,23 @@
       "accel_res": 0.246
     }
   },
-  "excursion_auc_units_note": "Measured with the ACC speed at 0.1 m/s per code (SCR-420); computed at that unit.",
+  "excursion_auc_units_note": "Recomputed with the ACC speed at 0.125 m/s per code (the 0.1 m/s values 0.968 / 0.95 below 40 m and 0.42-0.55 beyond are reproduced by the same script at that unit); excursion = |object vRel - ACC speed| > 2.5 m/s on matched ACC-target rows, age >= 20, AUC of the sigma code within each range band.",
   "excursion_auc_by_range": {
     "0-40m": {
-      "n_exc": 53,
-      "224": 0.968,
-      "240": 0.95
+      "n_exc": 72,
+      "224": 0.956,
+      "240": 0.946
     },
     "40-60m": {
-      "n_exc": 21,
-      "224": 0.487,
-      "240": 0.417
+      "n_exc": 27,
+      "224": 0.642,
+      "240": 0.593
     },
     "60m+": {
-      "n_exc": 70,
-      "224": 0.589,
-      "240": 0.554,
-      "232": 0.684
+      "n_exc": 80,
+      "224": 0.522,
+      "240": 0.526,
+      "232": 0.716
     }
   },
   "reference_template": "Tesla Model 3 Continental radar fields in opendbc (tesla_radar_continental): ProbExist, Meas, MovingState, dx/vx/ax/dy sigma"

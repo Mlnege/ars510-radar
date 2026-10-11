@@ -186,7 +186,7 @@ def kalman_variants() -> None:
     for k, (g, c) in enumerate(zip(groups, [FUS, S1, ANC])):
         a1.barh(y + (k - 1) * 0.26, [S["bench_false_closing_pct"][n][g] for n in names], 0.26, color=c, label=g.replace("heldout", "held-out"))
     a1.set_yticks(y, names); a1.invert_yaxis(); a1.set_xlabel("false closings (% of cycles, error < −2 m/s)")
-    a1.set_xlim(0, 8.6); a1.set_title("Offline bench: object list only, vs the hidden ACC target"); a1.legend(loc="lower right", fontsize=8)
+    a1.set_xlim(0, 11); a1.set_title("Offline bench: object list only, vs the hidden ACC target (ACC at 0.125 m/s per code)"); a1.legend(loc="lower right", fontsize=8)
     T = S["trace"]; t = np.array(T["t"])
     a2.plot(t, T["raw_vrel"], color=GRAY, lw=1, label="object-list vRel")
     a2.plot(t, T["fused_vrel"], color=FUS, lw=2, label="fused (one speed state)")

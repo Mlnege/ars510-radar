@@ -485,6 +485,31 @@
    },
    "source": "bundled radar_car_bus_messages.json",
    "note": ""
+  },
+  {
+   "doc": "14",
+   "claim": "StarPilot's planner extrapolates the lead's acceleration unchanged above 35 mph, blending from the usual decaying extrapolation at 20-35 mph",
+   "status": "supported",
+   "value": {
+    "unchanged_above_mph": 35,
+    "blend_mph": [
+     20,
+     35
+    ]
+   },
+   "source": "research workspace: StarPilot `extrapolate_lead` read in the StarPilot drives analysis (fork source of the owner's installed version)",
+   "note": "Source reading of the owner's StarPilot build; stock openpilot decays lead acceleration with tau 1.5."
+  },
+  {
+   "doc": "07",
+   "claim": "radard's distance gate is max(25 % of the vision lead's distance, 5 m)",
+   "status": "supported",
+   "value": {
+    "fraction": 0.25,
+    "floor_m": 5.0
+   },
+   "source": "openpilot selfdrive/controls/radard.py `dist_sane`",
+   "note": "At 110 m the gate is 27.5 m."
   }
  ]
 }

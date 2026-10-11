@@ -318,8 +318,7 @@ object. That model weights each reading by its own uncertainty, either over spee
 and range rate with the measured 3 % range noise (research profiles `shared_speed` / `shared_range`). It brakes hard
 while moving 59 and 168 times against `fused`'s 8. Both object-list kinematic signals, speed and range, carry slow,
 correlated errors that inverse-variance weighting leaves in place; the ACC target's speed follows the slope of its own
-range (below), so the radar's decision carries consistent speed and range. sunnypilot's
-Hyundai camera-SCC interface publishes that car's ACC lead as its single point the same way.
+range (below), so the radar's decision carries consistent speed and range.
 
 ![the ACC target alone against 2.6](img/analysis/guide_acc_target_parser.png)
 

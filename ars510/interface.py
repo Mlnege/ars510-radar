@@ -170,8 +170,8 @@ FUSED_CONFIG = replace(BASE_CONFIG, range_fusion_gain=0.1, relink_max_gap_s=0.0,
 
 # Experimental (fork only, docs/12 "Kalman variants tested"): fused with the object-list error as a 1.2 s Gauss-Markov
 # bias state, noise scaled by ego speed and the radar's acceleration reading (fitted on the hidden-ACC teacher). Offline
-# bench: 5.1 % / 4.8 % false-closing cycles against 5.9 % / 5.7 % for fused on held-out / fresh drives
-# (kalman_variants.json); it holds a far excursion that recovers longer than fused does.
+# bench at the 0.125 m/s ACC unit: 6.8 % / 7.8 % false-closing cycles against 7.6 % / 8.0 % for fused on held-out / fresh
+# drives (kalman_variants.json); it holds a far excursion that recovers longer than fused does.
 COLORED_CONFIG = replace(FUSED_CONFIG, speed_sigma_per_code=0.001, speed_bias_tau_s=1.19, speed_bias_sigma_per_code=0.0096,
                          speed_sigma_ego_gain=0.48, speed_sigma_accel_gain=0.51, young_sigma_scale=1.0,
                          lead_accel_std_mps2=1.0, speed_init_sigma_per_code=0.045, speed_divergence_inflation=True,

@@ -1,7 +1,34 @@
 {
  "description": "Kalman filter variants for the lead speed: offline bench (false closings vs the hidden ACC target, object list only) and openpilot replays (27 drives).",
- "units_note": "Bench reference: the ACC target speed read at 0.1 m/s per code (before the 0.125 correction in acc_summary_units.json), computed at that unit; replay_34_drives.fused is fused 2.0; the key name replay_34_drives labels the 27-drive replay suite.",
+ "units_note": "Bench rerun with the ACC target speed at 0.125 m/s per code: the cached per-cycle readings of the 0.1 m/s extraction are rescaled exactly (acc speed over ground = ego + 1.25 x (value - ego); the code zero 1024 is common to both units), and the filters are retuned on the same 3 tuning groups. The same script at the 0.1 unit reproduces bench_false_closing_pct_acc_unit_0p1. 'colored noise' uses the shipped COLORED_CONFIG constants (fitted at 0.1); bench_colored_refit_at_0p125 is its refit. replay_34_drives.fused is fused 2.0; the key name replay_34_drives labels the 27-drive replay suite.",
  "bench_false_closing_pct": {
+  "fused (random walk)": {
+   "heldout": 7.6,
+   "fresh": 8.0,
+   "owner": 7.6
+  },
+  "Student-t update": {
+   "heldout": 7.8,
+   "fresh": 8.7,
+   "owner": 7.4
+  },
+  "speed + acceleration state": {
+   "heldout": 7.7,
+   "fresh": 8.5,
+   "owner": 7.6
+  },
+  "learned noise model": {
+   "heldout": 7.1,
+   "fresh": 8.4,
+   "owner": 7.0
+  },
+  "colored noise (bias state)": {
+   "heldout": 6.8,
+   "fresh": 7.8,
+   "owner": 7.8
+  }
+ },
+ "bench_false_closing_pct_acc_unit_0p1": {
   "fused (random walk)": {
    "heldout": 5.9,
    "fresh": 5.7,
@@ -27,6 +54,11 @@
    "fresh": 4.8,
    "owner": 5.8
   }
+ },
+ "bench_colored_refit_at_0p125": {
+  "heldout": 6.8,
+  "fresh": 8.1,
+  "owner": 7.5
  },
  "bench_definition": "share of cycles with estimate - ACC target < -2 m/s, d > 30 m, age >= 60; ACC target and summaries hidden from the filter; tuned on 3 drive groups, scored on held-out / fresh / owner drives",
  "colored_params": {

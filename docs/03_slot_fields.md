@@ -285,8 +285,8 @@ Relative speed is the over-ground speed minus ego speed. The ACC target's relati
 - **Axis check from the codes' own jitter:** each code grows with the record-to-record jitter of its own quantity (`232|7` yRel, `248|7` and
   `264|8` lateral speed, `256|8` the `84|10` acceleration, `240|7` speed below 25 m). For `232|7` and `240|7` the
   jitter is about a fifth of the ACC-referenced error per count, so these codes describe slowly varying tracker error.
-- **`240|7` grades the width of the error:** it separates excursion records below 40 m (AUC 0.95, 53 excursions, ACC speed read at 0.1 m/s per code,
-  [`continental_field_map.json`](../data/analysis/summaries/continental_field_map.json)) with an AUC of 0.42-0.55 beyond 40 m, where 91 of the 144 excursions happen. Its size follows the error
+- **`240|7` grades the width of the error:** it separates excursion records below 40 m (AUC 0.95, 72 excursions,
+  [`continental_field_map.json`](../data/analysis/summaries/continental_field_map.json)) with an AUC of 0.53-0.59 beyond 40 m, where 107 of the 179 excursions happen. Its size follows the error
   width ([07](07_velocity_excursions.md#far-range-excursions-match-the-reported-velocity-error-scale)), so it serves as a per-reading weight in `fused`.
 - **Optical check:** against the camera reference (40-80 m) the disagreement grows at 0.049 m/s per count (R² 0.81
   over code deciles), which includes the camera's own error

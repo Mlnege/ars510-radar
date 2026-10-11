@@ -95,8 +95,8 @@ Four closed-loop drives with the object-list radar feeding radard (owner's early
 
 - 0.045 is a fitted Gaussian-equivalent: the robust (MAD) core is about 0.025-0.04 m/s per count over codes 12-70, and heavy
   tails (kurtosis 1.3-8) lift the RMS. Above code ~60 the main set's error grows faster than proportionally (figure).
-- Within a range band, `240|7` separates excursion records below 40 m (AUC 0.95) and sits near chance beyond (0.42-0.55;
-  computed with the ACC speed at 0.1 m/s per code, [`continental_field_map.json`](../data/analysis/summaries/continental_field_map.json)).
+- Within a range band, `240|7` separates excursion records below 40 m (AUC 0.95) and sits near chance beyond (0.53-0.59,
+  [`continental_field_map.json`](../data/analysis/summaries/continental_field_map.json)).
 - Across 13.6k candidate signals, the object's own state explains part of the object-list error: `84|10` acceleration (R² 0.11), the uncertainty code `264|8`, width `216|6`. Together the object's state
   and 3 s history predict ~37-43% of the error variance on 40 fresh one-minute segments ([`acc_unit_recompute.json`](../data/analysis/summaries/acc_unit_recompute.json)), spread over many fields
   ([`excursion_sigma_scale.json`](../data/analysis/summaries/excursion_sigma_scale.json)).
@@ -121,7 +121,7 @@ Four closed-loop drives with the object-list radar feeding radard (owner's early
 ## What openpilot does with it
 
 - radard's per-track Kalman filter smooths **the lead speed (vRel + ego speed) only** and passes a drift into `vLeadK` and `aLeadK`.
-- The 25% distance gate keeps the drifting track matched to the vision lead (±28 m at 110 m).
+- radard's distance gate, max(25 % of the vision lead's distance, 5 m) (`selfdrive/controls/radard.py`, `dist_sane`), keeps the drifting track matched to the vision lead (±28 m at 110 m).
 - The planner projects `aLeadK` forward as a·exp(−τ·t²/2), with τ = 1.5 while |aLeadK| stays below 0.5 m/s² and τ
   falling toward 0 while it is larger, so a large drift-driven `aLeadK` is held over the plan.
 

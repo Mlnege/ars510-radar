@@ -485,20 +485,20 @@ Numbers: [`acc_weight.json`](../data/analysis/summaries/acc_weight.json),
 ## Kalman variants tested
 
 The single speed state of `fused` was compared with richer filters on an offline bench: every cycle of 8 drive groups,
-the radar's ACC target hidden as the reference (read at 0.1 m/s per code on this bench), tuned on 3 groups and scored on
-the rest. The best candidates were then replayed through openpilot
+the radar's ACC target hidden as the reference (read at 0.125 m/s per code; the cached readings are rescaled exactly from
+the 0.1 extraction and the filters retuned), tuned on 3 groups and scored on the rest. The best candidates were then replayed through openpilot
 ([`kalman_variants.json`](../data/analysis/summaries/kalman_variants.json)). The bench metric is the share of cycles
-with estimate − ACC target below −2 m/s (d > 30 m, age ≥ 60); `fused` (one speed state) scores 5.9 / 5.7 / 5.8 % on
-held-out / fresh / owner drives.
+with estimate − ACC target below −2 m/s (d > 30 m, age ≥ 60); `fused` (one speed state) scores 7.6 / 8.0 / 7.6 % on
+held-out / fresh / owner drives (5.9 / 5.7 / 5.8 % at the 0.1 m/s unit).
 
 ![Kalman variants](img/analysis/kalman_variants.png)
 
 | variant | bench false closings, held-out / fresh / owner | openpilot replays (27 drives) |
 |---|---|---|
-| Student-t update instead of the 3σ clamp | 6.1 / 5.9 / 5.8 % (up to 0.2 points above `fused`) | – |
-| speed + acceleration state, with the ACC target's acceleration as a reading | 6.7 / 5.4 / 6.5 % (above `fused` on held-out and owner drives, below on fresh) | – |
-| noise learned from all slot fields (gradient boosting) | 5.7 / 5.5 / 5.2 %; the learned noise rebuilds `240\|7`, ego speed and `84\|10` | – |
-| object-list error as its own state (colored noise, τ 1.19 s), noise scaled by ego speed and `84\|10` | **5.1 / 4.8 / 5.8 %**: 14 % and 16 % fewer false closings on held-out and fresh drives, equal on owner drives; responds as fast to ACC-defined drops (below) | against 2.0: held-out 29 hard ticks vs 30, further drives 30 vs 2 (one far false closing held for seconds) |
+| Student-t update instead of the 3σ clamp | 7.8 / 8.7 / 7.4 % (above `fused` on held-out and fresh drives, below on owner drives) | – |
+| speed + acceleration state, with the ACC target's acceleration as a reading | 7.7 / 8.5 / 7.6 % (0.1 above `fused` on held-out, 0.5 above on fresh, equal on owner drives) | – |
+| noise learned from all slot fields (gradient boosting) | 7.1 / 8.4 / 7.0 %; the learned noise rebuilds `240\|7`, ego speed and `84\|10` | – |
+| object-list error as its own state (colored noise, τ 1.19 s), noise scaled by ego speed and `84\|10` | **6.8 / 7.8 / 7.8 %** with the `COLORED_CONFIG` constants (refit at this unit: 6.8 / 8.1 / 7.5 %): 11 % fewer false closings on held-out drives, 2-3 % fewer on fresh, 3 % more on owner drives; responds 84 ms sooner to ACC-defined drops (below) | against 2.0: held-out 29 hard ticks vs 30, further drives 30 vs 2 (one far false closing held for seconds) |
 | retuned `fused` constants (σ per count 0.033, ACC σ 0.3, lead acceleration 1.0 / 2.0) | – | 8 fresh drives: only lead acceleration 2.0 passes every gate, and it scores the same as 1.5 ([`driving_claim_sources.json`](../data/analysis/summaries/driving_claim_sources.json)) |
 | ACC target weight (σ 0.13 in 2.6; 0.3 in 2.5; 0.5 before) | – | [above](#the-acc-targets-weight) |
 
@@ -510,8 +510,9 @@ for road tests.
 
 ![response to ACC-defined speed drops](img/analysis/kalman_response.png)
 
-*Response on 252 windows (33 routes) where the hidden ACC target drops ≥ 2 m/s within 2 s (ACC read at 0.1 m/s per
-code): time for the estimate to cover half the drop, relative to the ACC target. One speed state 0.438 s, colored 0.394
-s; the paired difference is −44 ms, 95% route-bootstrap interval [−101, +13] ms. The ACC target is the same radar's
-tracker, so this compares the two filters with each other
+*Response on windows where the hidden ACC target drops ≥ 2 m/s within 2 s: time for the estimate to cover half the drop,
+relative to the ACC target. Figure: 252 windows (33 routes), ACC read at 0.1 m/s per code, one speed state 0.438 s,
+colored 0.394 s, paired difference −44 ms [−101, +13] ms. At 0.125 m/s per code: 276 windows (34 routes), one speed
+state 0.554 s, colored 0.470 s, paired difference −84 ms, 95% route-bootstrap interval [−129, −45] ms. The ACC target
+is the same radar's tracker, so this compares the two filters with each other
 ([`kalman_response.json`](../data/analysis/summaries/kalman_response.json)).*
