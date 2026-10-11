@@ -34,6 +34,7 @@ sudo reboot                                                          # required:
    the installer again after an update.
 
 More on installing, the self-check and troubleshooting: [`openpilot/README.md`](openpilot/README.md).
+For the routes and controlled captures that help most, see [16: Routes and tests](docs/16_routes_and_tests.md).
 
 ## What to expect on the road
 
@@ -224,7 +225,8 @@ numbers and a glossary.
 | [12 Kalman speed filter](docs/12_kalman_filter.md) | the `fused` profile's filter: model, gains, constants and their sources, what each part is worth, variants tested |
 | [13 Car-bus messages](docs/13_car_bus_messages.md) | the radar's nine Toyota driving-support messages on bus 0 (ACC command, PCS / AEB, lead distance), CAN filter versus radar disable, what happens to AEB, AEB without a filter |
 | [14 Forks](docs/14_forks.md) | what sunnypilot, FrogPilot and StarPilot do with the radar lead, and what that does with this radar (replays of their own radard and MPC lead code) |
-| [15 Testing PCS / AEB safely](docs/15_pcs_testing.md) | a runbook for testers: radar-visible soft targets, closed lot, speeds, recording, the four runs the AEB relay question needs |
+| [15 Recording PCS / AEB events](docs/15_pcs_testing.md) | professional/passive recording specification: isolated targets, warning/brake stages, complete logs and interpretation limits |
+| [16 Routes and tests](docs/16_routes_and_tests.md) | thirteen capture procedures: ordinary routes, parked diagnostics, physical references, lifecycle/class/lane tests and what to send back |
 
 ## Repository layout
 

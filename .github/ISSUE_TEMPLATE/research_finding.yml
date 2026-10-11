@@ -2,6 +2,11 @@ name: Research finding or idea
 description: A decode, calibration or behaviour result, or an idea to test.
 labels: [research]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        For capture procedures and required references, see https://github.com/ds-sebastian/ars510-radar/blob/main/docs/16_routes_and_tests.md
+        Use anonymous test/target labels and relative times. Keep route IDs, VINs, GPS and identifying video private; offer logs for private transfer.
   - type: textarea
     id: claim
     attributes:
