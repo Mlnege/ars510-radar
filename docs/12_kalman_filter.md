@@ -359,7 +359,7 @@ owner drives:
 
 | `fused` 2.0 without … | held-out | further | owner | verdict |
 |---|---|---|---|---|
-| (nothing: `fused` 2.0) | **30** | **2** | **0** | |
+| `fused` 2.0 (baseline) | **30** | **2** | **0** | |
 | the ACC target and summaries (filter on the object list alone) | 48 | 2 | 0 (4 target episodes) | needed |
 | the ACC target only (summaries kept) | 48 | 2 | 0 (3 target episodes) | needed: the ACC target carries the trackers' benefit |
 | the young-track factor | 30 | 11 | 0 | needed |
