@@ -47,7 +47,7 @@ Source: `by_version_and_set` in [`acc_target_parser.json`](../data/analysis/summ
 | owner road drives + 2 second-car drives (6.07) | vision only | 7.2 | 10.3 | 0 | 0 / 0 | 0 |
 | | `acc` | 6.0 | 10.8 | 187 | 0 / 5 | +0.001 s |
 | | `fused` | 3.3 | 8.3 | 212 | 0 / 4 | −0.010 s |
-| second car, never tuned on (6.19) | vision only | 56.5 | 10.4 | 0 | 0 / 0 | 0 |
+| second car, held out from tuning (6.19) | vision only | 56.5 | 10.4 | 0 | 0 / 0 | 0 |
 | | `acc` | 9.9 | 4.2 | 384 | 0 / 8 | +0.022 s |
 | | `fused` | 15.5 | 5.1 | 413 | 0 / 12 | +0.044 s |
 | fresh owner drives (0.47) | vision only | 0.0 | 0.0 | 0 | 0 / 0 | 0 |
@@ -78,10 +78,10 @@ What the table shows:
 
 | set | profile | unnecessary braking s | missed braking s | flips per h | hard / mild |
 |---|---|---|---|---|---|
-| 26 owner routes never in a replay set (4.28 h, 2.56 h moving) | vision only | 40.1 | 9.9 | 0 | 0 / 0 |
+| 26 owner routes outside every replay set (4.28 h, 2.56 h moving) | vision only | 40.1 | 9.9 | 0 | 0 / 0 |
 | | `acc` | 7.7 | 5.3 | 323 | 1 / 9 |
 | | `fused` | 11.4 | 3.6 | 345 | 0 / 7 |
-| 12 second-car routes + 1 owner route never used for a parser decision (1.98 moving h) | vision only | — | — | 0 | — |
+| 12 second-car routes + 1 owner route held out from every parser decision (1.98 moving h) | vision only | — | — | 0 | — |
 | | `acc` | 1.1 | 0.0 | 474 | 0 / 1 |
 | | `fused` | 1.6 | 0.0 | 433 | 0 / 2 |
 

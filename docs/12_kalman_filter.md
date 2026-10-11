@@ -303,7 +303,7 @@ all tuning), against 2.5:
 
 Against 2.5, per moving hour with a route-block bootstrap (95 % intervals): mild radar-only braking −1.95 [−2.94, −1.20],
 unnecessary braking −0.45 s [−0.84, −0.12], missed braking +0.06 s [−0.01, +0.17], lead flips −86 [−106, −68].
-On drives never used for development (12 second-car routes and one owner route, 2 moving hours) 2.6 had 0 hard
+On drives held out from development (12 second-car routes and one owner route, 2 moving hours) 2.6 had 0 hard
 radar-only braking, its 2 mild radar-only requests were both real slowdowns, and it was ahead of 2.5 on every count; on
 that car the camera reads closings stronger than the radar's range-based reference, so vision brakes 0.04 s earlier.
 
@@ -484,7 +484,7 @@ Numbers: [`acc_weight.json`](../data/analysis/summaries/acc_weight.json),
 
 ## Kalman variants tested
 
-Richer filters were tried against `fused`'s single speed state and did not earn a place in the recommended profiles. The
+Richer filters were tried against `fused`'s single speed state and stayed outside the recommended profiles. The
 offline bench uses every cycle of 8 drive groups with the radar's ACC target hidden as the reference (read at 0.125 m/s per
 code), tuned on 3 groups and scored on the rest ([`kalman_variants.json`](../data/analysis/summaries/kalman_variants.json)). Its
 metric is the share of cycles with estimate − ACC target below −2 m/s (d > 30 m, age ≥ 60); `fused` scores

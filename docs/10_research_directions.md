@@ -340,7 +340,7 @@ Replayed over every drive set (16.9 moving h, 62 routes, unchanged radard and pl
 - **Filter-free:** the ACC target's speed follows the slope of its own distance (best lag −0.06 s, gain 1.00), and its
   fast noise (0.027 m/s on the second car, 0.025 on the owner's;
   [`second_unit_noise.json`](../data/analysis/summaries/second_unit_noise.json)) is a fifth of its 0.125 m/s code step, so a filter would add delay.
-- **On drives never used for development or tuning** (32 routes of both cars, 4.54 moving h) it brakes unnecessarily less
+- **On drives held out from development and tuning** (32 routes of both cars, 4.54 moving h) it brakes unnecessarily less
   than 2.6: 9.2 against 13.0 oracle seconds (−0.84 s per moving hour, route bootstrap −1.72…−0.13). Hard and mild
   radar-only braking are equal (1 against 0, a correct hold at 0.3 m/s 1.3 m from an object; 10 against 9), and braking
   starts earlier on real closings (−0.020 against −0.008 s vs vision).
