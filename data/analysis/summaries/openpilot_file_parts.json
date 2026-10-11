@@ -1,7 +1,7 @@
 {
- "description": "Parts of upstream/ars510_radar.py (2.5; line counts unchanged since 2.4): code lines (no comments, docstrings or blank lines; shared constants counted once), the evidence for each, what removing it costs on the 27 replay drives, and its status for an upstream openpilot PR.",
+ "description": "Parts of upstream/ars510_radar.py (fused 2.6, 187 code lines in 227): code lines (no comments, docstrings or blank lines; shared constants counted once), the evidence for each, what removing it costs on the 27 replay drives, and its status for an upstream openpilot PR.",
  "file_code_lines": 187,
- "file_total_lines": 223,
+ "file_total_lines": 227,
  "parts": [
   {
    "part": "transport, CRC, slot decode, track IDs, ego speed, RadarInterface wrapper",
@@ -24,7 +24,7 @@
    "code_lines": 22,
    "since": "2.0",
    "evidence": "fused_filter.json",
-   "without": "hard radar-only braking about 3x (raw)",
+   "without": "hard radar-only ticks 48 with the filter alone against 93 for raw (20 held-out routes)",
    "upstream": "keep"
   },
   {
@@ -84,7 +84,7 @@
    "upstream": "candidate: keep, or move into radard as a lateral gate"
   },
   {
-   "part": "far cars the radar does not follow (beyond 60 m only the ACC target's)",
+   "part": "far cars: only the ACC target's track beyond 60 m",
    "code_lines": 2,
    "since": "2.6",
    "evidence": "far_acc_only.json",

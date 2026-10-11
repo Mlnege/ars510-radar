@@ -198,7 +198,7 @@ def ground_contact():
         ax.set_ylim(0, 40)
     axes[0].set_ylabel("camera ground-contact distance (m)")
     save(fig, "range_ground_contact",
-         "Camera distance = box bottom projected onto a flat road with the log's liveCalibration and openpilot intrinsics (no model output). "
+         "Camera distance = box bottom projected onto a flat road with the log's liveCalibration and openpilot intrinsics (camera geometry only). "
          "Drive B is hilly (flat-road assumption). The flat cluster near 7.7 m on A is the hood clipping box bottoms.")
 
 
@@ -450,7 +450,7 @@ def range_walk():
     axes[0].set_ylabel("disagreement with camera size ratio over 1.5 s (m)")
     axes[0].legend(fontsize=7.5, loc="upper left")
     NUMBERS["range_walk"] = out
-    save(fig, "range_walk_vs_integrated_vrel", "The camera box-height ratio over 1.5 s needs no calibration. "
+    save(fig, "range_walk_vs_integrated_vrel", "The camera box-height ratio over 1.5 s is calibration-free. "
                                                "Integrating the radar's velocity tracks it 1.4-3.7x better than the radar's own range change.")
 
 
@@ -1103,7 +1103,7 @@ def target_366_coding():
 
 
 def target_366_coverage():
-    """Owner-only report states, without treating a non-idle word as physical truth."""
+    """Owner-only report states of the car-bus 0x366 word against the ACC target."""
     info = summary("target_366_coverage")
     fig, ax = plt.subplots(figsize=(9, 3.7))
     categories = [("range_agrees", "ACC present, range agrees", S1),
@@ -1151,7 +1151,7 @@ def pcs_flag_0x344():
     ax.set_title("0x320 bit 13 follows 0x344 alone: set while the radar is silent, clear whenever 0x344 is replayed")
     ax.grid(axis="y", visible=False)
     fig.subplots_adjust(bottom=0.2)
-    save(fig, "pcs_flag_0x344", "\nBands: what was on the car bus (the radar's own frames, nothing, or openpilot's replay of the radar's idle frames). "
+    save(fig, "pcs_flag_0x344", "\nBands: what was on the car bus (the radar's own frames, an empty bus, or openpilot's replay of the radar's idle frames). "
          "The dash PCS malfunction warning stayed on through every replay phase.\nNumbers: data/analysis/summaries/pcs_flag_0x344.json.")
 
 

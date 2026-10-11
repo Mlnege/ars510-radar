@@ -4,10 +4,10 @@
 
 | tool | what it does |
 |---|---|
-| [`tools/decode_log.py`](../tools/decode_log.py) | rlog / qlog / CAN CSV → one CSV row per published radar point |
+| [`tools/decode_log.py`](../tools/decode_log.py) | rlog / qlog / CAN CSV → one CSV row per published object-list point (`raw`, `fused` or `all-tracks`) |
 | [`tools/build_cabana_route.py`](../tools/build_cabana_route.py) | appends reassembled objects to your rlogs on a virtual bus, for Cabana; `--dbc-only` regenerates `dbc/ars510_objects_vbus.dbc` |
 | [`tools/openpilot_replay/process_replay_ars510.py`](../tools/openpilot_replay/process_replay_ars510.py) | openpilot's own process_replay (card → radard → plannerd), stock vs installed integration |
-| [`tools/openpilot_replay/replay_radard.py`](../tools/openpilot_replay/replay_radard.py) | radard + planner only, several interface profiles side by side |
+| [`tools/openpilot_replay/replay_radard.py`](../tools/openpilot_replay/replay_radard.py) | radard + planner only, several object-list profiles (`all-tracks`, `raw`, `fused`, `fused_no_trackers`) side by side |
 | [`tools/fork_lead/`](../tools/fork_lead) | runs a fork's own radard and MPC lead handling on your drives: `prepare_route.py`, `fork_replay.py`, `fork_report.py`, `fork_synth.py` ([below](#compare-forks)) |
 | [`tools/check_structure.py`](../tools/check_structure.py) | CRC, slot-index and allocation-count checks on the bundled samples |
 | [`tools/make_profile_figures.py`](../tools/make_profile_figures.py) | runs the profiles on the bundled samples: the examples in [12](12_kalman_filter.md); a template for plotting your own idea |
@@ -20,8 +20,11 @@
 python tools/decode_log.py data/sample/highway_following_30s.csv.gz -o points.csv
 python tools/decode_log.py rlog.zst -o points.csv            # needs openpilot's LogReader on PYTHONPATH
 python tools/decode_log.py rlog.zst --profile all-tracks     # every track, no age gate; reports CRC failures
-python tools/decode_log.py data/sample/highway_acc_anchor_24s.csv.gz --profile fused    # fused, raw or all-tracks
+python tools/decode_log.py data/sample/highway_acc_anchor_24s.csv.gz --profile fused    # fused, raw (default) or all-tracks
 ```
+
+`decode_log.py` runs the object-list decoder. The `acc` profile publishes the radar's ACC target frames (0x235 / 0x237), which
+[`tools/fork_lead/prepare_route.py`](../tools/fork_lead/prepare_route.py) extracts next to the `raw` and `fused` points.
 
 ### Cabana
 
@@ -54,21 +57,25 @@ show the radar's own ACC target.
 
 ```bash
 OP=/path/to/openpilot
-cp -r $OP/opendbc_repo /tmp/opendbc_ars510 && python openpilot/install.py /tmp/opendbc_ars510
+cp -r $OP/opendbc_repo /tmp/opendbc_acc && python openpilot/install.py /tmp/opendbc_acc                      # acc, the default
+cp -r $OP/opendbc_repo /tmp/opendbc_fused && python openpilot/install.py /tmp/opendbc_fused --profile fused  # the all-tracks alternative
 PY=$OP/.venv/bin/python
 PYTHONPATH=$OP $PY tools/openpilot_replay/build_long_mpc_shadow.py --openpilot $OP --out op_shadow   # once, if not built with scons
 $PY tools/openpilot_replay/process_replay_ars510.py run --openpilot $OP --opendbc $OP/opendbc_repo --mpc-shadow op_shadow \
     --label vision --out pr --save-logs pr/logs route--0/rlog route--1/rlog
-$PY tools/openpilot_replay/process_replay_ars510.py run --openpilot $OP --opendbc /tmp/opendbc_ars510 --mpc-shadow op_shadow \
-    --label ars510 --out pr --save-logs pr/logs route--0/rlog route--1/rlog
-$PY tools/openpilot_replay/process_replay_ars510.py compare --out pr vision ars510
+$PY tools/openpilot_replay/process_replay_ars510.py run --openpilot $OP --opendbc /tmp/opendbc_acc --mpc-shadow op_shadow \
+    --label acc --out pr --save-logs pr/logs route--0/rlog route--1/rlog
+$PY tools/openpilot_replay/process_replay_ars510.py run --openpilot $OP --opendbc /tmp/opendbc_fused --mpc-shadow op_shadow \
+    --label fused --out pr --save-logs pr/logs route--0/rlog route--1/rlog
+$PY tools/openpilot_replay/process_replay_ars510.py compare --out pr vision acc      # each compare takes two labels
+$PY tools/openpilot_replay/process_replay_ars510.py compare --out pr vision fused
 ```
 
 The comparison lists detection, radarTracks rate and gaps, radar-matched leads, FCW and braking episodes that only one
 run has. To **watch** an episode, render openpilot's UI over the road video from the saved logs:
 
 ```bash
-PYTHONPATH=$OP $PY $OP/openpilot/tools/clip/run.py "a510a510a510a510/<route>/<start>/<end>" -d pr/logs/ars510 --big -o ars510.mp4
+PYTHONPATH=$OP $PY $OP/openpilot/tools/clip/run.py "a510a510a510a510/<route>/<start>/<end>" -d pr/logs/acc --big -o acc.mp4
 ```
 
 To **plot**, open a saved `rlog.zst` in PlotJuggler: `longitudinalPlan.aTarget`, `radarState.leadOne.dRel` / `.vRel`,
@@ -76,8 +83,8 @@ To **plot**, open a saved `rlog.zst` in PlotJuggler: `longitudinalPlan.aTarget`,
 acceleration. With ffmpeg 8+, put [`tools/openpilot_replay/ffmpeg`](../tools/openpilot_replay/ffmpeg) first on `PATH`
 if clip rendering fails on `-vsync`.
 
-Here `vision` is unmodified openpilot (vision-only leads on this car) and `ars510` the installed integration; install
-another profile into a second opendbc copy (`install.py /tmp/opendbc_raw --profile raw`) to compare profiles.
+Here `vision` is unmodified openpilot (vision-only leads on this car), `acc` the default install and `fused` the all-tracks
+install; another profile goes into its own opendbc copy (`install.py /tmp/opendbc_raw --profile raw`).
 
 ### Compare forks
 
@@ -94,8 +101,8 @@ python tools/fork_lead/fork_synth.py --sunnypilot ~/sunnypilot --frogpilot ~/fro
 ```
 
 Pass only the forks you have. The result is a proxy for the planner (a demand number on the lead trajectory each fork
-gives its MPC), good for comparing forks and profiles, not for what a planner would request. Its tests
-(`tests/test_fork_lead_tools.py`) need no fork checkout.
+gives its MPC), suited to comparing forks and profiles; the planner's own request comes from the replay above. Its tests
+(`tests/test_fork_lead_tools.py`) run without a fork checkout.
 
 ## Developing and testing a change
 
@@ -110,16 +117,16 @@ until the last.
    (`encode_slot`), including a case where it must leave the track alone.
 3. **Say what you expect before replaying.** Write down which events it should change and which it must leave alone.
    Tune on other drives than the one that motivated it.
-4. **Replay against the driver.** Run openpilot's card → radard → planner on held-out drives with the current
-   default profile and with yours, and report the gates used throughout [12](12_kalman_filter.md):
+4. **Replay against the driver.** Run openpilot's card → radard → planner on held-out drives with the profile you change
+   (`acc` or `fused`) and with your variant, and report the gates used throughout [12](12_kalman_filter.md):
 
    | gate | meaning |
    |---|---|
-   | hard radar-only ticks | planner ≤ −2 m/s² while the vision-only replay asks ≥ −0.5 m/s²; must not rise |
-   | radar-only episodes | ≥ 0.3 s at ≤ −1 m/s² while vision-only asks ≥ −0.3; must not rise |
-   | braking onset | mean time of the first ≤ −0.5 m/s² request relative to each driver brake; must not get later by more than 0.03 s |
-   | early braking | share of driver brakes where the planner reached ≤ −1 m/s² between 3 s before and 0.5 s after the driver started braking; must not drop without a stated reason (the path gate and 0.4 x match cost 1.8 points, [12](12_kalman_filter.md#path-gate)) |
-   | per event | no single driver brake answered more than 0.15 s later, lost, or weaker when hard |
+   | hard radar-only ticks | planner ≤ −2 m/s² while the vision-only replay asks ≥ −0.5 m/s²; stays at or below the baseline |
+   | radar-only episodes | ≥ 0.3 s at ≤ −1 m/s² while vision-only asks ≥ −0.3; stays at or below the baseline |
+   | braking onset | mean time of the first ≤ −0.5 m/s² request relative to each driver brake; stays within 0.03 s of the baseline |
+   | early braking | share of driver brakes where the planner reached ≤ −1 m/s² between 3 s before and 0.5 s after the driver started braking; stays at the baseline, or the drop has a stated reason (the path gate and 0.4 x match cost 1.8 points, [12](12_kalman_filter.md#path-gate)) |
+   | per event | every driver brake is answered within 0.15 s of the baseline, kept, and as strong when hard |
 
 5. **Open a PR with the numbers**, the figure, and the drives used (anonymised). Changes are merged on held-out
    evidence.
@@ -137,9 +144,9 @@ until the last.
 - **`data/reference/slot_bit_map.json`**: per-bit statistics of the 0x80 slot, header and 0x85 record.
 
 The evidence comes mainly from the owner's RAV4 (TSS2, 2022), logged with openpilot, with drives U1-U3 from a second,
-unfiltered RAV4. Drives are named by role (A development,
+unfiltered RAV4 and an 8.8 h replay set from the issue #66 tester's 2025 RAV4 Hybrid (S#, [12](12_kalman_filter.md#on-a-second-car)). Drives are named by role (A development,
 B city, C highway, D1-D4 closed-loop drives, E the ACC sample, O1-O4 owner road drives, O5 a parked owner test, U1-U3 a second
-unfiltered RAV4); the repo carries no route IDs, dongle IDs, GPS positions or full video. A few
+unfiltered RAV4, S# the tester's drives); each drive carries its letter and times relative to an event. A few
 camera stills are included, with licence plates and place names blurred.
 
 ## Testing on your own car

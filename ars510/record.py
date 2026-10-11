@@ -35,7 +35,7 @@ def slot_bytes(record: bytes, slot: int) -> bytes:
 
 
 def occupied_slots(record: bytes) -> Iterator[tuple[int, bytes]]:
-    """(slot index, 36 slot bytes) for every slot that is not the idle template."""
+    """(slot index, 36 slot bytes) for every slot that differs from the idle template."""
     for slot in range(ID80_OBJECT_COUNT):
         b = slot_bytes(record, slot)
         if b != ID80_IDLE_SLOT:

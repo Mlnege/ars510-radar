@@ -185,7 +185,7 @@
     "why_80m": "optical check: summary closer to the camera reference at 40-60 and 60-80 m, not beyond 80 m"
   },
   "current_units_recompute": {
-    "note": "Recomputed from the same SCR-426 / SCR-429 rows with the current units (summary range (code-160)/16 m, lateral 0.015 m, ACC speed 0.125 m/s per code); the blocks above used the earlier scales listed in scales_m_per_code.",
+    "note": "Recomputed from the same SCR-426 / SCR-429 rows with the current units (summary range (code-160)/16 m, lateral 0.015 m, ACC speed 0.125 m/s per code); the blocks above used the scales listed in scales_m_per_code.",
     "speed_vs_acc_same_object": {
       "corr": 0.984,
       "median_abs_diff_mps": 0.176,

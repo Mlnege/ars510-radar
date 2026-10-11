@@ -1,7 +1,8 @@
 """Toyota / Continental ARS510 front radar: CAN decode for openpilot experiments.
 
-Status: transport, geometry, track IDs and the ACC target are decoded; the default `fused`
-profile filters the object list's far-range speed excursions. Field confidence: README.md and docs/03.
+Status: transport, geometry, track IDs and the ACC target are decoded. The `fused` profile (all tracks, one Kalman
+speed filter per track) filters the object list's far-range speed excursions; the default install profile `acc`
+publishes the radar's ACC target alone (upstream/ars510_acc_target.py). Field confidence: README.md and docs/03.
 """
 from .constants import ID80_ADDR, ID85_ADDR, RADAR_BUS, TOYOTA_SPEED_ADDR
 from .interface import (

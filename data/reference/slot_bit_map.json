@@ -1,5 +1,5 @@
 {
- "description": "Carry-chain field split of the 0x80 slot (36 bytes, little-endian bit numbering), the 0x80 record header (bytes 0-16) and the 0x85 record, measured on 13 one-minute segments of a mixed highway/city drive. 'named' fields are decoded in ars510/objects.py; 'candidate' fields are unverified splits; 'constant' fields never changed (distinct>1 means constant within a track but different between tracks). best_corr_with / best_corr: strongest Pearson correlation with a decoded quantity.",
+ "description": "Carry-chain field split of the 0x80 slot (36 bytes, little-endian bit numbering), the 0x80 record header (bytes 0-16) and the 0x85 record, measured on 13 one-minute segments of a mixed highway/city drive. 'named' fields are decoded in ars510/objects.py; 'candidate' fields are unverified splits; 'constant' fields held one value (distinct>1 means constant within a track but different between tracks). best_corr_with / best_corr: strongest Pearson correlation with a decoded quantity.",
  "method": "carry-chain split: new field where flip rate rises above 1.25x the previous bit + 0.002, after constant runs, or at 16 bits",
  "slot_fields": [
   {
@@ -1007,7 +1007,7 @@
    "max": 10,
    "best_corr_with": "live objects (age>=1)",
    "best_corr": 1.0,
-   "note": "exact on 384,144 records (2026-09-24); bit 119 never set, 5 bits cover 20 slots"
+   "note": "exact on 384,144 records (2026-09-24); bit 119 stays 0, 5 bits cover 20 slots"
   },
   {
    "start": 120,

@@ -4,13 +4,22 @@ Besides the object list, the radar sends its own ACC target, target summaries, t
 Bit numbers for the big-endian frames below treat the 8-byte frame as one big-endian integer (bit 0 = LSB of byte 7),
 matching [`dbc/ars510_radar_bus.dbc`](../dbc/ars510_radar_bus.dbc) and `ars510.support`.
 
+| stream | read by | role |
+|---|---|---|
+| ACC target (0x235 / 0x237, companions 0x239 / 0x23B) | `acc` alone; `fused` as a speed reading (σ 0.13 m/s) and as the followed car's range | the one car the radar's ACC logic follows: 0.025 m distance, 0.125 m/s closing speed |
+| object list (0x80) | `raw` and `fused` | every tracked car, 0.0625 m range, 0.15 m/s over-ground speed ([03](03_slot_fields.md)) |
+| target summaries (0x191-0x194), 0x680 | analysis; a fork option (off in `fused`) | positions of the radar's internal tracker targets; sparse far-range witnesses |
+
 ## The radar's ACC target (0x235 / 0x237)
 
 At **50 Hz** (content updated every 60 ms radar cycle), this stream reports the one target the radar's own ACC logic follows.
 The two frames are mapped bit for bit: field boundaries come from the carry structure of 2 M frames, and while idle
 every numeric field sits at its zero code (100, 1024, 100, 1024, 2000, 0). Both DBCs name them `ACC_TARGET_1` (0x235) and `ACC_TARGET_2` (0x237):
 [`dbc/ars510_radar_bus.dbc`](../dbc/ars510_radar_bus.dbc) carries every field for Cabana,
-[`upstream/toyota_tss2_ars510.dbc`](../upstream/toyota_tss2_ars510.dbc) only what the `acc` interface parses.
+[`upstream/toyota_tss2_ars510.dbc`](../upstream/toyota_tss2_ars510.dbc) holds the seven signals (plus counters) the `acc` interface and its checks use.
+The stream is a distinct output of the radar's tracker: it reports on 58,553 of 484,061 active cycles in which the object
+list is empty (mostly stopped within 6.4 m; 1,443 of them above 3 m/s ego speed; 13 drives,
+[`acc_target_availability.json`](../data/analysis/summaries/acc_target_availability.json)).
 
 ![ACC target frames](img/analysis/acc_frame_map.png)
 
@@ -19,7 +28,7 @@ every numeric field sits at its zero code (100, 1024, 100, 1024, 2000, 0). Both 
 | closing speed | 0x235 bits 29-39: `(code − 1024) × 0.125` m/s, negative = closing | ● | `REL_SPEED` |
 | relative acceleration | 0x235 byte 2: `(code − 100) × 0.125` m/s², positive = opening | ● | `REL_ACCEL` |
 | distance | 0x237 bits 39-51: `code × 0.025` m | ● | `LONG_DIST` |
-| lateral position | 0x237 bits 27-38 (12 bits): `(code − 2000) × 0.01` m, left positive | ● layout, ◐ unit | `LAT_DIST` |
+| lateral position | 0x237 bits 27-38 (12 bits): `(code − 2000) × 0.01` m, left positive; 1.5 codes = one 0.015 m object-list code | ● layout and ratio, ◐ absolute unit | `LAT_DIST` |
 | lateral speed | 0x235 bits 8-18: `(code − 1024) × 0.0125` m/s, left positive | ◐ | `LAT_SPEED` |
 | target identity | 0x235 bits 0-4: constant while the radar follows one target | ◐ | `TARGET_ID` |
 | in-path state | 0x237 bit 8 confirmed, bit 7 candidate, bits 4-6 level 5 / 4 / 3 / 2 | ◐ | `IN_PATH`, `IN_PATH_CANDIDATE`, `IN_PATH_LEVEL` |
@@ -40,8 +49,8 @@ every numeric field sits at its zero code (100, 1024, 100, 1024, 2000, 0). Both 
 - **Relative lateral acceleration.** Same width and zero code as the longitudinal field. It mirrors ego's own lateral
   acceleration (−8.2 codes per m/s² of yaw rate × speed: about −1.0 at 0.125 m/s² per code) and adds 3.8 codes per m/s of
   the target's lateral speed. The two terms explain 76 % of its variance and 89 % in curves; it lags the gyro.
-- **In-path state.** Confirmed on 94 % of target frames. Otherwise the target is a candidate at level 4, 3 or 2; the level
-  moves to the neighbouring value only, and the median lateral offset grows from 0.3 m (level 5) to 0.7, 1.6 and 2.2 m.
+- **In-path state.** Confirmed on 94 % of target frames (level 5). The remaining frames carry candidate levels 4, 3 and 2,
+  with median lateral offsets of 0.7, 1.6 and 2.2 m against 0.3 m at level 5.
 - **Tracker bytes.** The first sits at 35-36 on a steady target, 44-50 while the target accelerates harder than about
   1.2 m/s² and a median of 48-74 while it brakes (harder braking, higher value); the second is about 86 for a stopped
   target, 128-135 for a steady mover, and climbs
@@ -62,7 +71,7 @@ every numeric field sits at its zero code (100, 1024, 100, 1024, 2000, 0). Both 
 
 - **Relative acceleration** follows the derivative of the closing speed about 0.1-0.2 s behind it.
 - The **object-list** relative speed (`64|10` minus ego) is 0.87 of the same distance slope (IQR 0.77-0.96, every
-  drive 0.78-0.94): on a moving car it reads about 13% smaller in magnitude than the ACC target does.
+  drive 0.78-0.94; 1,862 windows on 27 drives): on a moving car it reads about 13% smaller in magnitude than the ACC target (0.99).
 
 Numbers: [`acc_summary_units.json`](../data/analysis/summaries/acc_summary_units.json), [`acc_target_frames.json`](../data/analysis/summaries/acc_target_frames.json).
 
@@ -72,12 +81,13 @@ The ACC target is matched to an object by position (its 0.025 m distance and 0.0
 and `yRel`). When the object list's vRel and the ACC target's closing speed
 differ by more than 3 m/s, **the vision lead sides with the ACC target 76-81% of the time** (discovery 81%, n = 738;
 confirmation 76%, n = 484, route-bootstrap 68-93%; [`acc_unit_recompute.json`](../data/analysis/summaries/acc_unit_recompute.json)). In the bundled drive-E sample the object's vRel falls to −5.9 m/s
-while the ACC target stays at −0.75 to −0.9 m/s ([12](12_kalman_filter.md#the-model)).
+while the ACC target holds −0.75 to −0.9 m/s until about 18.7 s (`highway_acc_anchor_24s.csv.gz`, 18 s; [12](12_kalman_filter.md#the-model)).
 
 **Who sends it: the radar** (◐) ([summary](../data/analysis/summaries/acc_sender_clock.json)):
 
 - It starts 0.2 s after power-up, while openpilot first transmits at about 4 s ([01](01_radar_bus.md#power-up)), and
-  stays with cruise disengaged.
+  runs at 50 Hz with cruise disengaged and with the radar's car-bus output disabled (U2, 26 min,
+  [`radar_disable_unfiltered.json`](../data/analysis/summaries/radar_disable_unfiltered.json)).
 - Every ECU's periodic messages carry its own crystal error. On four drives the radar link splits into two clocks:
   - **radar:** 0x100/0x103, 0x190-0x196, 0x198, 0x202, 0x24F, 0x680, and **0x235/0x237**, which keep a fixed phase to
     the radar's 0x190 like its own 0x191 and change content every 60 ms radar cycle;
@@ -87,37 +97,38 @@ while the ACC target stays at −0.75 to −0.9 m/s ([12](12_kalman_filter.md#th
   The slot's camera-association state `112|3` ([03](03_slot_fields.md#camera-association)) ends between 40 and 60 m by
   day, so the same cars are followed with and without the camera's association. At 40-60 m both have the same ACC
   distance and speed jitter and the same agreement with openpilot's vision lead, and at 216 association onsets and
-  losses the ACC distance and speed do not step (+0.06 / +0.03 m, −0.01 / −0.05 m/s) while the object-list range of the
-  same track moves by about a metre. So any pull toward the camera that switches with the association is small (below
-  about 4 % of distance and 6 % of speed, measured against openpilot's vision lead). This bounds only the part that
-  switches with the association: a camera share that stays constant would leave the same observations ([summary](../data/analysis/summaries/acc_camera_identifiability.json)).
-- **Target choice agrees with the radar's listed objects:** all 539 daytime acquisitions beyond 60 m happen without the camera's
+  losses the ACC distance and speed hold steady (+0.06 / +0.03 m, −0.01 / −0.05 m/s) while the object-list range of the
+  same track moves by 0.8-1.7 m. An association-linked pull toward the camera is therefore at most about 4 % of distance
+  and 6 % of speed (measured against openpilot's vision lead). The observations are identical for any constant camera
+  share (exact mixture identities, [summary](../data/analysis/summaries/acc_camera_identifiability.json)), so the camera's
+  total weight in the target is a research question ([10](10_research_directions.md)).
+- **Target choice follows the radar's listed objects:** all 539 daytime acquisitions beyond 60 m happen without the camera's
   association, and the radar follows the nearest moving in-lane object as often at 60-70 m as at 20-40 m (0.93 / 0.92).
   At the camera's daytime range limit (40-50 m), 66 of 357 acquisitions (18.5 %) come within 0.25 s after the camera
-  associates the object, against about 27 expected by chance. Either the camera helps pick the target there, or both
+  associates the object, against about 27 expected by chance: the camera helps pick the target there, or both
   react to the same scene ([summary](../data/analysis/summaries/acc_camera_identifiability.json)). The camera
   also feeds the radar its lane curves (0x85); a drive with the camera covered tests the rest
-  ([10](10_research_directions.md)). Treat it as the radar's own filtered ACC target, associated with an object-list
-  track by position.
+  ([10](10_research_directions.md)). The interface uses the target as the radar's own ACC target: `acc` publishes it
+  alone, `fused` associates it with an object-list track by position.
 
 ![sender clock](img/analysis/acc_sender_clock.png)
 
 *Phase of each message against the radar's 0x190, per minute of one drive. Logger timestamps come in ~10 ms USB batches, so camera drift appears as 10 ms steps.*
 
-**How good it is:**
+**How good it is** (ACC target against the object list, same cars; `acc` publishes the first, `fused` weights both):
 
-- During disagreements it stays smooth and consistent with the track's range while the object-list velocity drifts
-  (closer to the range slope in 76% of 62 episodes; median error 1.2 vs 2.5 m/s; [`acc_unit_recompute.json`](../data/analysis/summaries/acc_unit_recompute.json)).
+| measure | ACC target | object list | source |
+|---|---|---|---|
+| speed noise, fast component (owner car / second car) | 0.025 / 0.027 m/s | 0.12 / 0.11 m/s | [`second_unit_noise.json`](../data/analysis/summaries/second_unit_noise.json) |
+| distance jitter per cycle | 0.04 m | 0.94 m | [`acc_fields.json`](../data/analysis/summaries/acc_fields.json) |
+| closer to the range slope in 62 tail episodes | 76 % (median error 1.2 m/s) | 24 % (2.5 m/s) | [`acc_unit_recompute.json`](../data/analysis/summaries/acc_unit_recompute.json) |
+| error scale against the [optical reference](07_velocity_excursions.md#compared-with-an-optical-reference), 10-40 m / 40-70 m | at most about 0.4 m/s (0.01-0.37 by reference triple) / 0.54 m/s | 0.55 / 1.07 m/s | [`acc_unit_recompute.json`](../data/analysis/summaries/acc_unit_recompute.json), [`video_truth.json`](../data/analysis/summaries/video_truth.json) |
+| present while a radar lead exists, owner road drives, 15-80 m / 80-200 m | 99 % / 66 % | every tracked car | [`road_v21.json`](../data/analysis/summaries/road_v21.json), [08](08_openpilot_integration.md#on-the-road) |
+
 - It carries information beyond the object list: the object list's own fields and their recent history explain about
   37-43 % of its disagreement with the ACC target
   ([07](07_velocity_excursions.md#far-range-excursions-match-the-reported-velocity-error-scale)). The `fused` profile
   therefore feeds the ACC target in as a speed measurement ([12](12_kalman_filter.md#the-model)).
-- Against the [optical reference](07_velocity_excursions.md#compared-with-an-optical-reference) its error scale is
-  too small to separate from zero at 10-40 m (at most about 0.4 m/s, depending on the reference set) and
-  0.54 m/s at 40-70 m, against 0.55 / 1.07 m/s for the object list (error scales against that
-  reference; [`acc_unit_recompute.json`](../data/analysis/summaries/acc_unit_recompute.json),
-  [`video_truth.json`](../data/analysis/summaries/video_truth.json)). It is present for 99 % of radar-lead time at
-  15-80 m and 66 % beyond on the owner's road drives ([08](08_openpilot_integration.md#on-the-road)).
 
 ### Class, width and timestamp (0x239 / 0x23B)
 
@@ -134,11 +145,11 @@ Two companion frames at the same 50 Hz describe the same target (`support.parse_
 - **Class.** Class 1 goes with the car template of the target summaries below and class 2 with the truck template in every
   matched frame (329,612 of 329,612; 18,974 of 18,974 on other drives). Classes 0 and 6 appear mostly while ego is stopped
   behind something within a few metres (6 with a car-sized width, 0 with a width of 10-50 cm); classes 4 and 5 carry
-  widths of 50-120 cm. Class 4 is mostly a moving target at 50 m (lead speed median 27 m/s), so not a pedestrian.
+  widths of 50-120 cm. Class 4 is mostly a moving target (2,992 of 3,687 samples, median 50 m and 27 m/s).
 - **Small targets while driving.** Over every stored log (three cars), class 0 also appears with ego above 3 m/s. That
   includes stationary objects as narrow as 23 cm (median 50 cm, at a median 31 m, on 22 routes)
   ([`object_size_provenance.json`](../data/analysis/summaries/object_size_provenance.json)). The radar's target choice
-  does not need a vehicle-sized object.
+  includes objects far narrower than a vehicle.
 - **Width.** Zero exactly while there is no target. The car class reads 140-220 cm (median 171, clipped at 140), the truck
   class 200-280 cm (exactly 200 on 97 % of its frames); cars read about 175 cm inside 30 m and 165 cm at 90 m.
 - **Object-list flag.** Set on 88-95 % of target frames when the object list holds one to four objects and on 0.2 % when
@@ -164,7 +175,7 @@ internal tracker: 0x191 / 0x193 its lifecycle and class, 0x192 / 0x194 its posit
 
 The template is the target's class: when the ACC target is this summary target, 0x239 reports class 1 with 18:15:45 and
 class 2 with 22:23:120 in every frame, and the object list's own class for a class-2 target is "large vehicle" on 92 % of
-20,394 matched frames. Most active frames use 18:15:45 or 22:23:120 (607,999 of 608,186); the remaining 187 frames contain
+20,394 matched frames ([`decode_claim_sources.json`](../data/analysis/summaries/decode_claim_sources.json)). Most active frames use 18:15:45 or 22:23:120 (607,999 of 608,186); the remaining 187 frames contain
 28 further tuples such as 25:15:20.
 `support.parse_0x191` returns score, age, code, the template in metres and the counter.
 [Aggregate evidence](../data/analysis/summaries/selected_target_descriptors.json),
@@ -200,7 +211,8 @@ measurement up to 80 m: an option, off in `fused` and on in `colored`
 - Byte 0 = count << 2 | 2: the **number of target summaries** in this cycle (0, 1 or 2). It equals the number of
   non-sentinel 0x191 / 0x193 frames in 681,864 of 681,879 cycles (the rest are startup frames); with one summary it is always the 0x191 / 0x192 pair.
 - Bytes 2-5: big-endian **microsecond timestamp** (`support.parse_0x190`).
-- Byte 6 high nibble: **cycle counter** mod 16, +3 per cycle on 99.996% of cycles. Use it to detect dropped
+- Byte 6 high nibble: **cycle counter** mod 16, +3 per cycle on 99.996% of cycles
+  ([`decode_claim_sources.json`](../data/analysis/summaries/decode_claim_sources.json)). Use it to detect dropped
   cycles.
 
 ## 0x195 / 0x196: event pair
@@ -227,7 +239,9 @@ non-idle samples, so recognise idle frames by the whole payload. The DBC keeps t
 
 85% of event frames occur with both the stock cruise and openpilot longitudinal control off. `q10` leads the car's
 own deceleration by 0.5-1 s (r = 0.39-0.56 on three drive partitions, about 0.004-0.008 m/s² per code). The reading:
-a pre-collision / brake-assist deceleration quantity (◐). Counts and relative-time example: `data/analysis/summaries/event_pair_carries.json`.
+a pre-collision / brake-assist deceleration quantity (◐). Counts and relative-time example:
+[`event_pair_carries.json`](../data/analysis/summaries/event_pair_carries.json); context table and lead lags:
+[`decode_references.json`](../data/analysis/summaries/decode_references.json).
 
 On U3, the one recorded stock PCS alarm, the pair left idle 1.06 s before the alarm and returned 0.26 s after it. The
 alarm itself is marked on the radar bus by **0x100 byte 0 = 0x02**, in the same CAN tick as the car-bus alarm. `q10` stayed
@@ -240,8 +254,9 @@ at 510 until the driver braked, and the 0x196 bytes ramped from the pair's onset
 
 0x240, 0x241, 0x244 and 0x245 are sent by the camera and share a **rolling phase 1-7** in byte 0 bits 5-7 (0 at startup).
 By day their bodies hold a default payload (`00 10 01 00 10 01 00`). **At night 0x240 and 0x244 carry light-source
-records**: they leave the default in every drive that starts after dark and in none that ends before dusk (71 of 698
-one-minute segments; 35 of 114 on a second set, ramping in over three minutes at dusk). Each frame holds two records of
+records**: every drive that starts after dark carries them and drives that end before dusk keep the default (71 of 698
+one-minute segments; 35 of 114 on a second set, ramping in over three minutes at dusk;
+[`decode_claim_sources.json`](../data/analysis/summaries/decode_claim_sources.json), [`context_24x.json`](../data/analysis/summaries/context_24x.json)). Each frame holds two records of
 {type nibble, 3 flag bits, 13-bit signed value, 8-bit value}; the two records of 0x244 share the 8-bit value. One record
 kind sweeps from small to large values while its byte falls from 255, as an approaching light does. 0x248 byte 2 is 1 by day and 0, 2 or 3 at night and carries startup and event bits with the same phase.
 
@@ -261,8 +276,9 @@ All three switch once and stay, so they are a direct "radar running" signal and 
 
 ## 0x680: single-object stream
 
-Every 0.5 s the radar reports **one object from its function-level tracker**, likely the same smooth tracker that feeds
-the ACC target (◐). `support.parse_0x680` decodes it (big-endian fields, MSB-first start | length):
+Every 0.5 s the radar reports **one object from its function-level tracker**. On vehicles it shares with the ACC target its
+speed equals the ACC speed (median difference 0.09 m/s), so it is likely a second output of the tracker that feeds the
+ACC target (◐). `support.parse_0x680` decodes it (big-endian fields, MSB-first start | length):
 
 | field | reading | conf. |
 |---|---|---|

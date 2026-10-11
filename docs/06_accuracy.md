@@ -1,6 +1,10 @@
 # 06. Accuracy: how well the object fields match the world
 
-Three drives carry the accuracy measurements: **A** (development, 24 min decoded, mixed), **B** (held out, 40 min city,
+The radar publishes two streams of numbers: the **object list** (0x80; `raw` and `fused` read it) and the **ACC target**
+(0x235 / 0x237; `acc` reads it alone, `fused` weights it into its speed filter). Sections below say which stream a number
+belongs to; the [side-by-side table](#object-list-and-acc-target-side-by-side) puts them next to each other.
+
+Three drives carry the object-list measurements: **A** (development, 24 min decoded, mixed), **B** (held out, 40 min city,
 often wet or at night, hilly) and **C** (held out, 24 min highway). The references each measure something different:
 
 | reference | what it gives |
@@ -13,18 +17,19 @@ often wet or at night, hilly) and **C** (held out, 24 min highway). The referenc
 
 ## At a glance
 
-| quantity | result |
-|---|---|
-| **dRel** scale and zero, 5-25 m | slope 1.001 / 0.992 / 0.993 against camera ground contact; zero within about 0.2 m on flat roads |
-| **dRel** far range | median residual 3.7 m at 60-100 m and 5.1 m at 100-150 m against camera/model consensus; 5-8 % short of the radar's own ACC distance at 50-100 m |
-| **dRel** record to record | walks by about 3% of range (see range walks below) |
-| **yRel** side | correct on 97.9-99.3% of off-centre targets against the camera |
-| **yRel** scale | 0.015 m per code (66.7 codes/m): 1.5 codes of the ACC target's centimetre lateral (1.499-1.502 on five sets); gyro 69 [65, 74.5], lane peaks 62.8-67.3, camera 69-73 |
-| **velocity** zero and scale | nominal zero 510.5; fitted scales 0.150 / 0.149 / 0.153 m/s per code from native range slope with GPS ego speed |
-| **vRel** vs camera | lower error than a constant zero or range differencing at every range (table below) |
-| **vRel**, stopped targets 5-30 m | RMS 0.54 m/s on settled tracks |
-| **speed noise**, second radar unit | object-list and ACC-target noise match the owner unit (fast noise 0.11 / 0.027 against 0.12 / 0.025 m/s) |
-| **trackId** | each ID in one slot only; 77 of 87 camera-checked tracks within 60 m keep one camera identity ≥ 95% of their life |
+| stream | quantity | result |
+|---|---|---|
+| object list | **dRel** scale and zero, 5-25 m | slope 1.001 / 0.993 / 0.995 against camera ground contact; median camera minus radar −0.01 m (A), +0.22 m (C), +0.71 m (B, hilly) |
+| object list | **dRel** far range | median residual 3.7 m at 60-100 m and 5.1 m at 100-150 m against camera/model consensus; 5-8 % short of the radar's own ACC distance at 50-100 m |
+| object list | **dRel** record to record | walks by about 3% of range (see range walks below) |
+| object list | **yRel** side | correct on 97.9-99.3% of off-centre targets against the camera |
+| both | **lateral** scale | object list 0.015 m per code (66.7 codes/m); ACC target 0.01 m per code, 1.5 of its codes per object-list code (1.499-1.502 on five sets); gyro 69 [65, 74.5], lane peaks 62.8-67.3, camera 69-73 |
+| object list | **velocity** zero and scale | nominal zero 510.5; fitted scales 0.150 / 0.149 / 0.153 m/s per code from native range slope with GPS ego speed |
+| object list | **vRel** vs camera | lower error than a constant zero or range differencing at every range (table below) |
+| object list | **vRel**, stopped targets 5-30 m | RMS 0.54 m/s on settled tracks |
+| both | **speed noise**, second radar unit | object-list and ACC-target noise match the owner unit (fast noise 0.11 / 0.027 against 0.12 / 0.025 m/s) |
+| object list | **trackId** | each ID lives in one slot; 77 of 87 camera-checked tracks within 60 m keep one camera identity ≥ 95% of their life |
+| ACC target | distance, closing speed, lateral | 0.025 m, 0.125 m/s, 0.01 m per code ([05](05_acc_target_and_support.md#units-of-the-acc-target)); fast speed noise 0.025 m/s; distance jitter 0.04 m per cycle |
 
 ## Distance
 
@@ -33,20 +38,22 @@ often wet or at night, hilly) and **C** (held out, 24 min highway). The referenc
 - **Scale 1/16 m.** Closing rate over relative speed gives 15.93 / 16.01 codes per metre on two calibration routes;
   camera ground contact gives slope 0.99-1.00 on all three drives.
 - **Nominal zero at code 160.** The formula is `code / 16 − 10 m`: code 160 decodes to zero. The offset was
-  originally fitted against a vision reference. Camera ground contact is consistent within about 0.2 m on A and C;
-  hilly drive B reads +0.7 m, consistent with a 0.25° camera-pitch error. That comparison assumes openpilot's
-  `RADAR_TO_CAMERA = 1.52 m`; a tape-measured radar-to-camera gap pins the physical zero and origin.
+  fitted against a vision reference. Camera ground contact minus radar is −0.01 m on A and +0.22 m on C; hilly drive B
+  reads +0.71 m, the size of a 0.19° camera-pitch error at B's median 17.5 m
+  ([`decode_claim_sources.json`](../data/analysis/summaries/decode_claim_sources.json), `data/analysis/ground_contact.parquet`).
+  The comparison uses openpilot's `RADAR_TO_CAMERA = 1.52 m`, which sets the physical origin of the camera reference.
 - **Far range** (drive A, camera box scale averaged with the vision model where they agree; the camera scale is anchored
   to the radar's own range at 20-45 m): median absolute residual 3.7 m at 60-100 m (distance ratio 1.017) and 5.1 m at
-  100-150 m (ratio 0.979).
+  100-150 m (ratio 0.979; [`far_range_camera_correction.json`](../data/analysis/summaries/far_range_camera_correction.json)).
 - **Against the radar's own ACC distance** (◐). For the car the radar's ACC function follows, `dRel` agrees with the ACC
   distance ([05](05_acc_target_and_support.md#the-radars-acc-target-0x235--0x237)) below 30 m and reads progressively
   short beyond it: median −1 m at 30-50 m, −3 m at 50-70 m, −4 m at 70-80 m and −7 m at 80-100 m (2-3 %, 5 %, 5-6 % and 8 %; cars
   more than large vehicles), and about twice that on a second set of drives, with an interquartile spread of 8-11 m at
   60-100 m. openpilot's vision lead, a camera estimate, reads within 1 % of the ACC distance from 20 to 80 m on the
   700-segment set (5-7 % short at 60-80 m on the second set) and is nearer to it than to `dRel` on 71-79 % of samples
-  at 30-100 m. The ACC distance is therefore the better far range for that car, and any
-  position gate between the object list and the radar's own trackers needs room for this difference
+  at 30-100 m. The ACC distance is therefore the better far range for that car: `acc` publishes it, `fused` publishes it
+  as the followed car's range (object-list range for the other tracks), and any position gate between the object list and
+  the radar's own trackers needs room for this difference
   ([`far_range_distance.json`](../data/analysis/summaries/far_range_distance.json)). The 2 Hz object stream 0x680, likely a
   second output of the same tracker (◐) that also covers other vehicles, shows the same: the object list is a median 2.5 m
   short at 40-60 m, 3 m at 60-110 m and 14 m at 110-170 m
@@ -75,8 +82,8 @@ often wet or at night, hilly) and **C** (held out, 24 min highway). The referenc
 | camera outer box edges | 68.9 / 69.7 / 72.8 codes per metre |
 
   The first two rows tie the unit to the radar's own centimetre and velocity fields; the gyro, camera and lane rows are
-  independent but wider. Replaying `fused` with these lateral units on 27 drives keeps the braking counts (held-out hard
-  radar-only ticks 30 → 30, target episodes 4 → 4 on `fused` 2.1; anticipation 0.449 → 0.443, one of 167 driver
+  independent and wider. Replaying `fused` 2.1 with these lateral units on 27 drives leaves the braking counts unchanged
+  (held-out hard radar-only ticks 30 → 30, target episodes 4 → 4; anticipation 0.449 → 0.443, one of 167 driver
   brakes; lead-source switches +0.7 %).
   Numbers: [`lateral_units.json`](../data/analysis/summaries/lateral_units.json).
 
@@ -104,15 +111,14 @@ often wet or at night, hilly) and **C** (held out, 24 min highway). The referenc
   them too. Against the ACC target's distance slope, the object-list relative speed is 0.87 (IQR 0.77-0.96;
   [05](05_acc_target_and_support.md#units-of-the-acc-target)).
 - **Ego reference.** Toyota 0xB4 reads about 1-1.5% below GPS and wheel speed in the measured comparisons. Steady
-  following against 0xB4 fits .149 m/s per code. The driving profiles use `vground_scale = .149 / .15`, a
-  **0.667%** reduction of decoded ground velocity, then subtract 0xB4 ego speed (the openpilot file decodes at 0.149
-  directly). This is an empirical profile setting on top of the nominal 0.15 decoder unit, not a physical calibration.
-  Against the ACC target's speed it helps or hurts depending on range and error metric (pooled RMS 1.302 → 1.297 m/s,
-  below 40 m 0.758 → 0.760; [comparison](../data/analysis/summaries/native_speed_alignment.json)), and the ACC target
-  shares the radar's errors. Where native speed reads below a reference, this downward scale widens the gap rather
-  than closing it. The physical scale, the factory zero and the radar's internal ego compensation remain open.
+  following against 0xB4 fits .149 m/s per code. The `raw` and `fused` object-list profiles use
+  `vground_scale = .149 / .15`, a **0.667%** reduction of decoded ground velocity, then subtract 0xB4 ego speed (the
+  openpilot file, `fused`, decodes at 0.149 directly). This is an empirical profile setting on top of the nominal
+  0.15 decoder unit. Against the ACC target's speed it moves the pooled RMS 1.302 → 1.297 m/s (below 40 m 0.758 → 0.760;
+  [comparison](../data/analysis/summaries/native_speed_alignment.json)); the ACC target is a correlated radar witness.
+  The `acc` profile reads the ACC target's own 0.125 m/s unit and needs no ego-speed subtraction.
 
-- **Against the camera** (closing speed from box growth over 2 s, all camera-paired samples):
+- **Object list against the camera** (closing speed from box growth over 2 s, all camera-paired samples):
 
   | drive | band | native vRel | constant 0 | 1 s range derivative |
   |---|---|---|---|---|
@@ -126,13 +132,13 @@ often wet or at night, hilly) and **C** (held out, 24 min highway). The referenc
 
   ![vrel vs camera](img/analysis/vrel_vs_camera.png)
 
-- **Random error, by range.** A three-cornered-hat split of radar, camera and range-slope disagreements gives the
-  radar's velocity scatter as 0.35-0.56 m/s at 3-30 m, 1.0-1.4 m/s at 30-60 m and 1.6-2.9 m/s at 60-100 m
-  (A / B / C: 0.35 / 1.02 / 1.60, 0.56 / 1.44 / 2.90, 0.56 / 1.14 / 1.73). The error is correlated over about
-  1-3 s and has heavy tails: these are the velocity excursions of [07](07_velocity_excursions.md).
+- **Random error, by range.** The object list's mean squared difference to the camera grows 18-36-fold from 3-30 m to
+  60-100 m (table above). The error lasts seconds and has heavy tails (kurtosis 1.3-8): these are the velocity
+  excursions of [07](07_velocity_excursions.md), which belong to the object list; the ACC target's speed stays smooth
+  through them ([05](05_acc_target_and_support.md#a-second-velocity-estimate-from-the-radar-itself)).
 - **Stopped targets.** Against targets that video and odometry show stopped at 5-30 m, settled tracks read vRel with
-  RMS 0.54 m/s (B and C).
-- **Timing.** On decelerating leads the radar's speed leads the camera's by 0.2-0.4 s (owner's StarPilot drives).
+  RMS 0.54 m/s (B and C; [`review_followup.json`](../data/analysis/summaries/review_followup.json)).
+- **Timing.** On decelerating leads the radar's speed leads the camera's by 0.2-0.4 s (owner's StarPilot closed-loop drives, object list).
 - **A second radar unit behaves the same (◐).** On a second car with the same firmware (153 min of ACC-target runs),
   the noise numbers that set `fused`'s σ values match the owner car's:
 
@@ -146,7 +152,7 @@ often wet or at night, hilly) and **C** (held out, 24 min highway). The referenc
   The growth with range is the same: object-list fast noise is 0.09 / 0.16 / 0.21 m/s at 20-50 / 50-80 / ≥ 80 m on the
   second unit. At 50-80 m the second unit's object list reads more closing than the owner's (−0.55 against −0.26 m/s).
   The object-list minus ACC difference grows with ego speed (−0.11 m/s at 8-15 m/s, −0.24 m/s at 30-40 m/s), consistent
-  with the 0.149/0.15 ego alignment below. Scale and offset cannot be separated on these data. One set of constants
+  with the 0.149/0.15 ego alignment above. These data fit a scale and an offset equally well. One set of constants
   serves both units ([`second_unit_noise.json`](../data/analysis/summaries/second_unit_noise.json)).
 
 ### Encoding constants and motion geometry
@@ -184,15 +190,33 @@ better** than the radar's range change does:
 *A real closing: the radar lead reads 24.7 m against the vision model's 36.8 m while the camera box grows only 27 % over the 2 s.
 The radar's velocity was right; its range walked. radard's 25% distance gate rejects the radar lead here.*
 
-So from record to record velocity is the radar's steady channel and range the jittery one; over seconds at range,
-velocity has the excursions of [07](07_velocity_excursions.md). Velocity-aided range (`range_fusion_gain = 0.1`)
+So from record to record velocity is the object list's steady channel and range the jittery one; over seconds at range,
+velocity has the excursions of [07](07_velocity_excursions.md). Velocity-aided range (`range_fusion_gain = 0.1`, `fused`)
 cuts the walks by about a third ([08](08_openpilot_integration.md#profiles)). Differentiating range to get velocity gives 3.5-27× the mean squared error
-of the native velocity field.
+of the native velocity field. The ACC target's 0.025 m distance (`acc`) has a cycle-to-cycle jitter of 0.04 m against 0.94 m
+for the object-list range of the same car ([`acc_fields.json`](../data/analysis/summaries/acc_fields.json), 46,251 cycles).
 
 ## Track identity
 
-- **Within the radar:** each track ID lives in one slot only.
+- **Within the radar:** each track ID lives in one slot.
 - **Against the camera** (within 60 m, tracks with a long camera chain): the radar track keeps one camera identity for
   at least 95% of its life on A 21 / 21, B 28 / 36 and C 28 / 30 tracks.
 - **Re-link:** `raw` re-links a track the radar re-initialises within 3.5 s near its predicted position, so radard keeps
-  its filter state across short losses; with `fused`'s speed filter the replays brake the same with or without it (lead-source switches 1,770 vs 1,772), so `fused` runs without it.
+  its filter state across short losses; with `fused`'s speed filter the replays brake the same with or without it (lead-source switches 1,770 vs 1,772,
+  [`fused_filter.json`](../data/analysis/summaries/fused_filter.json)), so `fused` runs without it. `acc` takes the radar's target ID as the track ID.
+
+## Object list and ACC target side by side
+
+`raw` and `fused` start from the object list; `acc` publishes the ACC target; `fused` also feeds the ACC target into its filter.
+
+| measure | object list | ACC target | source |
+|---|---|---|---|
+| distance unit | 0.0625 m per code | 0.025 m per code | [05](05_acc_target_and_support.md#units-of-the-acc-target) |
+| distance jitter per cycle, same car | 0.94 m | 0.04 m | [`acc_fields.json`](../data/analysis/summaries/acc_fields.json) |
+| distance against the ACC distance, 30-50 / 50-70 / 70-80 / 80-100 m | median −1 / −3 / −4 / −7 m | 0 (reference); openpilot's vision lead within 1 % | [`far_range_distance.json`](../data/analysis/summaries/far_range_distance.json) |
+| speed unit | 0.15 m/s per code (0.149 in the profiles) | 0.125 m/s per code | [05](05_acc_target_and_support.md#units-of-the-acc-target) |
+| fast speed noise, owner / second car | 0.12 / 0.11 m/s | 0.025 / 0.027 m/s | [`second_unit_noise.json`](../data/analysis/summaries/second_unit_noise.json) |
+| speed against the range slope of the same car, 1,862 windows | 0.87 (IQR 0.77-0.96) | 0.99 (IQR 0.97-1.00) | [`acc_summary_units.json`](../data/analysis/summaries/acc_summary_units.json) |
+| closer to the range slope in 62 tail episodes | 24 % (median error 2.5 m/s) | 76 % (1.2 m/s) | [`acc_unit_recompute.json`](../data/analysis/summaries/acc_unit_recompute.json) |
+| error scale against the optical reference, 10-40 / 40-70 m | 0.55 / 1.07 m/s | ≤ 0.4 / 0.54 m/s | [`acc_unit_recompute.json`](../data/analysis/summaries/acc_unit_recompute.json) |
+| cars covered | every tracked car, from age 60 in `raw` / `fused` | the one car the radar's ACC follows; present 99 % of radar-lead time at 15-80 m, 66 % at 80-200 m | [`road_v21.json`](../data/analysis/summaries/road_v21.json) |

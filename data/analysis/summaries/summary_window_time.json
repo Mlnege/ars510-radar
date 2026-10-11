@@ -203,9 +203,9 @@
   "total_applied_nonreset_summary_updates": 867,
   "effective_time_formula": "mean(t) + sum((t-mean(t))^3)/(2*sum((t-mean(t))^2)), for constant relative acceleration",
   "limits": [
-    "Receipt time is not radar acquisition time.",
-    "All observed applied summaries are 0x192; no 0x194 timing claim.",
-    "Startup windows are shorter; a fixed 480 ms delay does not describe every update.",
-    "Current ego added to delayed relative speed complicates over-ground timing. No extrapolation or profile change is implied."
+    "Timing is receipt time at the logger.",
+    "All observed applied summaries are 0x192; the timing covers 0x192.",
+    "Startup windows are shorter; the 480 ms delay is the typical value, startup windows differ.",
+    "Current ego added to delayed relative speed complicates over-ground timing. The numbers describe the window timing alone."
   ]
 }

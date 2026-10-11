@@ -2,8 +2,8 @@
 
 Each record starts with a first frame whose bytes 0-1 are a fixed marker (0x12 0xE4 for 0x80, 0x10 0x90 for
 0x85). Consecutive frames follow; bytes 1..7 of every frame, first frame included, are appended. The
-consecutive-frame sequence nibble wraps every 16 frames, so a DBC alone cannot tell which part of the record
-a frame carries: records must be reassembled in code.
+consecutive-frame sequence nibble wraps every 16 frames, so each record is reassembled in code, which tracks which part
+of the record a frame carries.
 """
 from __future__ import annotations
 

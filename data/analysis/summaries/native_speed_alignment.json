@@ -3,7 +3,7 @@
   "nominal_scale_mps": 0.15,
   "nominal_zero": 510.5,
   "profile_scale_mps": 0.149,
-  "status": "Empirical parser setting; physical scale and factory zero unresolved.",
+  "status": "Empirical parser setting (0.149 m/s per code against Toyota 0xB4); the physical scale and factory zero are bounded by docs/06.",
   "scope": "Existing mature geometry-matched owner-car observations against the dependent ACC target; same B4 and timestamp in each paired equation.",
   "selection": {
     "min_age": 60,

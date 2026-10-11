@@ -186,8 +186,8 @@ def main() -> int:
           "radar-only braking 7-21 times as often as fused (docs/10). Not for driving.")
   if args.profile == "raw":
     print("warning: the raw profile publishes the unfiltered radar decode. Velocity excursions (false closings beyond 40 m)\n"
-          "reach the planner unfiltered and cause about three times the hard radar-only braking of fused. Use it for research\n"
-          "and comparison only; install.py with no --profile installs the recommended fused profile.")
+          "reach the planner unfiltered: 93 hard radar-only braking ticks on the held-out replay routes against 16 for fused and\n"
+          "14 for acc (docs/11). Use it for research and comparison; install.py with no --profile installs acc.")
   return 0
 
 

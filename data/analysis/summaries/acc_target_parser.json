@@ -1,5 +1,5 @@
 {
- "description": "An alternative openpilot file that publishes only the radar's ACC target (0x235 / 0x237) as one point (upstream/ars510_acc_target.py), against fused 2.6 (upstream/ars510_radar.py) and vision only. Open-loop replays of every drive set in 6-segment chunks through the pinned openpilot's unchanged radard and planner; first 30 s of each chunk dropped. Hard = request <= -2 m/s2 while vision only >= -0.5; mild = <= -1 while vision >= -0.3; unnecessary / missed = against the hindsight-lead oracle (docs/12), whose reference lead is built mostly from the ACC target's range and therefore favours ACC-target designs; hard / mild and onset do not use it.",
+ "description": "The default `acc` profile: an openpilot file that publishes the radar's ACC target (0x235 / 0x237) as its one point (upstream/ars510_acc_target.py), against fused 2.6 (upstream/ars510_radar.py) and vision only. Open-loop replays of every drive set in 6-segment chunks through the pinned openpilot's unchanged radard and planner; first 30 s of each chunk dropped. Hard = request <= -2 m/s2 while vision only >= -0.5; mild = <= -1 while vision >= -0.3; unnecessary / missed = against the hindsight-lead oracle (docs/12), whose reference lead is built mostly from the ACC target's range and therefore favours ACC-target designs; hard / mild and onset do not use it.",
  "file_size": {
   "2.6": {
    "code_lines": 187,
@@ -15,7 +15,7 @@
    "conditions": 4,
    "functions": 2,
    "dbc_signals": 7,
-   "note": "upstream/ars510_acc_target.py with toyota_tss2_ars510.dbc (opendbc CANParser); replays ran on an earlier hand-decoded version with the same points (33 code lines, 4 constants, 3 state attributes, 12 conditions)"
+   "note": "upstream/ars510_acc_target.py with toyota_tss2_ars510.dbc (opendbc CANParser); replays ran on the hand-decoded version that publishes the same points on 11,028 bundled reports (33 code lines, 4 constants, 3 state attributes, 12 conditions)"
   }
  },
  "by_version_and_set": {
@@ -212,7 +212,7 @@
     "standstill": 8
    }
   },
-  "note": "standstill = ego below 0.5 m/s at the episode start: the request holds a stopped car behind an object the camera did not report as a lead (radard low-speed rule); it does not brake a moving car"
+  "note": "standstill = ego below 0.5 m/s at the episode start: the request holds a stopped car behind an object the camera reports no lead for (radard low-speed rule); the moving columns hold the braking of a moving car"
  },
  "route_bootstrap_acc_target_minus_2_6_per_moving_h": {
   "hard": {
@@ -712,7 +712,7 @@
     "p99_9_s": 0.0405
    }
   },
-  "note": "points through opendbc CANParser vs ars510.support; gaps over 0.2 s (CANParser timeout) are also over 0.5 s (the earlier staleness check)"
+  "note": "points through opendbc CANParser vs ars510.support; gaps over 0.2 s (CANParser timeout) are also over 0.5 s (the 0.5 s staleness check)"
  },
  "stock_acc_span_second_car_S2": {
   "scoreable_s": 139.7,
@@ -746,6 +746,6 @@
   "best_lag_s_median": -0.06,
   "gain_median": 1.0,
   "runs": 483,
-  "note": "0x235 speed against the slope of 0x237 distance (2 s local-linear fit): it does not lag its own range, so a filter could only add delay"
+  "note": "0x235 speed against the slope of 0x237 distance (2 s local-linear fit): it moves with its own range, so a filter adds delay"
  }
 }

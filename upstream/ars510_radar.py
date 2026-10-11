@@ -9,7 +9,7 @@ radar's 240|7 code. One Kalman filter per track fuses the slot speed, weighted b
 (0x235 / 0x237) for the track it describes. radard then filters as for any radar. radard's lead match weights
 lateral position only through the camera's uncertainty, so beyond 15 m a track a lane away from the yaw-predicted path
 is withheld.
-Single-file candidate for upstream; ars510-radar docs/12 has the evidence for every constant and every omitted part.
+Single-file `fused` candidate for upstream (ACC target alone: ars510_acc_target.py); ars510-radar docs/12 has the evidence for every constant and omitted part.
 """
 import zlib
 from math import isfinite, nan, pi
@@ -28,13 +28,13 @@ RANGE_GAIN = 0.1  # velocity-aided range: cuts 1.5 s range walks by about a thir
 # Kalman speed filter (one state: the lead's over-ground speed)
 SIGMA_PER_CODE = 0.045  # m/s per 240|7 count, against the radar's ACC target
 YOUNG_SCALE, YOUNG_AGE = 1.8, 100  # young tracks err more than 240|7 says
-ACC_SIGMA = 0.13  # m/s, the radar's ACC target speed (its measured noise; blended, not copied: the object list damps rare slides)
+ACC_SIGMA = 0.13  # m/s, the radar's ACC target speed (its measured noise; blended with the object list, which damps the ACC target's rare slides)
 LEAD_ACCEL = 1.5  # m/s^2, process noise
 GATE_SIGMA = 3.0  # innovations beyond 3 sigma count as 3 sigma
 PUBLISH_STD = 0.75  # m/s: a new track is published once its speed is this certain
 PATH_GATE, PATH_GATE_MIN_RANGE = 2.5, 15.0  # m: off the yaw-predicted path by more than this = another lane; closer in, cut-ins stay
 FAR_ACC_ONLY = 60.0  # m: beyond this only the car the radar's ACC follows is published, as Toyota's own ACC uses it
-STILL, STILL_GATE = 0.5, 1.5  # m/s, m: a stationary track (parked car, roadside object) cannot cut in: path-gated at every range
+STILL, STILL_GATE = 0.5, 1.5  # m/s, m: a stationary track (parked car, roadside object) is path-gated at every range, so it stays out of the lane
 
 
 def bits(b: bytes, start: int, length: int) -> int:
@@ -130,11 +130,11 @@ class Ars510Radar:
         vrel = speed - v_ego
       d_rel = self.fused_range(tid, t, self.acc_pos[1] if tid == acc_tid else o["d"], vrel)  # ACC distance for its track
       if o["age"] < PUBLISH_AGE or (tid not in self.published and std > PUBLISH_STD) or not isfinite(vrel):
-        continue  # no point without a fresh ego speed: one NaN would poison radard's filter
+        continue  # a point needs a fresh ego speed: one NaN would poison radard's filter
       still = abs(speed) < STILL and d_rel <= PATH_GATE_MIN_RANGE
       if tid != acc_tid and (d_rel > FAR_ACC_ONLY or (yaw is not None and (d_rel > PATH_GATE_MIN_RANGE or still) and abs(
           o["y"] - yaw / max(v_ego, 2.0 if still else 5.0) * d_rel * d_rel / 2) > (STILL_GATE if still else PATH_GATE))):
-        continue  # far: only the car the radar's ACC follows (radard uses the camera); else not a car or object off the path
+        continue  # far: only the car the radar's ACC follows is published (the camera covers the rest); closer in: an object off the path is another lane's
       self.published.add(tid)
       out.append((tid, d_rel, o["y"], vrel))
     self.prune(t)

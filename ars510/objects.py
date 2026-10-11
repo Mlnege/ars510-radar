@@ -3,9 +3,9 @@
 Each slot is read as ONE little-endian bit field: bit 0 is the LSB of slot byte 0, bit 8 the LSB of byte 1,
 and so on. `start|length` below uses that numbering (it is also DBC `@1+` Intel numbering on the slot bytes).
 
-Field boundaries come from carry chains between consecutive cycles of the same slot (a higher bit almost
-never flips unless the bit below it flips). Nominal scales and zero points use vehicle-motion consistency,
-host-standstill object-code peaks and camera/vision references; exact physical calibration remains bounded.
+Field boundaries come from carry chains between consecutive cycles of the same slot (a higher bit flips
+only together with the bit below it, in nearly every case). Nominal scales and zero points use vehicle-motion consistency,
+host-standstill object-code peaks and camera/vision references; exact physical calibration is bounded in docs/06.
 docs/03_slot_fields.md describes every field; docs/06_accuracy.md the measured accuracy.
 
 Output convention matches openpilot's RadarPoint: dRel forward (m), yRel LEFT positive (m).
@@ -154,8 +154,8 @@ class NativeObject:
     move_state: int  # legacy low two bits; see movement_code for distinct full states
     oncoming_flag: bool  # raw oncoming-like state; can reset within the allocation
     vel_unc_code: int  # velocity-uncertainty code (240|7), about 0.045 m/s per count
-    geometry_valid: bool  # age >= 1 (age 0 carries stale geometry) and not the age-1 initialization template
-    lateral_valid: bool  # lateral code is not the sentinel
+    geometry_valid: bool  # age >= 1 (age 0 carries stale geometry) and past the age-1 initialization template
+    lateral_valid: bool  # lateral code differs from the sentinel
     movement_code: int | None = None  # full 109|3; None for legacy manually constructed objects
     raw8_low5: int | None = None  # 8|5 startup countdown while the motion code is 5
     raw13_bit: int | None = None  # 13|1 raw flag next to the startup code

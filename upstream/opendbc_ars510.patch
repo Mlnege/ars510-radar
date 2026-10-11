@@ -8,9 +8,9 @@ index 00000000..583cf690
 +
 +Besides its raw object list (0x80, one record over 106 frames), the radar sends the one target its own ACC acts on
 +(ACC_TARGET_1 / ACC_TARGET_2 in toyota_tss2_ars510.dbc): a converged, in-path track chosen by the radar's tracker, with
-+distance, lateral position, closing speed and an ID that changes when the radar switches targets. Toyota's ACC uses
-+nothing else. This interface publishes that target as openpilot's only radar point; radard matches it to the camera's
-+lead as for any radar, and every other car comes from the camera. ars510-radar docs/10 ("The ACC target alone") has
++distance, lateral position, closing speed and an ID that changes when the radar switches targets. Toyota's ACC acts on
++this target alone. This interface publishes that target as openpilot's only radar point; radard matches it to the
++camera's lead as for any radar, and every other car comes from the camera. ars510-radar docs/10 ("The ACC target alone") has
 +the evidence.
 +"""
 +from opendbc.can import CANParser
@@ -298,7 +298,7 @@ index 00000000..2e9d4a78
 + SG_ LAT_DIST : 30|12@0+ (0.01,-20) [-20|20.95] "m" XXX
 + SG_ PRESENT : 50|1@0+ (1,0) [0|1] "" XXX
 +
-+CM_ "Continental ARS510 front radar (Toyota RAV4 2022-25, fwdRadar 8821F0R03100), radar bus: the target the radar's own ACC follows. The 0x80 object list and 0x85 metadata record span many frames and are not described here.";
++CM_ "Continental ARS510 front radar (Toyota RAV4 2022-25, fwdRadar 8821F0R03100), radar bus: the target the radar's own ACC follows. The 0x80 object list and 0x85 metadata record span many frames and are decoded by ars510-radar (ars510/).";
 +CM_ BO_ 565 "ACC target, part 1: 50 Hz, content updated once per 60 ms radar cycle.";
 +CM_ SG_ 565 STATE "5 = target present, 1 = no target (all other fields zero).";
 +CM_ SG_ 565 REL_ACCEL "Target acceleration relative to ego.";

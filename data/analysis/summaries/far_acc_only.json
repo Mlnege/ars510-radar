@@ -377,8 +377,8 @@
   },
   "note": "[episodes, seconds] where the request differs by > 0.3 m/s2 for >= 0.3 s; the costs are <= 0.5 m/s2 and never make later braking harder"
  },
- "cost": "a fast real closing far ahead without an ACC target waits for the radar to make the car its ACC target: about 1 s later on one owner drive (95 m, closing 4.5 m/s) and 0.8 s on the second car (86 m, closing 8.8 m/s); vision only did not brake earlier in either, and Toyota's own ACC holds for several seconds on a far closing car (it first braked at 66 m on a car acquired at 94 m)",
- "held_out_driver_agreement": "20 held-out drives (2.6): anticipation at -1 m/s2 44.9 % (2.5 42.5 %), onset vs vision -0.013 s, radar-only braking 0 /h (2.5 0.22), driver overrides radar closer / further 7 / 0 (2.5 4 / 1), lead flips 347 /h (494), radar share of lead time 83 % (87 %); 34-drive hard ticks held-out / further / owner 16 / 0 / 0 (2.5 29 / 1 / 0)",
+ "cost": "a fast real closing far ahead without an ACC target waits for the radar to make the car its ACC target: about 1 s later on one owner drive (95 m, closing 4.5 m/s) and 0.8 s on the second car (86 m, closing 8.8 m/s); vision only braked at the same time or later in both, and Toyota's own ACC holds for several seconds on a far closing car (it first braked at 66 m on a car acquired at 94 m)",
+ "held_out_driver_agreement": "20 held-out drives (2.6): anticipation at -1 m/s2 44.9 % (2.5 42.5 %), onset vs vision -0.013 s, radar-only braking 0 /h (2.5 0.22), driver overrides radar closer / further 7 / 0 (2.5 4 / 1), lead flips 347 /h (494), radar share of lead time 83 % (87 %); 27-drive hard ticks held-out / further / owner 16 / 0 / 0 (2.5 29 / 1 / 0)",
  "far_false_closing_share": {
   "definition": "published 2.3 vRel more than 2 m/s more closing than the range-based hindsight reference, lead beyond 40 m",
   "acc_target_track": [

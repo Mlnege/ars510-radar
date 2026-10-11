@@ -29,5 +29,5 @@
   "within_0_25_s_after_association_onset": {"pair_count": 67, "unique_acquisitions": 66, "total_acquisitions": 357, "unique_acquisition_share": 0.18487394957983194, "baseline_pairs_per_bin": 26.85, "excess_pair_rate": 0.11246498599439776, "scope": "Timing coincidence; excess pair rate is not an attributable causal acquisition fraction."},
   "night_beyond_70_m_followed_share": {"associated": [0.58, 0.79], "unassociated": [0.11, 0.35], "routes": 3}
  },
- "reading": "No distinct association-linked kinematic response under the tested estimators; general factory-camera contribution is unqualified. Target selection agrees with listed radar objects, with enriched association-onset timing at 40-50 m compatible with shared triggers or camera-assisted selection."
+ "reading": "The ACC step at association onset and loss follows the radar's own kinematics under the tested estimators (distance weight 0.000 +- 0.020 at onset). Target selection agrees with listed radar objects; association-onset timing is enriched at 40-50 m, which fits shared triggers or camera-assisted selection."
 }

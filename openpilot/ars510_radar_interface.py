@@ -1,4 +1,4 @@
-"""openpilot radar tracks from the Toyota / Continental ARS510 native object list.
+"""openpilot radar tracks from the Toyota / Continental ARS510: the ACC target (`acc`, default) or the native object list (`fused`, `raw`).
 
 Installed by `openpilot/install.py` as `opendbc/car/toyota/ars510_radar_interface.py`, together with the `ars510`
 decoder package as `opendbc/car/toyota/ars510/`. The installer appends a marked block to the end of
@@ -9,25 +9,26 @@ so the same install works on openpilot and its forks (sunnypilot, StarPilot, Car
   - tracks: `CarInterface.RadarInterface` becomes a thin dispatcher that builds `Ars510RadarInterface` for such a car
     and the fork's own RadarInterface otherwise. No ToyotaFlags bit is added, so fork flag bits cannot collide.
 Worth knowing (docs/07, docs/08, docs/12):
-  - vRel has occasional 1-10 s excursions (mostly false closings beyond 40 m); the `fused` speed filter handles them, and the default `acc` publishes only the ACC target, which has none;
+  - the object list's vRel has occasional 1-10 s excursions (mostly false closings beyond 40 m, docs/07): `fused` filters them with the ACC target's speed, and the default `acc` publishes the ACC target alone;
   - the radar deletes most new stationary objects at age 5, more often the faster ego drives (7 % kept above 10 m/s),
     so a car that was already stopped when it came into view comes mostly from vision;
   - radard weights lateral position only through the camera's uncertainty when it picks the lead; `fused` adds a
     yaw-rate path gate.
 
-Why there is no CANParser: the object list is ONE 742-byte record sent as 106 ISO-TP-style frames on 0x80 every
+The object-list profiles (`fused`, `raw`) parse without CANParser: the object list is ONE 742-byte record sent as 106 ISO-TP-style frames on 0x80 every
 ~60 ms. CANParser keeps only the latest value per address (or a per-call list in vl_all), and a DBC cannot say which
 part of the record a frame carries (the sequence nibble wraps every 16 frames). The frames are reassembled from the
-raw `can_packets` card.py passes in, CRC-checked, and decoded in `ars510`. The DBCs are for cabana, not for parsing.
+raw `can_packets` card.py passes in, CRC-checked, and decoded in `ars510`. The DBCs in `dbc/` are for cabana; the `acc`
+profile parses its two 50 Hz ACC target messages with CANParser and `toyota_tss2_ars510.dbc`.
 
 Output cadence: one RadarData per completed record (~16.7 Hz, inside radard's 8-24 Hz radarTracks window).
 - After power-up the radar sends its first object record ~6 s after first CAN. Until the first valid record, this
   behaves like openpilot's radarless default: empty RadarData at 20 Hz, no error, vision-only leads. A warning is
   logged if no record has arrived NO_RECORD_WARN_S after start (e.g. wiring, or firmware that also silences bus 1 on
-  the alpha-longitudinal radar disable; 8821F0R03100 does not).
+  the alpha-longitudinal radar disable; on 8821F0R03100 bus 1 keeps running).
 - Once records have arrived, if none arrives for STALE_S, a radarUnavailableTemporary RadarData is sent at 20 Hz
   until records resume, instead of radard silently reusing the last tracks.
-- A CRC-failed record is dropped. It is not flagged as a CAN error: the staleness check covers sustained loss.
+- A CRC-failed record is dropped; the staleness check covers sustained loss.
 """
 import importlib
 from dataclasses import replace
@@ -39,10 +40,10 @@ from opendbc.car.toyota.ars510 import BASE_CONFIG, COLORED_CONFIG, FUSED_CONFIG,
 from opendbc.car.toyota.ars510.constants import (ACC_TARGET_POS_ADDR, ACC_TARGET_VREL_ADDR, CAR_BUS, ID80_ADDR, RADAR_BUS, SUMMARY_ADDRS,
                                                  TOYOTA_KINEMATICS_ADDR, TOYOTA_SPEED_ADDR)
 
-# Decoder profile (docs/08): "fused" (FUSED_CONFIG, default: one Kalman speed filter fusing the object list and the ACC
-# target by the radar's own uncertainty, plus a path gate, docs/12), "raw" (BASE_CONFIG: the unfiltered radar
-# decode, research only), "openpilot" (fused in one file, ars510_upstream.py) or "acc"
-# (the radar's ACC target alone as one point, ars510_acc_target.py, docs/10). "colored" is an experimental fused
+# Decoder profile (docs/08): "acc" (default: the radar's ACC target alone as one point, ars510_acc_target.py, docs/10),
+# "fused" (FUSED_CONFIG: one Kalman speed filter fusing the object list and the ACC target by the radar's own
+# uncertainty, plus a path gate, docs/12), "raw" (BASE_CONFIG: the unfiltered radar decode, research only) or
+# "openpilot" (fused in one file, ars510_upstream.py). "colored" is an experimental fused
 # variant for road tests (docs/12); "shared_speed" / "shared_range" are research files with one gate-free Kalman model
 # over every object (docs/10). `install.py --profile` rewrites this one line.
 STANDALONE = {"acc": "ars510_acc_target", "shared_speed": "ars510_shared_speed", "shared_range": "ars510_shared_range"}

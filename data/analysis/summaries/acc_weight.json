@@ -1,5 +1,5 @@
 {
- "description": "Weight of the radar's ACC target speed in fused's per-track speed filter: 2.4 (sigma 0.5 m/s), 2.5 (0.3 m/s) and the ACC target's values copied unblended for its track. Unchanged openpilot card -> radard -> planner replays: the 27 replay drives (gate counts as in docs/09) and the hindsight-lead oracle (oracle_reference.json), plus the road drives (owner 2.1 drives and a second car, open loop). Gates were fixed before the 0.3 result.",
+ "description": "Weight of the radar's ACC target speed in fused's per-track speed filter: 2.4 (sigma 0.5 m/s), 2.5 (0.3 m/s), 2.6 (0.13 m/s, in use) and the ACC target's values copied unblended for its track. Unchanged openpilot card -> radard -> planner replays: the 27 replay drives (gate counts as in docs/09) and the hindsight-lead oracle (oracle_reference.json), plus the road drives (owner 2.1 drives and a second car, open loop). Gates were fixed before the 0.3 result.",
  "sigma_mps": {
   "2.4": 0.5,
   "2.5": 0.3,
@@ -84,7 +84,7 @@
   "bookmarks": 23
  },
  "caveat": "The oracle's reference takes its range from the ACC target where present, so it partly favours a heavier ACC weight; the hard-tick, onset and anticipation counts are independent of it and are equal or slightly better; held-out target episodes rose 3 -> 4 and road mild requests 7 -> 8 (judged real).",
- "basis": "sigma 0.3 m/s is closer than 0.5 to a likelihood fit of the ACC target's noise near range (about 0.13 m/s; the fit is degenerate because errors persist, so it bounds rather than sets the value); earlier tests of a heavier ACC weight used the ACC speed at 0.1 m/s per code, 20 % too small (acc_summary_units.json).",
+ "basis": "a likelihood fit of the ACC target's noise near range gives about 0.13 m/s (the fit is degenerate because errors persist, so it bounds the value); 2.5 moved from 0.5 to 0.3 m/s and 2.6 uses 0.13 m/s; the tests of a heavier ACC weight in fused_filter.json read the ACC speed at 0.1 m/s per code, 20 % below the 0.125 unit (acc_summary_units.json).",
  "all_sets_with_far_rule": {
   "definition": "fast suite, 16.9 moving h, beyond 60 m only the ACC target's track; onset = first request <= -0.5 m/s2 minus vision's on the oracle's confident braking episodes",
   "0.3": {

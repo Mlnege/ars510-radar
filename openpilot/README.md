@@ -13,9 +13,10 @@ python /data/ars510-radar/openpilot/install.py /data/openpilot
 sudo reboot
 ```
 
-That's all: the fork is detected, the `acc` profile is installed, and an install made with an older patch-based
-version of this installer is replaced automatically. `--profile fused` installs the all-tracks Kalman profile and `--profile raw` the unfiltered decode for comparison
-([docs/11](../docs/11_profiles_compared.md) compares them); the removed `anchor` and `steady` names install `fused`.
+The fork is detected, the `acc` profile is installed, and an install made with an older patch-based
+version of this installer is replaced automatically. `--profile fused` installs the all-tracks Kalman profile and
+`--profile raw` the unfiltered decode for comparison ([docs/11](../docs/11_profiles_compared.md) compares them);
+`anchor` and `steady` install `fused`.
 
 **Reboot after installing.** The manager pre-imports its Python processes, so a new ignition cycle alone keeps the old
 Toyota modules. On the first drive after the reboot, `radarUnavailable` is false and leads are radar-backed.
@@ -31,14 +32,14 @@ while testing).
 
 | profile | config |
 |---|---|
-| `fused` | `FUSED_CONFIG`: the `raw` decode with range fusion, one Kalman speed filter fusing the object list and the ACC target (0x235) by the radar's own uncertainty, and a path gate; it drives exactly like the `openpilot` version. Fewest false brakes ([docs/11](../docs/11_profiles_compared.md)) |
-| `raw` | `BASE_CONFIG`: the unfiltered radar decode with only what radard needs, for research and comparison. Velocity excursions reach the planner unfiltered (three times the hard radar-only braking of `fused`); the installer prints a warning. `stock` and `default` are its older names |
+| `acc` (default) | the radar's ACC target alone as one point, the upstream proposal ([`upstream/ars510_acc_target.py`](../upstream/ars510_acc_target.py) with [`toyota_tss2_ars510.dbc`](../upstream/toyota_tss2_ars510.dbc), opendbc's CANParser, 26 code lines): the car Toyota's own ACC follows, published as soon as the radar picks it; every other car comes from the camera ([docs/10](../docs/10_research_directions.md#towards-an-upstream-comma-interface)) |
+| `fused` | `FUSED_CONFIG`: the `raw` decode with range fusion, one Kalman speed filter fusing the object list and the ACC target (0x235) by the radar's own uncertainty, and a path gate; it drives exactly like the `openpilot` version. The all-tracks alternative: every radar car within 60 m ([docs/11](../docs/11_profiles_compared.md)) |
 | `openpilot` | the single-file version of `fused` ([`upstream/ars510_radar.py`](../upstream/ars510_radar.py)), installed as `opendbc/car/toyota/ars510_upstream.py`: one file in opendbc style with `fused`'s filter, points with `trackId` / `dRel` / `yRel` / `vRel` only (`upstream` is its older name) |
-| `acc` (default) | the radar's ACC target alone as one point, the upstream proposal ([`upstream/ars510_acc_target.py`](../upstream/ars510_acc_target.py) with [`toyota_tss2_ars510.dbc`](../upstream/toyota_tss2_ars510.dbc), opendbc's CANParser): no object list, no filter; every other car comes from the camera ([docs/10](../docs/10_research_directions.md#towards-an-upstream-comma-interface)) |
-| `colored` | experimental: `COLORED_CONFIG`, `fused` with a colored-noise (bias) state for the object list; road tests only ([docs/12](../docs/12_kalman_filter.md#kalman-variants-tested)) |
+| `raw` | `BASE_CONFIG`: the unfiltered radar decode with what radard needs, for research and comparison. Velocity excursions reach the planner (93 hard radar-only braking ticks on the held-out routes against 16 for `fused` and 14 for `acc`); the installer prints a warning. `stock` and `default` are its older names |
+| `colored` | experimental: `COLORED_CONFIG`, `fused` with a colored-noise (bias) state for the object list; road tests ([docs/12](../docs/12_kalman_filter.md#kalman-variants-tested)) |
 
 Older names still work and print what they select: `anchor` / `steady` → `fused`, `stock` / `default` → `raw`,
-`upstream` → `openpilot`. Note that `--profile default` means `raw`; leave `--profile` out for the recommended `acc`.
+`upstream` → `openpilot`. `--profile default` selects `raw`; leave `--profile` out to install `acc`.
 
 ## What gets installed
 
