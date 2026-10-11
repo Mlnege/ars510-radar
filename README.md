@@ -55,7 +55,10 @@ the driver did ([11](docs/11_profiles_compared.md)), with the default `fused` pr
   planner through the camera until the radar picks it, about 1 s later than with the object list
   ([12](docs/12_kalman_filter.md#far-cars-the-radar-does-not-follow)).
 
-These are replay results on the owner's car (the hindsight-lead numbers also include a second car's two drives). On the road (7.4 h on the owner's car with 2.1.0, and a second driver's
+These are replay results on the owner's car (the hindsight-lead numbers also include a second car's two drives). Replayed on
+a second car never used for tuning (8.8 h), `fused` stays off the brakes at 10 of the 11 false brakes its driver flagged
+on an older profile ([12](docs/12_kalman_filter.md#on-a-second-car)), and the radar's speed noise is the same on both
+units ([06](docs/06_accuracy.md#velocity)). On the road (7.4 h on the owner's car with 2.1.0, and a second driver's
 2025 RAV4 Hybrid) the braking matched them: no hard radar-only braking on the owner's car (the second car's one replayed hard brake was
 the next-lane pairing the path gate now removes); the two mild slowdowns had far leads beyond
 95 m without the radar's ACC target, and the next-lane pairing behind one of them is what the path gate now handles
