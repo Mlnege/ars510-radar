@@ -988,7 +988,7 @@ def excursion_sigma_scale():
     """Native-minus-ACC velocity error against the reported 240|7 code, and observed vs Gaussian-predicted excursion incidence."""
     info = summary("excursion_sigma_scale")
     fig, (a, b) = plt.subplots(1, 2, figsize=(10.5, 4.3))
-    for key, col, lab in (("corpus_700_segments", S1, "development + held-out drives"), ("fresh_114_segments", S2, "fresh drives")):
+    for key, col, lab in (("corpus_700_segments", S1, "development + held-out drives"),):
         r = info[key]["rms_by_code"]
         x = [v["code"] for v in r.values() if v["n"] >= 70]; y = [v["rms"] for v in r.values() if v["n"] >= 70]
         a.plot(x, y, marker="o", color=col, label=lab)
@@ -1001,9 +1001,9 @@ def excursion_sigma_scale():
     for lab, c in (("40–55 m", S1), ("55–70 m", S2), ("70–85 m", S3), ("85–110 m", S4)): b.scatter([], [], color=c, label=lab)
     b.set_xlabel("predicted excursion rate (%), Gaussian σ = 0.045 × code"); b.set_ylabel("observed rate (%)"); b.set_title("Excursion incidence per range band and code quartile"); b.legend(loc="upper left")
     fig.tight_layout()
-    save(fig, "excursion_sigma_scale", "Matched to the radar's own ACC target (227 k development/held-out records, 13 k fresh). Excursion = 9-record median of native − ACC below −2.5 m/s. "
+    save(fig, "excursion_sigma_scale", "Matched to the radar's own ACC target (210 k development/held-out records, ACC speed at 0.125 m/s per code). Excursion = 9-record median of native − ACC below −2.5 m/s. "
          "ACC reference error (about 0.6 m/s) is included in the RMS; kurtosis beyond 2.5σ exceeds Gaussian. "
-         "ACC speed at 0.1 m/s per code; at the decoded 0.125 the per-count RMS is 0-6 % higher (acc_unit_recompute.json).")
+         "Fresh-drive incidence at the same unit: acc_unit_recompute.json.")
 
 
 def video_truth_excursions():
@@ -1021,31 +1021,6 @@ def video_truth_excursions():
     ax.legend(loc="upper left")
     fig.tight_layout()
     save(fig, "video_truth_excursions", "2,657 selected windows; ECC metric scale uses native range; the reference has its own error.")
-
-
-def kalman_response():
-    """Paired route uncertainty for the fixed current colored recurrence against scalar RW."""
-    info = summary("kalman_response")
-    names = [("development", "Development"), ("prior_evaluation", "Prior evaluation"),
-             ("recent_reused", "Recent, reused"), ("owner", "Owner"), ("combined", "Combined")]
-    fig, ax = plt.subplots(figsize=(9, 4.2))
-    for y, (key, label) in enumerate(names):
-        row = info["cohorts"][key]
-        delta = row["paired_lag_difference_s"]["currentCN_minus_RW"]
-        mean = 1000 * delta["mean"]
-        lo, hi = (1000 * v for v in delta["route_block_bootstrap_95"])
-        ax.errorbar(mean, y, xerr=[[mean - lo], [hi - mean]], fmt="o", capsize=4,
-                    color=S1 if key != "combined" else INK, markersize=6)
-    labels = [f"{label}  ({info['cohorts'][key]['event_count']} windows)" for key, label in names]
-    ax.set_yticks(range(len(names)), labels)
-    ax.invert_yaxis()
-    ax.axvline(0, color=INK2, lw=1, ls=":")
-    ax.set_xlim(-220, 245)
-    ax.set_xlabel("Colored model − scalar model response lag (ms); negative = earlier")
-    ax.set_title("ACC-defined response: combined interval spans zero")
-    fig.tight_layout()
-    save(fig, "kalman_response", "252 windows, 33 routes; paired route-block bootstrap 95% intervals. Trackers hidden during estimation.\n"
-         "The reference is the same radar's ACC target, so this compares the filters with each other.")
 
 
 def summary_owner_case():
@@ -1189,7 +1164,7 @@ NUMBERS: dict = {}
 FIGURES = {f.__name__: f for f in (record_raster, field_map, vground_vs_ego, standstill_codes, lateral_hist, bev_density, ground_contact,
                                    lateral_scale, lifetimes, slot_gantt, track_lifecycle, lane_weights, object_size, heading_field,
                                    age_convergence, vrel_hexbin, vrel_mse, range_walk, brake_events, fault_injection,
-                                   event_code_context, initial_attribute_zeros, id85_direction_code_structure, lane_curve_cells, excursion_sigma_scale, video_truth_excursions, kalman_response, summary_owner_case,
+                                   event_code_context, initial_attribute_zeros, id85_direction_code_structure, lane_curve_cells, excursion_sigma_scale, video_truth_excursions, summary_owner_case,
                                    acc_frame_map, camera_association, lateral_unit_evidence, far_range_distance, tracker_range, target_366_coding, target_366_coverage, pcs_flag_0x344, pcs_activation_u3)}
 
 

@@ -852,5 +852,65 @@
    -12.8
   ]
  },
- "acc_drop_response_summary": "kalman_response.json"
+ "acc_drop_response_summary": "kalman_response.json",
+ "replay_colored_vs_fused_2_6": {
+  "description": "The shipped COLORED_CONFIG (colored-noise state, ACC sigma 0.5, summaries on) on the code of fused 2.6, replayed with the fast suite (every drive set, 6-segment chunks, 16.91 moving h) beside fused 2.6; the fused 2.6 row reproduces profiles_vs_vision / acc_target_parser exactly.",
+  "moving_h": 16.91,
+  "fused_2_6": {
+   "hard": 8,
+   "hard_ticks": 16,
+   "mild": 27,
+   "flips_per_h": 332,
+   "unnecessary_s": 21.0,
+   "missed_s": 16.4,
+   "onset_vs_vision_s": -0.01
+  },
+  "colored": {
+   "hard": 7,
+   "hard_ticks": 18,
+   "mild": 26,
+   "flips_per_h": 332,
+   "unnecessary_s": 31.1,
+   "missed_s": 18.1,
+   "onset_vs_vision_s": 0.016
+  },
+  "colored_minus_fused_per_moving_h": {
+   "hard": {
+    "per_h": -0.059,
+    "ci95": [
+     -0.293,
+     0.129
+    ]
+   },
+   "mild": {
+    "per_h": -0.059,
+    "ci95": [
+     -0.369,
+     0.256
+    ]
+   },
+   "unnecessary_s": {
+    "per_h": 0.6,
+    "ci95": [
+     0.188,
+     1.15
+    ]
+   },
+   "missed_s": {
+    "per_h": 0.098,
+    "ci95": [
+     0.004,
+     0.216
+    ]
+   },
+   "flips": {
+    "per_h": 0.473,
+    "ci95": [
+     -3.552,
+     4.777
+    ]
+   },
+   "routes": 62
+  }
+ }
 }

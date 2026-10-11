@@ -26,12 +26,10 @@ Profiles (docs/08 has the details and replay numbers):
             the object list and the radar's ACC target by their own uncertainty, with a path gate (= the openpilot version)
   raw       BASE_CONFIG: the unfiltered radar decode with only what radard
             needs to run. Velocity excursions reach the planner unfiltered; for research and comparison only
-  colored   experimental: fused with the object-list error as its own (colored-noise) state; fewer false closings
-            offline, slower to let go of a far excursion that recovers (docs/12). For road tests only
   openpilot fused in one file (upstream/ars510_radar.py, opendbc style), driving identically, points with trackId /
             dRel / yRel / vRel only. The all-tracks upstream alternative; the proposal is acc
-  shared_speed / shared_range  research only: every object and the ACC target through one gate-free Kalman model
-            (speed, or range and range rate). The object list's correlated errors reach the planner (docs/10)
+  Also tried, set aside (installable for research; docs/12, docs/10): colored (fused with a colored-noise state) and
+  shared_speed / shared_range (every object and the ACC target through one gate-free Kalman model)
 
 Legacy names are aliases: anchor/steady select fused, upstream selects openpilot,
 and stock/default select raw. Every alias prints its selection. Omit --profile for the recommended acc default.

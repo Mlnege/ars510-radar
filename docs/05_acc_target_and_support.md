@@ -202,7 +202,7 @@ from the range slope and lags by about half a second.
 `parse_0x192()` returns the raw codes plus `Target192.d_rel` and `Target192.y_rel` in metres (0x194 has the same
 layout). It returns `None` for a short payload or the exact whole-frame sentinel. The fork build can attach each summary
 to the object-list track at its position (range within max(5 m, 15 %), lateral within 1 m) and use its range slope as a speed
-measurement up to 80 m: an option, off in `fused` and on in `colored`
+measurement up to 80 m: an option, off in `fused` and `acc`
 ([12](12_kalman_filter.md#what-the-summaries-do)).
 
 ## 0x190: cycle header

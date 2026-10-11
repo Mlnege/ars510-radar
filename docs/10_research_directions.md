@@ -313,10 +313,9 @@ filtered speed. Each part of `ars510_radar.py` above rebuilds a piece of that de
 - the path gates rebuild "in path";
 - the far rule is the decision itself at range.
 
-Passing the object list straight through gives hard braking, and so does one gate-free Kalman model over every
-object. That model weights each reading by its own uncertainty, either over speed with a traffic prior, or over range
-and range rate with the measured 3 % range noise (research profiles `shared_speed` / `shared_range`). It brakes hard
-while moving 59 and 168 times against `fused`'s 8. Both object-list kinematic signals, speed and range, carry slow,
+Tried and set aside: one gate-free Kalman model over every object (`shared_speed`, `shared_range`; over speed with a traffic
+prior, or over range and range rate with the measured 3 % range noise) brakes hard while moving 59 and 168 times against
+`fused`'s 8. Both object-list kinematic signals, speed and range, carry slow,
 correlated errors that inverse-variance weighting leaves in place; the ACC target's speed follows the slope of its own
 range (below), so the radar's decision carries consistent speed and range.
 

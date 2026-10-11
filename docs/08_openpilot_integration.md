@@ -105,11 +105,13 @@ same drives.
 | `fused` | `FUSED_CONFIG`: the `raw` decode with range fusion and one Kalman speed filter that weights the object list and the radar's ACC target by their own uncertainty ([12](12_kalman_filter.md#the-model)), plus a path gate against next-lane leads ([12](12_kalman_filter.md#path-gate)); the filter makes `raw`'s relink and saturation guard redundant | the all-tracks alternative: every radar car within 60 m, with 0 radar-only braking per hour on the held-out drives ([11](11_profiles_compared.md)) |
 | `openpilot` | `fused` in one file ([`upstream/ars510_radar.py`](../upstream/ars510_radar.py)): opendbc style with `fused`'s filter, points with `trackId` / `dRel` / `yRel` / `vRel` only ([10](10_research_directions.md#towards-an-upstream-comma-interface)) | driving the all-tracks upstream alternative |
 | `raw` | `BASE_CONFIG`: the unfiltered radar decode plus what radard needs (tracks from age 60, ego-speed subtraction, invalid-code guard) | research and comparison; velocity excursions reach the planner |
-| `colored` | experimental: `COLORED_CONFIG`, `fused` with a colored-noise (bias) state for the object list, the summaries on and the ACC target at 0.5 m/s ([12](12_kalman_filter.md#kalman-variants-tested)) | road tests: fewer false closings offline, slower to let go of a far excursion that recovers |
-| `shared_speed`, `shared_range` | research files ([`openpilot/standalone/`](../openpilot/standalone)): every object and the ACC target through one gate-free Kalman model, over speed with a traffic prior or over range and range rate ([10](10_research_directions.md#the-acc-target-alone--candidate)) | research: replays ask for hard radar-only braking 7-21 times as often as `fused` |
 
-`--profile acc`, `shared_speed` and `shared_range` hand the whole update to their standalone file (its own reporting
-cadence and error report; `acc` also needs its DBC, which the installer copies to `opendbc/dbc/`), with the legacy point
+Also tried and set aside: `colored` (`fused` with a colored-noise state) and the research files `shared_speed` / `shared_range`
+(every object and the ACC target through one gate-free Kalman model; 59 and 168 hard moving episodes against `fused`'s 8).
+In replay `colored` asks for 10 s more unnecessary braking than `fused` over 16.9 moving hours ([12](12_kalman_filter.md#kalman-variants-tested)); the installer keeps them.
+
+`--profile acc` hands the whole update to its standalone file (its own reporting
+cadence and error report; it also needs its DBC, which the installer copies to `opendbc/dbc/`), with the legacy point
 fields for forks that carry them. `--profile openpilot` runs the same `Ars510Radar` core as the standalone file through
 the fork adapter (fork constructor arguments, legacy point fields); its `trackId` / `dRel` / `yRel` / `vRel` match
 `fused` exactly ([12](12_kalman_filter.md#removing-parts-together)).

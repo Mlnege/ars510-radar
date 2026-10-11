@@ -465,7 +465,7 @@ bookmarks (within 0.03 m/s² on the other 4), with 0 hard radar-only braking and
 ([`driving_claim_sources.json`](../data/analysis/summaries/driving_claim_sources.json)); against the
 oracle (owner and second car, 7.65 h) 5.4 against 4.9 s unnecessary and 7.2 against 9.5 s missed. So `fused` leaves
 them out from 2.4 on, and the fork default and the openpilot version drive identically. The code remains a fork option
-(`summary_sigma_mps`), and the experimental `colored` profile, tested with them, keeps them.
+(`summary_sigma_mps`).
 
 ### The ACC target's weight
 
@@ -484,35 +484,29 @@ Numbers: [`acc_weight.json`](../data/analysis/summaries/acc_weight.json),
 
 ## Kalman variants tested
 
-The single speed state of `fused` was compared with richer filters on an offline bench: every cycle of 8 drive groups,
-the radar's ACC target hidden as the reference (read at 0.125 m/s per code; the cached readings are rescaled exactly from
-the 0.1 extraction and the filters retuned), tuned on 3 groups and scored on the rest. The best candidates were then replayed through openpilot
-([`kalman_variants.json`](../data/analysis/summaries/kalman_variants.json)). The bench metric is the share of cycles
-with estimate − ACC target below −2 m/s (d > 30 m, age ≥ 60); `fused` (one speed state) scores 7.6 / 8.0 / 7.6 % on
-held-out / fresh / owner drives (5.9 / 5.7 / 5.8 % at the 0.1 m/s unit).
+Richer filters were tried against `fused`'s single speed state and did not earn a place in the recommended profiles. The
+offline bench uses every cycle of 8 drive groups with the radar's ACC target hidden as the reference (read at 0.125 m/s per
+code), tuned on 3 groups and scored on the rest ([`kalman_variants.json`](../data/analysis/summaries/kalman_variants.json)). Its
+metric is the share of cycles with estimate − ACC target below −2 m/s (d > 30 m, age ≥ 60); `fused` scores
+7.6 / 8.0 / 7.6 % on held-out / fresh / owner drives.
 
 ![Kalman variants](img/analysis/kalman_variants.png)
 
-| variant | bench false closings, held-out / fresh / owner | openpilot replays (27 drives) |
-|---|---|---|
-| Student-t update instead of the 3σ clamp | 7.8 / 8.7 / 7.4 % (above `fused` on held-out and fresh drives, below on owner drives) | – |
-| speed + acceleration state, with the ACC target's acceleration as a reading | 7.7 / 8.5 / 7.6 % (0.1 above `fused` on held-out, 0.5 above on fresh, equal on owner drives) | – |
-| noise learned from all slot fields (gradient boosting) | 7.1 / 8.4 / 7.0 %; the learned noise rebuilds `240\|7`, ego speed and `84\|10` | – |
-| object-list error as its own state (colored noise, τ 1.19 s), noise scaled by ego speed and `84\|10` | **6.8 / 7.8 / 7.8 %** with the `COLORED_CONFIG` constants (refit at this unit: 6.8 / 8.1 / 7.5 %): 11 % fewer false closings on held-out drives, 2-3 % fewer on fresh, 3 % more on owner drives; responds 84 ms sooner to ACC-defined drops (below) | against 2.0: held-out 29 hard ticks vs 30, further drives 30 vs 2 (one far false closing held for seconds) |
-| retuned `fused` constants (σ per count 0.033, ACC σ 0.3, lead acceleration 1.0 / 2.0) | – | 8 fresh drives: only lead acceleration 2.0 passes every gate, and it scores the same as 1.5 ([`driving_claim_sources.json`](../data/analysis/summaries/driving_claim_sources.json)) |
-| ACC target weight (σ 0.13 in 2.6; 0.3 in 2.5; 0.5 before) | – | [above](#the-acc-targets-weight) |
+| variant | bench false closings, held-out / fresh / owner |
+|---|---|
+| Student-t update instead of the 3σ clamp | 7.8 / 8.7 / 7.4 % |
+| speed + acceleration state, with the ACC target's acceleration as a reading | 7.7 / 8.5 / 7.6 % |
+| noise learned from all slot fields (gradient boosting) | 7.1 / 8.4 / 7.0 % |
+| object-list error as its own state (colored noise, τ 1.19 s), noise scaled by ego speed and `84\|10` (`--profile colored`) | 6.8 / 7.8 / 7.8 % |
 
-The colored-noise filter is the textbook fix for the object list's slow, correlated errors: an error time constant of
-1.19 s, a lag-1 autocorrelation of 0.95 per 60 ms record (e^(−0.06/1.19)). It rejects slow drift, and for the same
-reason it takes seconds to let go of a large drift that recovers. Real driving rewards letting go quickly, so `fused`
-keeps one speed state. The fork build offers the colored filter as the experimental `colored` profile (`COLORED_CONFIG`)
-for road tests.
+The colored-noise filter is the textbook fix for the object list's slow, correlated errors (lag-1 autocorrelation 0.95 per
+60 ms record). On the bench it lowers false closings by 0.8 points on held-out drives and responds 84 ms sooner to
+ACC-defined drops (276 windows, 95% route-bootstrap interval [−129, −45] ms; [`kalman_response.json`](../data/analysis/summaries/kalman_response.json)).
+In replay through openpilot on every drive set (16.9 moving hours) it asks for 10.1 s more unnecessary braking than `fused`
+2.6 (31.1 s against 21.0 s; +0.60 s per moving hour, 95% route-bootstrap interval [+0.19, +1.15]) and 1.7 s more missed
+braking (18.1 s against 16.4 s), with the same hard braking and lead flips. `fused` keeps one speed state; the fork build
+keeps `COLORED_CONFIG` as an option.
 
-![response to ACC-defined speed drops](img/analysis/kalman_response.png)
-
-*Response on windows where the hidden ACC target drops ≥ 2 m/s within 2 s: time for the estimate to cover half the drop,
-relative to the ACC target. Figure: 252 windows (33 routes), ACC read at 0.1 m/s per code, one speed state 0.438 s,
-colored 0.394 s, paired difference −44 ms [−101, +13] ms. At 0.125 m/s per code: 276 windows (34 routes), one speed
-state 0.554 s, colored 0.470 s, paired difference −84 ms, 95% route-bootstrap interval [−129, −45] ms. The ACC target
-is the same radar's tracker, so this compares the two filters with each other
-([`kalman_response.json`](../data/analysis/summaries/kalman_response.json)).*
+Constants retuned on 8 fresh drives (σ per count 0.033, ACC σ 0.3, lead acceleration 1.0 / 2.0): only lead acceleration 2.0
+passes every gate, and it scores the same as 1.5 ([`driving_claim_sources.json`](../data/analysis/summaries/driving_claim_sources.json)).
+The ACC target's weight: [above](#the-acc-targets-weight).

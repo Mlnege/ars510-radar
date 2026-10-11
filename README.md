@@ -112,7 +112,7 @@ The code comes in two versions that drive identically:
   [docs/10](docs/10_research_directions.md#parts-of-the-openpilot-file) lists what each part costs and buys. The
   `acc` proposal is [`upstream/ars510_acc_target.py`](upstream/ars510_acc_target.py), 41 lines (26 code) with its
   [DBC](upstream/toyota_tss2_ars510.dbc). The fork build also keeps the radar's target summaries and the track-ID
-  relink as options (`colored` uses the summaries); `fused` drives as well without them
+  relink as options; `fused` drives as well without them
   ([docs/12](docs/12_kalman_filter.md#what-the-summaries-do)).
 
 | profile | install | what it does | use it for |
@@ -121,10 +121,10 @@ The code comes in two versions that drive identically:
 | `fused` | `--profile fused` | one Kalman speed filter per track that weights the object list and the radar's ACC target by the radar's own uncertainty, and withholds most next-lane cars beyond 15 m | the all-tracks alternative: every radar car within 60 m |
 | `raw` | `--profile raw` | the unfiltered radar decode, with the validity rules radard needs | research and comparison: speed excursions reach the planner |
 | `openpilot` | `--profile openpilot` | `fused` from the single upstream file; points with `trackId` / `dRel` / `yRel` / `vRel` only | driving exactly what is proposed for openpilot in all-tracks form |
-| `colored` | `--profile colored` | experimental: `fused` with the object list's slow speed error as its own state | road tests of the main `fused` variant ([docs/12](docs/12_kalman_filter.md#kalman-variants-tested)) |
-| `shared_speed`, `shared_range` | `--profile shared_speed` / `shared_range` | research: every object and the ACC target through one gate-free Kalman model (speed, or range and range rate) | research ([docs/10](docs/10_research_directions.md#the-acc-target-alone--candidate)) |
 
 ![which processing each profile applies](docs/img/analysis/profile_layers.png)
+
+Also tried, set aside: a colored-noise variant of `fused` (`--profile colored`) and two gate-free Kalman models over every object (`shared_speed`, `shared_range`). In replay, `colored` asks for 10 s more unnecessary braking than `fused` over 16.9 moving hours, and the gate-free models brake hard 7-21 times as often ([docs/12](docs/12_kalman_filter.md#kalman-variants-tested), [docs/10](docs/10_research_directions.md#the-acc-target-alone--candidate)); the installer keeps them for research.
 
 `anchor` and `steady` (earlier tuned profiles) install `fused`. Each profile against vision only, pros and cons,
 assumptions and a comparison with openpilot's other radar interfaces: [docs/11](docs/11_profiles_compared.md). The
