@@ -29,6 +29,7 @@ Output cadence: one RadarData per completed record (~16.7 Hz, inside radard's 8-
   until records resume, instead of radard silently reusing the last tracks.
 - A CRC-failed record is dropped. It is not flagged as a CAN error: the staleness check covers sustained loss.
 """
+import importlib
 from dataclasses import replace
 
 from opendbc.car import structs
@@ -40,9 +41,12 @@ from opendbc.car.toyota.ars510.constants import (ACC_TARGET_POS_ADDR, ACC_TARGET
 
 # Decoder profile (docs/08): "fused" (FUSED_CONFIG, default: one Kalman speed filter fusing the object list and the ACC
 # target by the radar's own uncertainty, plus a path gate, docs/12), "raw" (BASE_CONFIG: the unfiltered radar
-# decode, research only) or "openpilot" (the upstream version, ars510_upstream.py: one file in opendbc style).
-# "colored" is an experimental fused variant for road tests (docs/12). `install.py --profile` rewrites this one line.
-PROFILES = {"fused": FUSED_CONFIG, "openpilot": None, "raw": BASE_CONFIG, "colored": COLORED_CONFIG}
+# decode, research only), "openpilot" (the upstream version, ars510_upstream.py: one file in opendbc style) or "acc"
+# (the radar's ACC target alone as one point, ars510_acc_target.py, docs/10). "colored" is an experimental fused
+# variant for road tests (docs/12); "shared_speed" / "shared_range" are research files with one gate-free Kalman model
+# over every object (docs/10). `install.py --profile` rewrites this one line.
+STANDALONE = {"acc": "ars510_acc_target", "shared_speed": "ars510_shared_speed", "shared_range": "ars510_shared_range"}
+PROFILES = {"fused": FUSED_CONFIG, "openpilot": None, "raw": BASE_CONFIG, "colored": COLORED_CONFIG, **{k: k for k in STANDALONE}}
 PROFILE = PROFILES["fused"]
 
 # Radar firmware confirmed to be a Continental ARS510 that sends the native object list (0x80) on bus 1.
@@ -63,12 +67,21 @@ WANTED = {(RADAR_BUS, ID80_ADDR), (CAR_BUS, TOYOTA_SPEED_ADDR), (CAR_BUS, TOYOTA
 class Ars510RadarInterface(RadarInterfaceBase):
   def __init__(self, CP, *args, **kwargs):  # forks add arguments (sunnypilot: CP_SP)
     super().__init__(CP, *args, **kwargs)
-    self.ars = UpstreamCandidate() if PROFILE is None else Ars510NativeRadarInterface(replace(PROFILE, include_metadata=False))
+    self.standalone = None
+    if isinstance(PROFILE, str):  # a standalone file: a complete RadarInterface of its own (frames, cadence, staleness)
+      self.standalone = importlib.import_module(f"opendbc.car.toyota.{STANDALONE[PROFILE]}").RadarInterface(CP, *args, **kwargs)
+    else:
+      self.ars = UpstreamCandidate() if PROFILE is None else Ars510NativeRadarInterface(replace(PROFILE, include_metadata=False))
     self.start_s: float | None = None
     self.last_record_s: float | None = None
     self.warned = False
 
   def update(self, can_packets):
+    if self.standalone is not None:
+      ret = self.standalone.update(can_packets)
+      if ret is not None and ret.points and LEGACY_FIELDS:  # forks with the legacy fields: as for the upstream version
+        ret.points = [_point({"trackId": p.trackId, "dRel": p.dRel, "yRel": p.yRel, "vRel": p.vRel, **ACC_LEGACY}) for p in ret.points]
+      return ret
     self.frame += 1
     latest = None
     now_s = None
@@ -101,20 +114,18 @@ class Ars510RadarInterface(RadarInterfaceBase):
 
     self.last_record_s = latest["time_s"]
     ret = structs.RadarData()
-    points = []
-    # RadarPoint is trackId / dRel / yRel / vRel; forks that still carry the legacy aRel / yvRel / measured fields get
-    # them too. Every profile withholds points with a NaN vRel, which would poison radard's per-track Kalman filter.
-    for p in latest["radarData"]["points"]:
-      pt = structs.RadarData.RadarPoint()
-      pt.trackId = p["trackId"]
-      pt.dRel = p["dRel"]
-      pt.yRel = p["yRel"]
-      pt.vRel = p["vRel"]
-      for legacy in LEGACY_FIELDS:
-        setattr(pt, legacy, p[legacy])
-      points.append(pt)
-    ret.points = points
+    # Every profile withholds points with a NaN vRel, which would poison radard's per-track Kalman filter.
+    ret.points = [_point(p) for p in latest["radarData"]["points"]]
     return ret
+
+
+def _point(p: dict) -> structs.RadarData.RadarPoint:
+  """RadarPoint is trackId / dRel / yRel / vRel; forks that still carry the legacy aRel / yvRel / measured fields get them too."""
+  pt = structs.RadarData.RadarPoint()
+  pt.trackId, pt.dRel, pt.yRel, pt.vRel = p["trackId"], p["dRel"], p["yRel"], p["vRel"]
+  for legacy in LEGACY_FIELDS:
+    setattr(pt, legacy, p[legacy])
+  return pt
 
 
 class UpstreamCandidate:
@@ -138,6 +149,7 @@ def _legacy_fields() -> tuple[str, ...]:
 
 
 LEGACY_FIELDS = _legacy_fields()
+ACC_LEGACY = {"aRel": float("nan"), "yvRel": float("nan"), "measured": True}
 
 
 # ---- generic hook (called from the block install.py appends to opendbc/car/toyota/interface.py) ------------------

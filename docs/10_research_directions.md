@@ -222,3 +222,65 @@ upstream PR.
 
 Numbers: [`openpilot_file_parts.json`](../data/analysis/summaries/openpilot_file_parts.json), with the evidence file for
 each part.
+
+### The ACC target alone (◐ candidate)
+
+[`upstream/ars510_acc_target.py`](../upstream/ars510_acc_target.py) publishes only the radar's ACC target
+(0x235 / 0x237: distance, lateral position, closing speed, target id) as openpilot's one radar point, the way Toyota's
+own ACC uses the radar ([05](05_acc_target_and_support.md)). It has no object list, reassembly, track-ID logic, ego speed,
+filter or gates: 33 code lines against 187, 4 constants against 28, 12 conditions against 85. The object list is the
+tracker's raw state; the ACC target is its decision: one converged, in-path, moving target with a fine distance and a
+filtered speed. Each part of `ars510_radar.py` above rebuilds a piece of that decision:
+- the Kalman filter and the young-track factor rebuild the tracker's own speed filtering;
+- the age and speed-std gates rebuild "converged";
+- the path gates rebuild "in path";
+- the far rule is the decision itself at range.
+
+Passing the object list straight through gives hard braking, and so does one gate-free Kalman model over every
+object. That model weights each reading by its own uncertainty, either over speed with a traffic prior, or over range
+and range rate with the measured 3 % range noise (research profiles `shared_speed` / `shared_range`). It brakes hard
+while moving 59 and 168 times against `fused`'s 8. Both object-list kinematic signals, speed and range, carry slow,
+correlated errors that no inverse-variance weight removes. Passing the radar's decision through does not have them. sunnypilot's
+Hyundai camera-SCC interface publishes that car's ACC lead as its single point the same way.
+
+![the ACC target alone against 2.6](img/analysis/guide_acc_target_parser.png)
+
+Replayed over every drive set (16.9 moving h, 62 routes, unchanged radard and planner):
+- **Braking.** It asks for something different from 2.6 (> 0.3 m/s²) on 0.21 % of moving time. Every route-bootstrap
+  difference to 2.6 includes zero: hard, mild, oracle unnecessary and missed braking.
+- **Lead stability and onset.** Lead flips are lower (302 against 332 per hour). Braking starts 0.017 s before vision
+  only on real closings (2.6: 0.010 s). The radar supplies the lead more often (88 % against 86 % of lead time),
+  because the ACC target needs no age gate.
+- **While moving,** it has 5 hard and 22 mild radar-only episodes against 8 and 27. Its other 8 count as hard because
+  the car is stopped 0.7-4.8 m behind an object the camera does not report as a lead: radard's low-speed rule holds
+  the car there, while vision only would ask to move off.
+- **One far case:** a real object braking and drifting a lane to the right at 82 m, still flagged in-path. radard
+  matches it to the camera's lead 27 m further on, at radard's 25 % distance limit (−2.6 m/s² for 0.35 s; 2.6 blends it
+  down to −0.85).
+- **On Toyota's stock-ACC drives** its requests track Toyota's command as closely as 2.6's: on U1 RMS 0.249 m/s² for
+  both (jerk p99 0.167 against 0.176 m/s³); on the second car's stock drive (140 s) the two differ by 0.007 m/s² RMS,
+  with correlation to Toyota 0.76 for both against 0.68 for vision only. The rest of the gap to Toyota is openpilot's
+  planner (0.35 m/s² more braking where Toyota holds at its set speed), not the radar point.
+- **No filter on top:** the ACC target's speed does not lag its own distance (best lag −0.06 s, gain 1.00), and its
+  fast noise (0.027 m/s) is a fifth of its 0.125 m/s code step, so a filter could only add delay.
+- **On drives never used for development** (1.98 moving h): 0 hard episodes and 1 oracle-confirmed mild, as 2.6.
+- **On 26 owner routes held out from every replay** (2.56 moving h):
+  - unnecessary braking 7.7 against 2.6's 11.4 s, and lead flips 323 against 345 per hour (both route-bootstrap CIs
+    exclude zero);
+  - braking starts 0.053 s before vision only (2.6: 0.026 s);
+  - hard, mild and missed braking tie within their intervals. Its one hard episode is a hold at 0.3 m/s, 1.3 m from an
+    object, where the oracle asks for −2.65 m/s² too.
+
+Each part earns its line, by what breaks without it (replays of every drive set):
+- **Target id as track id.** With a constant id, radard's per-track filter carries the old target's speed into the new
+  one: unnecessary braking 19.2 → 37.2 s, hard episodes 13 → 16.
+- **Lateral position.** At 0, radard's low-speed rule (points within 1 m of the path) takes targets that are off the
+  path: hard braking while moving 5 → 7, mild 22 → 27.
+- **The radar's target-present flags.** Without them an absent target becomes a point at 0 m, which radard keeps
+  switching to: lead flips 302 → 342 per hour, mild 30 → 32.
+- **Reporting at 20 Hz.** No effect in replay, which runs radard in simulation mode; on the car radard accepts
+  radarTracks only at 8-24 Hz.
+
+The oracle's reference lead is built mostly from the ACC target's range, so its unnecessary and missed seconds lean
+toward this file; the hard, mild and onset numbers do not use it. Numbers:
+[`acc_target_parser.json`](../data/analysis/summaries/acc_target_parser.json).
