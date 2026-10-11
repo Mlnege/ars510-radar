@@ -81,17 +81,19 @@ while the ACC target stays at −0.75 to −0.9 m/s ([12](12_kalman_filter.md#th
     the radar's 0x190 like its own 0x191 and change content every 60 ms radar cycle;
   - **camera:** 0x101/0x102, 0x180, 0x197, 0x210, 0x240-0x248, 0x24D, 0x500/0x501, drifting 16-57 ms per 30 min against
     the radar.
-- **Its distance and closing speed come from the radar's own tracker** (◐, [summary](../data/analysis/summaries/acc_target_camera.json)).
+- **Its distance and closing speed are filtered estimates sent on the radar clock** (◐, [summary](../data/analysis/summaries/acc_target_camera.json)).
   The slot's camera-association state `112|3` ([03](03_slot_fields.md#camera-association)) ends between 40 and 60 m by
   day, so the same cars are followed with and without the camera's association. At 40-60 m both have the same ACC
   distance and speed jitter and the same agreement with openpilot's vision lead, and at 216 association onsets and
   losses the ACC distance and speed do not step (+0.06 / +0.03 m, −0.01 / −0.05 m/s) while the object-list range of the
-  same track moves by about a metre. With errors like openpilot's vision, a camera share above about 4 % (distance) or
-  6 % (speed) would show.
-- **The choice of target is mostly the radar's:** all 539 daytime acquisitions beyond 60 m happen without the camera's
+  same track moves by about a metre. So any pull toward the camera that switches with the association is small (below
+  about 4 % of distance and 6 % of speed, measured against openpilot's vision lead). This bounds only the part that
+  switches with the association: a camera share that stays constant would leave the same observations ([summary](../data/analysis/summaries/acc_camera_identifiability.json)).
+- **Target choice agrees with the radar's listed objects:** all 539 daytime acquisitions beyond 60 m happen without the camera's
   association, and the radar follows the nearest moving in-lane object as often at 60-70 m as at 20-40 m (0.93 / 0.92).
-  At the camera's daytime range limit (40-50 m), 11 % of acquisitions come within 0.25 s of the camera associating the
-  object, so there the ACC target's presence partly follows the camera's association. The camera
+  At the camera's daytime range limit (40-50 m), 66 of 357 acquisitions (18.5 %) come within 0.25 s after the camera
+  associates the object, against about 27 expected by chance. Either the camera helps pick the target there, or both
+  react to the same scene ([summary](../data/analysis/summaries/acc_camera_identifiability.json)). The camera
   also feeds the radar its lane curves (0x85); a drive with the camera covered tests the rest
   ([10](10_research_directions.md)). Treat it as the radar's own filtered ACC target, associated with an object-list
   track by position.

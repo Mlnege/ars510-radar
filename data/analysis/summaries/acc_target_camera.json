@@ -18,7 +18,7 @@
    "object_list_range_step_m": {"onset": -0.8, "loss": -1.7},
    "note": "[mean, standard error]; the ACC step does not lean toward the vision lead's offset (distance weight 0.000 +- 0.020 at onset, placebo 0.006)"
   },
-  "camera_share_upper_bound": {"distance": 0.04, "speed": 0.06, "assumption": "camera errors like openpilot's vision lead"}
+  "conditional_association_onset_slope_limits": {"distance": 0.04, "speed": 0.06, "scope": "Approximate estimator-specific limits on an association-linked response toward the logged vision offset, not total camera weights.", "required_assumptions": ["association state switches the relevant input on/off", "logged vision offset represents factory camera offset", "other event changes are controlled"]}
  },
  "selection": {
   "day_acquisitions_beyond_60_m": 539,
@@ -26,8 +26,8 @@
   "follows_nearest_moving_in_lane_object": {"60-70 m (never associated)": 0.93, "20-40 m (associated)": 0.92},
   "follows_vision_confirmed_leads_60_80_m": [0.96, 0.97],
   "acquisitions_40_50_m_day": 357,
-  "within_0_25_s_after_association_onset": {"count": 67, "baseline_per_bin": 27, "share": 0.11},
+  "within_0_25_s_after_association_onset": {"pair_count": 67, "unique_acquisitions": 66, "total_acquisitions": 357, "unique_acquisition_share": 0.18487394957983194, "baseline_pairs_per_bin": 26.85, "excess_pair_rate": 0.11246498599439776, "scope": "Timing coincidence; excess pair rate is not an attributable causal acquisition fraction."},
   "night_beyond_70_m_followed_share": {"associated": [0.58, 0.79], "unassociated": [0.11, 0.35], "routes": 3}
  },
- "reading": "no detectable camera input in the ACC target's distance and closing speed; selection radar-led, with acquisitions at the camera's day range limit (40-50 m) partly coinciding with the camera's association; untested: camera input that does not set 112|3 (needs a drive with the camera covered)"
+ "reading": "No distinct association-linked kinematic response under the tested estimators; general factory-camera contribution is unqualified. Target selection agrees with listed radar objects, with enriched association-onset timing at 40-50 m compatible with shared triggers or camera-assisted selection."
 }

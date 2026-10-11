@@ -1,0 +1,102 @@
+{
+  "status": "general_camera_share_not_identifiable",
+  "slopes": {
+    "d_onset": {
+      "n": 101,
+      "slope": 0.0002663889063859438,
+      "se": 0.019535172638353467
+    },
+    "d_placebo": {
+      "n": 1029,
+      "slope": 0.006219409743183486,
+      "se": 0.004654507629610847
+    },
+    "v_onset": {
+      "n": 101,
+      "slope": 0.062271514642410465,
+      "se": 0.02325446208382211
+    },
+    "v_placebo": {
+      "n": 1029,
+      "slope": 0.05969325414287044,
+      "se": 0.007546549303359666
+    }
+  },
+  "observational_counterexamples": [
+    {
+      "axis": "d",
+      "weight": 0.0,
+      "rows": 2501,
+      "max_abs_error": 0.0
+    },
+    {
+      "axis": "d",
+      "weight": 0.5,
+      "rows": 2501,
+      "max_abs_error": 7.105427357601002e-15
+    },
+    {
+      "axis": "d",
+      "weight": 0.9,
+      "rows": 2501,
+      "max_abs_error": 2.248201624865942e-15
+    },
+    {
+      "axis": "v",
+      "weight": 0.0,
+      "rows": 2501,
+      "max_abs_error": 0.0
+    },
+    {
+      "axis": "v",
+      "weight": 0.5,
+      "rows": 2501,
+      "max_abs_error": 8.881784197001252e-16
+    },
+    {
+      "axis": "v",
+      "weight": 0.9,
+      "rows": 2501,
+      "max_abs_error": 5.551115123125783e-16
+    }
+  ],
+  "acquisition_timing": {
+    "acquisitions": 357,
+    "onset_pairs": 694,
+    "nearby_pairs": 67,
+    "nearby_unique_acquisitions": 66,
+    "baseline_pairs_per_bin": 26.85,
+    "pair_rate": 0.1876750700280112,
+    "unique_acquisition_share": 0.18487394957983194,
+    "excess_pair_rate": 0.11246498599439776,
+    "histogram": [
+      15,
+      19,
+      20,
+      34,
+      23,
+      25,
+      30,
+      32,
+      22,
+      20,
+      21,
+      28,
+      67,
+      41,
+      37,
+      39,
+      32,
+      45,
+      32,
+      29,
+      31,
+      15,
+      21,
+      16
+    ]
+  },
+  "counterexample_limits": "Unobserved-state algebra, not an inferred physical radar/camera model or share.",
+  "description": "Recomputation of cached owner-car association transitions and selection timing. Exact unobserved-state mixture identity shows total camera weight is not identifiable from these observations.",
+  "independent_check": "PASS: scalar cached-source allocations, acquisitions, all timing bins, covariance slopes; eight exact-rational mixture identities."
+}
