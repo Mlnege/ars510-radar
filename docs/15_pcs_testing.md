@@ -1,73 +1,73 @@
-# 15. Testing PCS / AEB safely: a runbook for testers
+# 15. Recording PCS / AEB events
 
-The radar's pre-collision system (PCS) is still decoded only up to its alarm stage ([13](13_car_bus_messages.md#a-recorded-stock-pcs-alarm-u3)).
-The rest of what an AEB relay needs ([13](13_car_bus_messages.md#where-a-relay-stands-for-developers)) can only come from
-recorded activations: the braking stages, whether a disabled radar still raises its bus-1 alarm flag, and what the dash
-reacts to. This page describes how to record them without putting anyone at risk.
+The radar's PCS output is decoded through an alarm-stage event
+([13](13_car_bus_messages.md#a-recorded-stock-pcs-alarm-u3)). Further evidence needs isolated target identity,
+warning-versus-braking stages and the radar's behavior when its car-bus output is disabled. This page specifies
+what to record at a professional test facility or during an incidental event in normal driving.
+For ordinary routes and other controlled tests, use [16](16_routes_and_tests.md).
 
-**Read this first.** Toyota's owner's manual tells owners not to test PCS themselves. The system does not promise to
-warn or brake in every case. On every run **the driver stops the car**. Anything the car does on its own is a bonus to
-record, never something to rely on. Stop the session after anything unexpected.
+Toyota cautions against testing PCS yourself
+([RAV4 quick-reference guide, PCS section](https://assets.sia.toyota.com/publications/en/om-s/OM19V1QRG/pdf/OM19V1QRG.pdf)).
+Do not reproduce a collision-course approach, raise speeds to reach a braking stage, or delay driver braking.
+A closed lot and a homemade soft object do not establish a validated safety setup. The facility chooses
+approach speeds, target design, abort conditions and vehicle control; this guide supplies the data requirements.
 
-## 1. The target: soft, and visible to the radar
+## 1. Isolate and identify the target
 
-U3 showed that an inflatable decoration does not appear in the radar's object list at all: air-filled vinyl reflects
-almost nothing at 77 GHz ([13](13_car_bus_messages.md#a-recorded-stock-pcs-alarm-u3)). The target has to be **harmless to
-hit and radar-visible**.
+U3 had an inflatable decoration and a pickup behind it. The object list tracked the pickup and did not list the
+inflatable, leaving the warning's intended target partly ambiguous
+([13](13_car_bus_messages.md#a-recorded-stock-pcs-alarm-u3)). A new experiment needs separate target controls.
 
-- **Best: a commercial ADAS soft target.** An inflatable or foam "soft car" or pedestrian dummy made for AEB testing.
-  Its skin is built to reflect radar like the real thing.
-- **DIY: a light box with corner reflectors.** Cardboard or foam, roughly the size of a car's rear (about 1.5 × 1 m),
-  with one or two **corner reflectors** inside. A corner reflector is three flat plates meeting at right angles, such as a
-  cardboard corner lined with aluminium foil, opening towards the car. It returns a strong echo and is light enough to be
-  pushed over without damage.
-- **Never** a person, a parked car or anything heavy or rigid.
-- **Check it before running at it.** Drive slowly towards the target with logging on (section 4). Confirm that it
-  appears in the radar's object list or as its ACC target at 20-40 m (`tools/decode_log.py`, [09](09_tools_and_data.md)).
-  If the radar does not list it, any warning comes from the camera, which is a different test (run B).
+- Use a facility-approved, radar-characterized ADAS soft target for a radar-target experiment.
+- Keep other plausible reflectors out of the target's background; record the complete scene and surveyed positions.
+- Independently measure the target's position/motion and demonstrate association before interpreting a PCS edge.
+- Treat a target absent from the object list as an association limit, not proof that any warning came from the camera.
+  A below-threshold radar detection or unlogged camera input can remain possible.
+- Do not use a person, a real parked vehicle or a homemade reflector assembly as a collision target.
 
-## 2. Place and people
+## 2. Record the complete event
 
-- A **private, closed lot** with the owner's permission: no traffic, no pedestrians, no parked cars in the line of
-  travel.
-- A **long, clear run-out** past the target, so a late stop rolls into empty space.
-- A **spotter outside the car** who keeps the area clear and calls each run. The driver only drives.
-- Dry pavement, daylight. Repeat at dusk afterwards if you want night behaviour.
+Keep full rlogs on all available CAN buses, synchronized external video/reference and road-camera frame indices.
+Retain at least 30 seconds before and after the event, adjacent segments, driver actions and the actual sensor/
+controller configuration. Record the target alias, radar/filter state, longitudinal mode and any dashboard messages.
 
-## 3. Speed and procedure
+| Group | Fields to retain |
+|---|---|
+| threat and alarm | bus-1 0x100, 0x195/0x196; 0x80/0x85; selected targets 0x235/0x237/0x239/0x23B; car-bus 0x33E |
+| PCS and brake stages | original car-bus 0x283/0x344/0x411, brake-pressure/force fields where logged, stockFcw/stockAeb |
+| driver and motion | brake/gas, carState, pose/IMU, independently logged target/ego motion, controls and planner outputs |
+| configuration/health | radar firmware, fork/profile/version, CAN filter or DSU, diagnostics/restriction where available, all messages before/after |
 
-- **Speed.** Start at 10-15 km/h. Raise in steps of about 5 km/h only after a run behaved as expected, and stay below
-  30 km/h. U3's alarm came at 25 km/h.
-- **Each run.** Drive straight at the target, foot over the brake, and press the bookmark (flag) button at the start.
-  Brake at a cone line placed well before the target, whether or not the car has done anything.
-  - **Warning runs:** brake normally after the warning.
-  - **Braking runs (run C only):** the cone line sits closer, so the car gets a chance to act first. Use only a target
-    that is harmless to hit.
-- Note each run: number, speed, target, what the dash showed or the car did, and the time.
+Verify that filters or openpilot have not replaced the original car-bus outputs. CAN receipt time, video SOF and
+reference acquisition time need a clock mapping; visual overlap or wall-clock notes alone do not align them.
 
-## 4. Recording
+## 3. Conditions to request from a facility
 
-- **Radar enabled:** stock ACC (openpilot lateral only) or openpilot longitudinal through a radar CAN filter. Run D is
-  the exception.
-- **Logging:** leave the comma device recording; its rlogs carry all three CAN buses (car, radar, camera side). Keep
-  the qcamera files for your own review.
-- **Before leaving the lot,** note the route and the segment of each run.
-
-## 5. The runs and what each answers
-
-| run | setup | answers |
+| Condition | Setup to document | Question |
 |---|---|---|
-| A | radar-visible soft car, 15-25 km/h, warning runs | the alarm and the radar-bus alarm flag (0x100) on a clean target |
-| B | the decoration alone (a plain inflatable), warning runs | whether a warning can come from the camera alone |
-| C | radar-visible soft car, braking runs | pre-fill, brake assist and autonomous braking: their car-bus frames and how the radar marks them on bus 1 |
-| D | radar-visible soft car under alpha long (radar disabled), warning-run speeds, driver brakes as usual | whether a disabled radar still raises 0x100, which decides whether an AEB relay is possible at all |
+| A: isolated radar-visible target | facility-approved target, radar enabled | whether the alarm and bus-1 0x100 association repeat on a uniquely identified target |
+| B: target-visibility control | a separately characterized target with no competing background reflector | whether warning behavior differs with radar visibility; input source still needs independent evidence |
+| C: brake-stage capture | facility-managed warning, brake-assist, pre-fill and autonomous-braking conditions, labelled separately | which car-bus commands and radar-bus values mark each stage |
+| D: disabled-output condition | facility-approved control/logging setup with the radar's car-bus output disabled | whether bus-1 threat/alarm signaling remains available; no assumption that the car will warn or brake |
 
-In run D the car will not warn or brake: openpilot longitudinal has disabled the radar's car-bus output. The driver
-brakes as on any normal approach.
+Keep runs that produce no warning or braking. They may be **not exercised**, not evidence that a particular bit
+is invalid or that all disabled-radar decision paths are absent. The facility must distinguish driver braking,
+brake assist and autonomous action; a pedal press or deceleration trace alone does not establish the actuator source.
 
-## 6. Sharing
+## 4. What the result can support
 
-Open a [research finding](https://github.com/ds-sebastian/ars510-radar/issues/new/choose) with the run table and the
-route and segment of each run. Offer the rlogs privately; they carry the VIN. The repo publishes signals only:
-- no route or dongle IDs, VINs or GPS;
-- no camera footage or stills, unless you say otherwise.
+Repeated, stage-labelled events can qualify an alarm or braking decision signal and its timing within the tested
+configuration. They do not establish a safe AEB relay, universal target detection or restoration of stock behavior.
+Short-TTC 0x195/0x196 activity without PCS action is a useful control, not a brake request.
+
+Do not send guessed brake requests, use a warning-only signal as a brake trigger, or represent missing-message
+replication as restored AEB. Fork-level relay design and safety limits require separate review
+([13](13_car_bus_messages.md#where-a-relay-stands-for-developers)).
+
+## 5. Share privately, report anonymously
+
+Open a [research finding](https://github.com/ds-sebastian/ars510-radar/issues/new?template=research_finding.yml)
+with the condition table, firmware/configuration, relative event times, observed stages, reference uncertainty
+and negative results. Offer rlogs and video privately; the maintainer arranges transfer.
+Keep route/dongle IDs, VINs, GPS and identifying footage out of public posts. The public repo carries anonymous
+signal summaries and reproduction instructions.

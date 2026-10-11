@@ -28,7 +28,7 @@ The confirmed radar firmware is `8821F0R03100` at 0x750 / 0x0f on the Toyota ARS
 `8821F0R01100` is listed in openpilot fingerprints; for it, detection relies on seeing both 0x80 and 0x85 on bus 1 at
 fingerprinting (a warm restart), and one capture adds it to the firmware list. See [firmware validation](docs/10_research_directions.md#for-the-integration).
 Install with [`openpilot/README.md`](openpilot/README.md). The installer supports openpilot and forks, and the
-`fused` profile is the default (`--profile raw` for comparison). Then:
+`acc` profile is the default (`--profile raw` for comparison). Then:
 
 1. Reboot, drive, and press the bookmark (flag) button whenever braking feels wrong or a lead seems stuck.
 2. Open a **Drive report** issue. Give the fork and version, `install.py --check` output, road type, and for each
@@ -38,6 +38,10 @@ Install with [`openpilot/README.md`](openpilot/README.md). The installer support
 
 Reports from a different car, radar firmware or fork are especially valuable: they show how far the layout and the
 filter carry beyond the owner's car (a second RAV4 has reported so far).
+
+For a targeted contribution, use [the route and test guide](docs/16_routes_and_tests.md). It lists the ordinary
+drives, parked/controlled acquisitions, required logs and independent references that each question needs.
+PCS/AEB event collection follows the [professional/passive specification](docs/15_pcs_testing.md).
 
 ## Code changes
 

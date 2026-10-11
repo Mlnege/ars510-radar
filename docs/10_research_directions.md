@@ -2,6 +2,9 @@
 
 The most promising next steps, ordered by how directly they would improve the radar in openpilot.
 
+[16: Routes and tests](16_routes_and_tests.md) turns these questions into recording procedures, required
+physical references and hand-in checklists. Begin with the smallest observable contrast before a long session.
+
 ## For a better ride
 
 1. **The far range of every track.** The object list reads far cars short of the radar's own ACC distance (5-8% at
@@ -14,10 +17,11 @@ The most promising next steps, ordered by how directly they would improve the ra
    15-80 m and 66% beyond on the owner's car ([08](08_openpilot_integration.md#on-the-road)). Far leads without it depend on the object list
    and its wide error alone, which is where much of `fused`'s remaining mild radar-only braking comes from. Finding when and why the radar
    drops or delays its target (range, speed, curve, camera state) tells whether coverage can grow.
-3. **A drive with the camera covered.** The ACC target's distance and speed hold steady where the camera's
+3. **A controlled factory-camera comparison.** The ACC target's distance and speed hold steady where the camera's
    association changes, and the radar takes far targets without it ([05](05_acc_target_and_support.md)). The camera's
-   messages to the radar never drop out in the logs, so one drive with the camera covered shows whether camera input beyond the
-   association state (lane curves, objects) reaches the ACC target or its choice of target.
+   messages to the radar never drop out in the logs. A paired parked/controlled-site intervention
+   ([T09](16_routes_and_tests.md#t09-factory-camera-dependence)) tests input beyond the association state.
+   Compare selection separately from kinematics and function restriction; do not drive with the camera covered.
 4. **Physical units for the uncertainty fields.** `240|7`, `232|7`, `224|7` and `248|7` are scaled against the radar's ACC
    target, the radar's own estimate ([03](03_slot_fields.md#uncertainty-and-quality)). An independent reference (a second car with a GPS logger,
    or a known far target) would give them physical units and test `fused`'s weights directly.
@@ -93,10 +97,11 @@ The goal: tell a velocity excursion from a real closing within about 1 s ([07](0
 
 ## For the decode
 
-- **Lateral scale and range zero from slow circles.** A stationary object moves sideways at yaw rate × (range +
-  3.5 m) while the car turns. Ordinary turns past parked cars already give 69 codes per metre (65-74.5,
-  [06](06_accuracy.md#lateral-position)); a few minutes of slow circles in an empty lot with parked cars or poles would
-  narrow that to a per-cent and pin the range zero from the gyro alone.
+- **Lateral frame and range zero from measured rotation.** Ordinary turns past parked cars already give 69 codes
+  per metre (65-74.5, [06](06_accuracy.md#lateral-position)). Slow turns around surveyed reflectors, with yaw and the
+  radar-to-reference lever arm measured, can distinguish scale/origin hypotheses
+  ([T07](16_routes_and_tests.md#t07-lateral-motion-heading-and-turning)). Gyro closure alone is not an independent
+  physical zero or a per-cent calibration.
 - **`272|5` under a known overhead object.** Driving under a bridge or gantry of known clearance, and past parked
   vehicles of known height, relates the code to height. Its ranking of pedestrians below cars points to a size- or
   reflectivity-like quantity.
@@ -111,9 +116,9 @@ The goal: tell a velocity excursion from a real closing within about 1 s ([07](0
   accelerates or brakes, and the camera's 0x240 / 0x244 frames carry light-source records at night
   ([05](05_acc_target_and_support.md)). A drive behind a car with known braking, and a night drive past lights at known
   positions, would name their units.
-- **What the camera association changes.** `112|3` shows which objects the camera has confirmed (inside 45 m by day,
-  farther at night, [03](03_slot_fields.md#camera-association)). A drive with the camera covered shows what the radar
-  does differently for those objects.
+- **What the camera association changes.** `112|3` indicates association (inside 45 m by day, farther at night,
+  [03](03_slot_fields.md#camera-association)). [T09](16_routes_and_tests.md#t09-factory-camera-dependence) compares
+  matched target paths while parked; unchanged association-transition observations do not identify total input weight.
 
 ## For the integration
 
@@ -143,7 +148,7 @@ What other radars in openpilot send (signals in their DBCs), and the ARS510 coun
 | the radar's own **relative** speed | `REL_SPEED` on Toyota, Honda, Hyundai, Chrysler | over-ground speed (`64\|10`) minus 0xB4 ego speed | the ACC target carries a relative speed for the followed car |
 | relative **acceleration** | Hyundai `REL_ACCEL`, Tesla `LongAccel` | `84\|10` over-ground acceleration (◐, lags about 0.5 s); the ACC target's relative acceleration (●) | calibrate `84\|10` against independent motion |
 | **lateral speed** | Tesla `LatSpeed` | `74\|10` (◐, 0.147-0.155 m/s per code against the gyro, `decode_references.json`) | already published as `yvRel` where forks carry it |
-| radar **fault / blockage** status | Honda `RADAR_STATE`, Tesla `sensorBlocked` | "no record for 0.5 s" is reported; candidates: Toyota's car-bus 0x411 `PCS_HUD` alerts (`PCS_DUST2` sensor blocked, `PCS_INDICATOR` = 2 fault), the camera's object-list acknowledgement (0x101 byte 0, 0x197), and a long idle run of 0x680 while driving (longest 1.0 s in 7.8 h of normal driving) | a drive with a covered or dirty radar, or in heavy rain or snow, shows which of them reacts |
+| radar **fault / blockage** status | Honda `RADAR_STATE`, Tesla `sensorBlocked` | "no record for 0.5 s" is reported; candidates: Toyota's car-bus 0x411 `PCS_HUD` alerts (`PCS_DUST2` sensor blocked, `PCS_INDICATOR` = 2 fault), the camera's object-list acknowledgement (0x101 byte 0, 0x197), and a long idle run of 0x680 while driving (longest 1.0 s in 7.8 h of normal driving) | parked baseline/covered/recovery diagnostic and passive captures ([T01](16_routes_and_tests.md#t01-parked-startup-and-status)); retain naturally occurring warnings from ordinary drives |
 | measurement **uncertainty** | (rarely exposed) | `224/232/240/248\|7` family, scaled against the radar's ACC target | physical units would let radard weight radar against vision |
 | plain **DBC** decode through `CANParser` | every upstream interface | a 742-byte record split over 106 frames | a reassembler of about 80 lines (`ars510/transport.py`) and a CRC check |
 

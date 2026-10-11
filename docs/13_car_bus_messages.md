@@ -272,21 +272,22 @@ What this means for a build today:
 
 ### What is needed, in order
 
-How to record these safely (targets, place, speeds, logging): [15](15_pcs_testing.md).
+The professional/passive recording specification, target controls and required logs are in [15](15_pcs_testing.md).
+These are facility-managed or separate engineering questions, not DIY collision-course instructions.
 
-1. **The alarm with the radar disabled.** This decides whether a relay is possible at all. Repeat a low-speed
-   approach to a soft PCS test target under alpha long (radar disabled) with bus 1 logged, and see whether 0x100 goes to 0x02.
-   The car does not warn or brake in this setup, so the driver brakes as usual. If 0x100 stays 0, a disabled radar
-   does not announce its decision and the relay route is closed.
+1. **The alarm with the radar disabled.** Request a facility-managed comparison with the radar's car-bus output
+   disabled and bus 1 logged. Do not assume the car will warn or brake. A repeated 0x100 alarm association can qualify
+   that signaling path; a run without an exercised alarm does not rule out every internal decision path.
 2. **A recorded stock activation that reaches braking**, with bus 0 and bus 1 logged. The alarm stage is recorded
-   (U3); the braking stages need an approach where the driver does not brake first: a soft PCS test target on a
-   closed lot, somewhat faster than U3, from a car with the radar enabled (stock ACC, or a radar CAN filter). Bus 0
+   (U3); the braking stages need a facility-controlled event with a validated soft target and independent actuator/
+   driver-action labels, from a car with the radar enabled. The facility sets approach and abort conditions. Bus 0
    gives the braking sequence in 0x283 / 0x344; bus 1 shows which radar-bus values mark it, next to 0x100.
 
    **The target must be visible to the radar.** Use a radar-reflective soft target, of the kind made for ADAS / NCAP testing.
    An inflatable decoration did not appear in the radar's object list at all (U3).
-3. **Which object a warning is about.** Two separate approaches settle U3's open point: the inflatable alone, with nothing
-   behind it (a warning then comes from the camera's detection), and a parked car alone (the radar's own case).
+3. **Which object a warning is about.** Separate characterized target controls, with no competing background
+   reflector and independently measured motion, distinguish U3's possible targets. An unlisted target does not
+   prove camera-only detection; a hidden radar observation or unlogged camera input can remain possible.
 4. **A parked 0x411 test.** With the radar disabled, send upstream's "PCS off" 0x411 and see whether the dash changes from
    "Malfunction" to "PCS off". This names the dash's input. It is the same kind of parked test as O5.
 5. **A fork-level design** of the panda limits and the health check, reviewed before anything brakes the car on the
