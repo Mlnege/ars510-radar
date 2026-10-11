@@ -106,7 +106,11 @@ often wet or at night, hilly) and **C** (held out, 24 min highway). The referenc
 - **Ego reference.** Toyota 0xB4 reads about 1-1.5% below GPS and wheel speed in the measured comparisons. Steady
   following against 0xB4 fits .149 m/s per code. The driving profiles use `vground_scale = .149 / .15`, a
   **0.667%** reduction of decoded ground velocity, then subtract 0xB4 ego speed (the openpilot file decodes at 0.149
-  directly). It is an empirical alignment to 0xB4 on top of the nominal wire scale.
+  directly). This is an empirical profile setting on top of the nominal 0.15 decoder unit, not a physical calibration.
+  Against the ACC target's speed it helps or hurts depending on range and error metric (pooled RMS 1.302 → 1.297 m/s,
+  below 40 m 0.758 → 0.760; [comparison](../data/analysis/summaries/native_speed_alignment.json)), and the ACC target
+  shares the radar's errors. Where native speed reads below a reference, this downward scale widens the gap rather
+  than closing it. The physical scale, the factory zero and the radar's internal ego compensation remain open.
 
 - **Against the camera** (closing speed from box growth over 2 s, all camera-paired samples):
 
