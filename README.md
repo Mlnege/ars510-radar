@@ -106,6 +106,7 @@ The code comes in two versions that drive identically:
 | `openpilot` | `--profile openpilot` | the openpilot version: `fused` from the single upstream file; points with `trackId` / `dRel` / `yRel` / `vRel` only | driving exactly what is proposed for openpilot |
 | `colored` | `--profile colored` | experimental: `fused` with the object list's slow speed error as its own state | road tests of the main alternative ([docs/12](docs/12_kalman_filter.md#kalman-variants-tested)) |
 | `shared_speed`, `shared_range` | `--profile shared_speed` / `shared_range` | research: every object and the ACC target through one gate-free Kalman model (speed, or range and range rate) | research only: the object list's correlated errors reach the planner ([docs/10](docs/10_research_directions.md#the-acc-target-alone--candidate)) |
+| `acc_filter`, `shared_corroborated` | `--profile acc_filter` / `shared_corroborated` | research: the ACC target through one (range, speed) Kalman filter; every object through one model that counts object speed only where the ACC decision corroborates it | research only: `acc_filter` equals `acc` with 54 instead of 33 lines, `shared_corroborated` brakes unnecessarily 4.5 s/h more |
 
 ![which processing each profile applies](docs/img/analysis/profile_layers.png)
 

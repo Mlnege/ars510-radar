@@ -13,7 +13,7 @@ StarPilot, CarrotPilot and other forks: no fork file is patched in place. The in
   - copies the openpilot version to      opendbc/car/toyota/ars510_upstream.py (used by --profile openpilot)
   - copies the ACC-target file to        opendbc/car/toyota/ars510_acc_target.py (used by --profile acc)
     and its DBC to                       opendbc/dbc/toyota_tss2_ars510.dbc
-  - copies two research files to         opendbc/car/toyota/ars510_shared_{speed,range}.py (--profile shared_speed / shared_range)
+  - copies four research files to        opendbc/car/toyota/ars510_{shared_speed,shared_range,acc_filter,shared_corroborated}.py
   - appends one marked block to the end of opendbc/car/toyota/interface.py, which wraps the fork's own
     CarInterface: ARS510 detection in _get_params and dispatch in RadarInterface (see ars510_radar_interface.py)
 An install made with an older, patch-based version of this installer is removed first.
@@ -32,6 +32,8 @@ Profiles (docs/08 has the details and replay numbers):
             dRel / yRel / vRel only. The all-tracks upstream alternative; the proposal is acc
   shared_speed / shared_range  research only: every object and the ACC target through one gate-free Kalman model
             (speed, or range and range rate). The object list's correlated errors reach the planner (docs/10)
+  acc_filter / shared_corroborated  research only: the ACC target through one (range, speed) Kalman filter (equal to acc, more
+            code); every object through one model that counts object speed only where the ACC decision corroborates it
 
 Legacy names are aliases: anchor/steady select fused, upstream selects openpilot,
 and stock/default select raw. Every alias prints its selection. Omit --profile for the recommended acc default.
@@ -49,7 +51,8 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
 LEGACY_PATCHES = sorted((HERE / "legacy").glob("*.patch"))
 PROFILE_LINE = 'PROFILE = PROFILES["acc"]'
-PROFILE_NAMES = ("acc", "fused", "openpilot", "raw", "colored", "shared_speed", "shared_range")
+RESEARCH = ("shared_speed", "shared_range", "acc_filter", "shared_corroborated")  # standalone research files
+PROFILE_NAMES = ("acc", "fused", "openpilot", "raw", "colored", *RESEARCH)
 LEGACY_NAMES = {"anchor": "fused", "steady": "fused", "stock": "raw", "default": "raw", "upstream": "openpilot"}
 DBCS = ("ars510_radar_bus.dbc", "ars510_objects_vbus.dbc")  # repo dbc/ is for Cabana on a PC; not installed
 BEGIN = "# >>> ars510-radar: added by ars510-radar/openpilot/install.py; remove with install.py --uninstall"
@@ -76,7 +79,7 @@ def targets(root: Path) -> dict[str, Path]:
   toyota = root / "opendbc" / "car" / "toyota"
   return {"package": toyota / "ars510", "interface": toyota / "ars510_radar_interface.py",
           "upstream": toyota / "ars510_upstream.py", "acc_target": toyota / "ars510_acc_target.py",
-          "shared_speed": toyota / "ars510_shared_speed.py", "shared_range": toyota / "ars510_shared_range.py",
+          **{name: toyota / f"ars510_{name}.py" for name in RESEARCH},
           "acc_dbc": root / "opendbc" / "dbc" / "toyota_tss2_ars510.dbc"}
 
 
@@ -173,7 +176,7 @@ def main() -> int:
   shutil.copyfile(REPO / "upstream" / "ars510_radar.py", t["upstream"])
   shutil.copyfile(REPO / "upstream" / "ars510_acc_target.py", t["acc_target"])
   shutil.copyfile(REPO / "upstream" / "toyota_tss2_ars510.dbc", t["acc_dbc"])
-  for name in ("shared_speed", "shared_range"):
+  for name in RESEARCH:
     shutil.copyfile(HERE / "standalone" / f"ars510_{name}.py", t[name])
   src = (HERE / "ars510_radar_interface.py").read_text()
   assert src.count(PROFILE_LINE) == 1
@@ -181,9 +184,10 @@ def main() -> int:
   interface_py.write_text(text.rstrip("\n") + "\n" + HOOK)
   print(f"installed into {root} ({args.profile} profile" + (f"; replaced the older {legacy.name}" if legacy else "") +
         "). Reboot the device to activate.")
-  if args.profile in ("shared_speed", "shared_range"):
-    print("warning: a research profile. The object list's slow, correlated errors reach the planner: replays ask for hard\n"
-          "radar-only braking 7-21 times as often as fused (docs/10). Not for driving.")
+  if args.profile in RESEARCH:
+    print("warning: a research profile, not for driving (docs/10): the shared_* models let the object list's slow, correlated\n"
+          "errors or uncorroborated points reach the planner (hard radar-only braking 3-21 times fused's); acc_filter equals acc\n"
+          "with more code.")
   if args.profile == "raw":
     print("warning: the raw profile publishes the unfiltered radar decode. Velocity excursions (false closings beyond 40 m)\n"
           "reach the planner unfiltered and cause about three times the hard radar-only braking of fused. Use it for research\n"

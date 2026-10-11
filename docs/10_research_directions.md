@@ -260,7 +260,12 @@ Passing the object list straight through gives hard braking, and so does one gat
 object. That model weights each reading by its own uncertainty, either over speed with a traffic prior, or over range
 and range rate with the measured 3 % range noise (research profiles `shared_speed` / `shared_range`). It brakes hard
 while moving 59 and 168 times against `fused`'s 8. Both object-list kinematic signals, speed and range, carry slow,
-correlated errors that no inverse-variance weight removes. Passing the radar's decision through does not have them. sunnypilot's
+correlated errors that no inverse-variance weight removes. Passing the radar's decision through does not have them.
+Two more shared models agree (research profiles `acc_filter` / `shared_corroborated`, [summary](../data/analysis/summaries/continuous_models.json)):
+a Kalman filter on the ACC target alone reproduces `acc` on every count with 54 lines instead of 33, so that stream needs
+no estimation; one model over every object that counts object-list speed only where the ACC decision corroborates the
+track gives hard braking 23 against 13, unnecessary braking +4.5 s/h (CI +3.5…+5.7) and 696 lead flips/h against 302,
+because uncorroborated points still reach radard as lead candidates. Only not publishing a point removes it. sunnypilot's
 Hyundai camera-SCC interface publishes that car's ACC lead as its single point the same way.
 
 ![the ACC target alone against 2.6](img/analysis/guide_acc_target_parser.png)

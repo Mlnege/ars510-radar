@@ -1,0 +1,14 @@
+{
+ "scope": "fast replay suite, 16.9 moving h, 62 routes, 278 chunks, unchanged radard and planner; exploratory",
+ "profiles": {
+  "acc": {"code_lines": 33, "constants": 4, "conditions": 12, "hard": 13, "mild": 30, "unnecessary_s": 19.2, "missed_s": 17.4, "onset_vs_vision_s": -0.017, "flips_per_h": 302},
+  "acc_filter": {"code_lines": 54, "constants": 7, "conditions": 14, "hard": 13, "mild": 30, "unnecessary_s": 19.3, "missed_s": 17.4, "onset_vs_vision_s": -0.016, "flips_per_h": 302},
+  "shared_corroborated": {"code_lines": 128, "constants": 22, "conditions": 47, "hard": 23, "mild": 76, "unnecessary_s": 95.9, "missed_s": 12.6, "onset_vs_vision_s": -0.019, "flips_per_h": 696},
+  "fused_2_6": {"code_lines": 187, "constants": 28, "conditions": 85, "hard": 8, "mild": 27, "unnecessary_s": 21.0, "missed_s": 16.4, "onset_vs_vision_s": -0.010, "flips_per_h": 332}
+ },
+ "difference_to_acc_per_moving_h_ci95": {
+  "acc_filter": {"unnecessary_s": [0.003, 0.0, 0.01], "flips": [-0.3, -2.4, 1.8]},
+  "shared_corroborated": {"unnecessary_s": [4.53, 3.45, 5.72], "flips": [394, 318, 490]}
+ },
+ "note": "values in difference lists: estimate, lower, upper (route-block bootstrap). Counts are episodes except unnecessary / missed (seconds)."
+}
