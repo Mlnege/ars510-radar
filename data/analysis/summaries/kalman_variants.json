@@ -18,9 +18,9 @@
    "owner": 7.6
   },
   "learned noise model": {
-   "heldout": 7.1,
-   "fresh": 8.4,
-   "owner": 7.0
+   "heldout": 7.2,
+   "fresh": 8.3,
+   "owner": 6.9
   },
   "colored noise (bias state)": {
    "heldout": 6.8,
@@ -42,18 +42,11 @@
   "lead_accel_mps2": 1.0
  },
  "learned_noise_importance": {
-  "s240": [
-   0.36,
-   0.53
-  ],
-  "v_ego": [
-   0.22,
-   0.29
-  ],
-  "acc84": [
-   0.1,
-   0.11
-  ]
+  "s240": 0.4225,
+  "v_ego": 0.2308,
+  "acc84": 0.0959,
+  "s200": 0.0887,
+  "d": 0.07
  },
  "replay_34_drives": {
   "fused": {
@@ -893,5 +886,5 @@
    "routes": 62
   }
  },
- "learned_noise_importance_note": "Gradient-boosting importance, range over two runs of the same script: the order s240 > v_ego > acc84 holds in each."
+ "learned_noise_importance_note": "Permutation importance of the gradient-boosting noise model (HistGradientBoostingRegressor, random_state 0, 300 iterations, learning rate 0.05, 31 leaves, min 200 samples per leaf); two runs give identical values."
 }

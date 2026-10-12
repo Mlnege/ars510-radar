@@ -496,7 +496,7 @@ metric is the share of cycles with estimate − ACC target below −2 m/s (d > 3
 |---|---|
 | Student-t update instead of the 3σ clamp | 7.8 / 8.7 / 7.4 % |
 | speed + acceleration state, with the ACC target's acceleration as a reading | 7.7 / 8.5 / 7.6 % |
-| noise learned from all slot fields (gradient boosting) | 7.1 / 8.4 / 7.0 % |
+| noise learned from all slot fields (gradient boosting) | 7.2 / 8.3 / 6.9 % |
 | object-list error as its own state (colored noise, τ 1.19 s), noise scaled by ego speed and `84\|10` (`--profile colored`) | 6.8 / 7.8 / 7.8 % |
 
 The colored-noise filter is the textbook fix for the object list's slow, correlated errors (lag-1 autocorrelation 0.95 per
