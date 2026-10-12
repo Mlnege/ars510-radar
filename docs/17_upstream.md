@@ -5,7 +5,7 @@ ask. Both are prepared as branches on a fork of opendbc, on top of opendbc maste
 
 | branch | profile | what it adds |
 |---|---|---|
-| [`ars510-acc`](https://github.com/commaai/opendbc/compare/master...ds-sebastian:opendbc:ars510-acc) | `acc`: the radar's ACC target alone (the proposal) | smasher816's implementation (the ACC target inline in the Toyota `radar_interface.py`, the DBC `toyota_tss2_ars510.dbc`, the radar DBC for the two RAV4 platforms in `values.py`), then our fixes on top and `tests/test_ars510.py` |
+| [`ars510-acc`](https://github.com/commaai/opendbc/compare/master...ds-sebastian:opendbc:ars510-acc) | `acc`: the radar's ACC target alone (the proposal) | the ACC target inline in the Toyota `radar_interface.py`, the DBC `toyota_tss2_ars510.dbc`, the radar DBC for the two RAV4 platforms in `values.py`, and `tests/test_ars510.py` |
 | [`ars510-fused`](https://github.com/commaai/opendbc/compare/master...ds-sebastian:opendbc:ars510-fused) | `fused`: every track, one Kalman speed filter per track | `car/toyota/ars510_radar.py`, its test, the same DBC, and the same routing and detection |
 
 `upstream/opendbc_ars510.patch` is the `ars510-acc` branch as one patch, and `upstream/toyota_tss2_ars510.dbc` is its
@@ -22,7 +22,7 @@ all-tracks candidate.
 | | `acc`: the ACC target alone (proposal) | `fused`: every track (single file) |
 |---|---|---|
 | files | [`upstream/ars510_acc_target.py`](../upstream/ars510_acc_target.py) + [`toyota_tss2_ars510.dbc`](../upstream/toyota_tss2_ars510.dbc), as [`opendbc_ars510.patch`](../upstream/opendbc_ars510.patch) | [`upstream/ars510_radar.py`](../upstream/ars510_radar.py), routed by [`toyota_routing.patch`](../upstream/toyota_routing.patch) |
-| size | 33 code lines (50 in the file), 8 DBC signals in three messages plus two rolling counters | 187 code lines (227 in the file) |
+| size | 33 code lines (50 in the file); reads 7 DBC signals of three messages plus their rolling counters | 187 code lines (227 in the file) |
 | constants / state attributes / conditions / functions | 1 / 4 / 5 / 2 | 28 / 15 / 85 / 13 |
 | radar available when | the car model: the radar-ACC RAV4 2022 and 2023-25 platforms | the car model (same platforms) |
 | evidence | [below](#the-acc-target-alone--candidate) | [parts ledger](#parts-of-the-openpilot-file) |
@@ -30,26 +30,22 @@ all-tracks candidate.
 Sizes: [`acc_target_parser.json`](../data/analysis/summaries/acc_target_parser.json) (`file_size`) and
 [`openpilot_file_parts.json`](../data/analysis/summaries/openpilot_file_parts.json).
 
-The `acc` proposal, [`upstream/opendbc_ars510.patch`](../upstream/opendbc_ars510.patch), applies to opendbc master as three
-commits:
-1. **smasher816's implementation** ([smasher816/sunnypilot@3436526](https://github.com/smasher816/sunnypilot/commit/3436526cb80ec8988c1dfb09c5fcf7440cd28d02)), ported to opendbc master:
-   - **DBC:** `opendbc/dbc/toyota_tss2_ars510.dbc` with `ACC_TARGET_1` (0x235) and `ACC_TARGET_2` (0x237).
-   - **`values.py`:** `dbc_dict` accepts no radar; the radar-ACC override is gone; C-HR and Yaris are listed radarless;
-     the RAV4 2022 and 2023-25 platforms get `toyota_tss2_ars510`.
-   - **`radar_interface.py`:** for radar-ACC cars the Toyota `RadarInterface` parses the ACC target and publishes it as
-     one point.
+The `acc` proposal, [`upstream/opendbc_ars510.patch`](../upstream/opendbc_ars510.patch), applies to opendbc master as one
+commit:
+- **DBC:** `opendbc/dbc/toyota_tss2_ars510.dbc` with the ACC target frames `ACC_TARGET_1`-`4` (0x235 / 0x237 / 0x239 /
+  0x23B), every field documented. The interface reads seven signals; through CANParser every signal equals the
+  reference decoder on 9,574 frame sets.
+- **`values.py`:** `dbc_dict` accepts no radar; the RAV4 2022 and 2023-25 platforms get `toyota_tss2_ars510`, and the
+  other radar-ACC cars stay radarless. So the car model selects the parser.
+- **`radar_interface.py`:** for radar-ACC cars the Toyota `RadarInterface` publishes the ACC target as one point, once
+  per radar cycle: after the stock trigger check (0x237 updated), the radar's cycle clock (0x239 `TIMESTAMP`) must have
+  advanced. The frames repeat at 50 Hz, and radard accepts `liveTracks` only at 8-24 Hz. The clock advances once per
+  60 ms cycle, with or without a target, so reports go out at 16.7 Hz: empty when there is no target, nothing when the
+  radar stops sending. There is no point while the frames are invalid (a stale or bad counter).
+- **Tests:** `opendbc/car/toyota/tests/test_ars510.py`.
 
-   Of the radar-ACC cars only the two RAV4s then have a radar DBC, so the car model selects the parser.
-2. **Our fixes:**
-   - **Once per radar cycle:** after the stock trigger check (0x237 updated), the radar's cycle clock (0x239 `TIMESTAMP`,
-     added as `ACC_TARGET_3`) must have advanced. The frames repeat at 50 Hz, and radard accepts `liveTracks` only at
-     8-24 Hz. The clock advances once per 60 ms cycle, with or without a target, so reports go out at 16.7 Hz: empty when
-     there is no target, nothing when the radar stops sending.
-   - **No stale point:** no point while the frames are invalid (a stale or bad counter).
-   - **Tests:** `opendbc/car/toyota/tests/test_ars510.py`.
-3. **The remaining DBC fields**, which the interface does not read: lateral speed and acceleration, in-path state, tracker
-   bytes and check bytes, the class and object-list flag on 0x239 and the target width on 0x23B (`ACC_TARGET_4`). They
-   match smasher816's later DBC, and through CANParser every signal equals the reference decoder on 9,574 frame sets.
+smasher816 helped frame this approach (the ACC target inline in Toyota's `RadarInterface`, selected through the radar
+DBC) and reviewed it; the DBC field names follow his.
 
 The C-HR and Yaris radars send the same frames ([01](01_radar_bus.md#c-hr-and-yaris)); the proposal keeps those two
 platforms radarless until a drive validates them.
@@ -119,7 +115,7 @@ each part.
 [`upstream/ars510_acc_target.py`](../upstream/ars510_acc_target.py) publishes only the radar's ACC target
 (0x235 / 0x237: distance, lateral position, closing speed, target id) as openpilot's one radar point, the way Toyota's
 own ACC uses the radar ([05](05_acc_target_and_support.md)). It is a CANParser on three messages, the target-present flags and
-one point: 33 code lines (50 in the file) and a three-message, 8-signal DBC against 187 lines, 1 constant against 28, 5 conditions against 85.
+one point: 33 code lines (50 in the file) reading 7 DBC signals, against 187 lines, 1 constant against 28, 5 conditions against 85.
 The replay numbers below come from a hand-decoded version that decodes the same values (all 11,028 bundled reports
 identical) and reported every fifth card update. Reporting once per radar cycle instead gives the same results on every
 measure (hard 13 against 13, mild 32 against 30, unnecessary 19.3 against 19.2 s, missed 17.4 against 17.4 s; every
