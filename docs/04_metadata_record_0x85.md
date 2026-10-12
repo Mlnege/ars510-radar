@@ -63,7 +63,7 @@ parameters_present = bool(cell.payload[3] & 0x40)   # also ShellCell.parameters_
 ```
 
 It equals `payload[6:10] != b"\x84\x03\xf4\x01"` in all 4,466,850 tested cells
-([`id85_parameter_presence.json`](../data/analysis/summaries/id85_parameter_presence.json)) and in all 13,090 bundled cells. Populated cells change at
+([`id85_parameter_presence.json`](../data/analysis/summaries/id85_parameter_presence.json)) and in all 13,090 bundled cells (1,309 records × 10 cells). Populated cells change at
 every record while ego moves (1,984 of 1,984 consecutive pairs of cells 2, 3, 8 and 9 in the bundled highway sample).
 
 ### Lane / road-boundary curves

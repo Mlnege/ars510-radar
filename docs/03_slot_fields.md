@@ -97,7 +97,7 @@ range noise while set (median 0.19 vs 0.41 m from the track's own trend) and low
 prediction (◐), like the Tesla radar's `Meas = 0`. Velocity excursions arrive as measured records: all 144 tested
 excursions have `107|1` clear.
 
-**Startup code `8|5`** matches its formula on 134,217 / 134,217 birth samples across 24 drives
+**Startup code `8|5`** matches its formula on 134,217 / 134,217 birth samples across 24 drives (the rows of the three groups summed)
 ([`startup_low5_decay.json`](../data/analysis/summaries/startup_low5_decay.json)): ages 1-4 read 30, then
 20, 13, 9, 6, 4, 2, 1, 1, 0. Once the motion code leaves 5 the field takes mature values.
 
