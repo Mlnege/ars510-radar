@@ -4,7 +4,7 @@ The installer works on every fork ([08](08_openpilot_integration.md)), but a for
 a radar lead. This page reads the radard and MPC lead handling of sunnypilot, FrogPilot and StarPilot, runs their own
 code on two recorded drives and on synthetic cases, and says what the ARS510 changes on each.
 
-Profiles: the run feeds each fork the points of `raw` (the unfiltered decode), `fused` (all tracks, version 2.5.0) and
+Profiles: the run feeds each fork the points of `raw` (the unfiltered decode), `fused` (all tracks, version 2.6.0) and
 `acc` (the radar's ACC target alone, the default install). The radar's ACC target is also the **reference** the added
 demand of the other two is measured against, so `acc` shows 0 added demand by construction and its own rows are the
 reference rows.
@@ -20,7 +20,7 @@ fork's source, ◐ from the replay and synthetic runs below, which use a proxy f
   the planner then does with the track's speed and acceleration, and that one fork also accepts radar-only leads at speed.
 - **sunnypilot** (openpilot's own path) hands the MPC the radar's speed and acceleration. It is the fork most exposed to
   the radar's speed errors ([07](07_velocity_excursions.md)) and the one `fused` helps most: events with a false braking
-  demand of at least 1 m/s² fall from 90 (`raw`) to 14 (`fused`) per hour; `acc` hands it the reference point itself.
+  demand of at least 1 m/s² fall from 90 (`raw`) to 10 (`fused`) per hour; `acc` hands it the reference point itself.
 - **FrogPilot** with its default Human Following takes the radar's range and the lead's speed at the first instant; the
   vision model supplies the future. A radar speed error of 1-4 m/s adds 0.07-0.30 m/s² of demand there (◐), and its first braking
   request came within 0.06 s of vision-only's in all 10 lead-braking events checked. It also takes in-lane radar-only leads.
@@ -29,7 +29,7 @@ fork's source, ◐ from the replay and synthetic runs below, which use a proxy f
   filters it reacts to a radar speed error about 60% as much as sunnypilot; on the drives with `raw` it added about as much (75 against 90 events per hour of ≥ 1 m/s², 328
   against 291 of ≥ 0.5).
 - On sunnypilot, FrogPilot with Human Following off and StarPilot, `fused` removes most of what `raw` adds (≥ 1 m/s²
-  events 90 → 14 and 75 → 4 per hour); on FrogPilot's default path both profiles add little (6.5 and 9.8 events per hour
+  events 90 → 10 and 75 → 2 per hour); on FrogPilot's default path both profiles add little (6.5 and 8.2 events per hour
   against vision only). `fused` takes its speed from the radar's ACC target where the radar follows a car ([12](12_kalman_filter.md)),
   and `acc` publishes that target alone.
 
@@ -68,38 +68,38 @@ At 70 m the results are within 0.05 of these, except −1 m/s, which falls to 0.
 the same fork given the radar's ACC target alone (the `acc` profile, 0 by construction); events per hour of extra demand
 of at least 1.0 (0.5) m/s²:
 
-| | `raw` | `fused` 2.5.0 | `acc` |
+| | `raw` | `fused` 2.6.0 | `acc` |
 |---|---|---|---|
-| sunnypilot | 90 (291) | 14 (24) | 0 (0) |
-| FrogPilot, Human Following off | 90 (291) | 14 (24) | 0 (0) |
-| StarPilot | 75 (328) | 4 (33) | 0 (0) |
+| sunnypilot | 90 (291) | 10 (20) | 0 (0) |
+| FrogPilot, Human Following off | 90 (291) | 10 (20) | 0 (0) |
+| StarPilot | 75 (328) | 2 (10) | 0 (0) |
 | FrogPilot, default | 0 (2) | 0 (2) | 0 (0) |
 
-`fused` cuts sunnypilot's and FrogPilot-off's large events about six-fold and StarPilot's about eighteen-fold. The small
-FrogPilot numbers come from that path taking its deltas from the vision model, so little radar error reaches it. In 10 lead-braking events seen by the ACC target its first braking request came within 0.06 s of vision-only's (StarPilot: 9 of 10, and one response only the radar made). On sunnypilot's path the proxy puts the radar's response
+`fused` cuts sunnypilot's and FrogPilot-off's large events about nine-fold and StarPilot's more than thirty-fold. The small
+FrogPilot numbers come from that path taking its deltas from the vision model, so little radar error reaches it. In 10 lead-braking events seen by the ACC target its first braking request came within 0.06 s of vision-only's (StarPilot: 8 of 10 at the same time, one later, and one response only the radar made). On sunnypilot's path the proxy puts the radar's response
 later than vision's in 6 of the 10, where the real-planner replay in [08](08_openpilot_integration.md#radar--vision-against-vision-only-replay)
 puts it earlier; the proxy models the lead path alone (jerk limits and the vision model's own acceleration forecast belong to the real planner), so its timing
 is a hint (○). Against vision only, sunnypilot with `raw` adds 94 braking events of at least 1.0 per hour,
-FrogPilot-off 92, StarPilot 86, FrogPilot default 6.5; with `fused` 13, 15, 10 and 10, and 7, 7, 3 and 0 per hour
+FrogPilot-off 92, StarPilot 86, FrogPilot default 6.5; with `fused` 12, 11, 7 and 8, and 7, 7, 3 and 0 per hour
 are braking that vision alone would have asked for and the radar left out.
 
-**Radar-only leads.** Of the lead time, 82-85% has a radar-sourced lead and 0.5-0.7% a radar-only one, on every fork.
+**Radar-only leads.** Of the lead time, 80-85% has a radar-sourced lead and 0.4-0.7% a radar-only one, on every fork.
 FrogPilot's far-lead path takes an in-lane moving track that only the radar reports: with the scene otherwise empty it
 did so after 0.5 s in the synthetic case (peak demand 0.74 m/s² for a 10 m/s slower object, 1.49 for 20 m/s slower),
-while sunnypilot and StarPilot kept the vision-only lead. On the drives it produced 15 leads in 37 min that no other fork took (median
-0.2 s, longest 1.7 s); 4 would have asked for at least 1.0 m/s².
+while sunnypilot and StarPilot kept the vision-only lead. On the drives it produced 11 leads in 37 min with `fused` (15 with `raw`) that no other fork took (median
+0.15 s, longest 0.9 s); 2 would have asked for at least 1.0 m/s².
 
 **StarPilot's two paths.** The legacy path (openpilot's, through the filters) runs 12% of the lead time with vision
 only, 19% with `raw`, 13% with `fused` and 13% with `acc`: it switches on and off 530-890 times an hour, and
 the filters, which start at 0 and update only on that path, are more than 2 m/s from the lead's speed when it starts in
-24-29% of runs (26% with vision only), so the stale start is a property of the fork. With `fused` the first 2 s of a run ask for a median +0.23 m/s² more than with the ACC target (90th
-percentile +0.91, at least 1.0 in 14 of 159 runs); with `raw` +0.67 (+1.25, 74 of 392).
+24-30% of runs (26% with vision only), so the stale start is a property of the fork. With `fused` the first 2 s of a run ask for a median +0.09 m/s² more than with the ACC target (90th
+percentile +0.79, at least 1.0 in 10 of 141 runs); with `raw` +0.67 (+1.25, 74 of 392).
 
 ## What the evidence supports
 
 - On any fork, install the default `acc` or `fused`. `acc` publishes only the radar's ACC target, the reference of this
-  comparison, so the fork's lead speed is the ACC target's speed. `fused` (run here as 2.5.0) cuts the braking demand
-  the radar's speed errors add about six-fold on sunnypilot (90 → 14 events per hour against the radar's own tracker), and the
+  comparison, so the fork's lead speed is the ACC target's speed. `fused` 2.6.0 cuts the braking demand
+  the radar's speed errors add about nine-fold on sunnypilot (90 → 10 events per hour against the radar's own tracker), and the
   benefit grows with how much of the radar's speed the fork uses.
 - A fork that uses the radar's speed and acceleration (sunnypilot, FrogPilot with Human Following off) gets most from the
   radar and is the most sensitive to what the radar gets wrong. A fork that anchors on the vision model (FrogPilot's
