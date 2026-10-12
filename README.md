@@ -154,6 +154,8 @@ filter with replay evidence for every part: [docs/12](docs/12_kalman_filter.md).
   Firmware `8821F0R01100`, the other RAV4 radar in openpilot's fingerprints, sends the same messages: on opendbc's two
   2022 RAV4 test routes (Hybrid and ICE) it carries the full ARS510 bus, and the `acc` and `fused` parsers decode it
   ([01](docs/01_radar_bus.md#radar-firmware)). The integration therefore selects the parser by the car model.
+  The C-HR and Yaris radars send the same frames on opendbc's test routes, but those minutes hold little traffic, so the
+  two platforms stay radarless for now ([01](docs/01_radar_bus.md#c-hr-and-yaris)).
 - **Far range.** The object list's speed sometimes reads a far car closing several m/s faster than it is, for 1-10 s
   ([07](docs/07_velocity_excursions.md)). The ACC target is present for 99 % of radar-lead time at 15-80 m and 66 %
   beyond 80 m ([08](docs/08_openpilot_integration.md#on-the-road)); beyond 60 m both profiles publish the car the ACC
@@ -176,7 +178,7 @@ filter with replay evidence for every part: [docs/12](docs/12_kalman_filter.md).
 ```mermaid
 flowchart LR
     CAN["CAN: bus 1 radar<br/>+ bus 0 wheel speed, yaw rate"] --> card --> RI["Toyota RadarInterface"]
-    RI -- "ARS510 detected<br/>(firmware or 0x80/0x85)" --> A["Ars510RadarInterface<br/>acc: ACC target frames<br/>fused: reassemble · CRC · decode · Kalman speed filter"]
+    RI -- "radar-ACC RAV4<br/>(car model)" --> A["Ars510RadarInterface<br/>acc: ACC target frames<br/>fused: reassemble · CRC · decode · Kalman speed filter"]
     A -- "RadarPoints: acc 16.7 Hz, fused 16.7 Hz" --> radard["radard (unchanged)"] --> planner["planner (unchanged)"]
 ```
 

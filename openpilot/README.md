@@ -50,7 +50,7 @@ Older names still work and print what they select: `anchor` / `steady` → `fuse
 | `ars510_radar_interface.py` | `opendbc/car/toyota/ars510_radar_interface.py` | `Ars510RadarInterface` (raw CAN → RadarData) and the hook |
 | `../upstream/ars510_radar.py` | `opendbc/car/toyota/ars510_upstream.py` | the single-file `fused` (used by `--profile openpilot`) |
 | `../upstream/ars510_acc_target.py` | `opendbc/car/toyota/ars510_acc_target.py` | the ACC target alone (used by `--profile acc`) |
-| `../upstream/toyota_tss2_ars510.dbc` | `opendbc/dbc/toyota_tss2_ars510.dbc` | its DBC: the three ACC target messages |
+| `../upstream/toyota_tss2_ars510.dbc` | `opendbc/dbc/toyota_tss2_ars510.dbc` | its DBC: the four ACC target messages |
 | 4-line block | end of `opendbc/car/toyota/interface.py` | `CarInterface = hook_car_interface(CarInterface)` |
 
 The DBCs in [`../dbc/`](../dbc) are for inspecting the radar in Cabana on a PC; the decoder reassembles the 106-frame
@@ -59,7 +59,7 @@ record in Python. The only DBC installed on the device is `toyota_tss2_ars510.db
 The hook wraps the fork's own Toyota `CarInterface` after it is defined:
 - **detection** in `_get_params`: a radar-ACC RAV4 2022 or 2023-25 gets `radarUnavailable = False` from the car model
   (both radar firmwares in openpilot's fingerprints are the ARS510, [docs/01](../docs/01_radar_bus.md#radar-firmware));
-  C-HR and Yaris keep the fork's behaviour;
+  C-HR and Yaris keep the fork's behaviour (same radar frames, not yet validated: [docs/01](../docs/01_radar_bus.md#c-hr-and-yaris));
 - **tracks** through `CarInterface.RadarInterface`: `Ars510RadarInterface` for that car, the fork's own
   RadarInterface for every other car. Extra constructor arguments (sunnypilot's `CP_SP`) pass through, and forks
   whose RadarPoint still has `aRel` / `yvRel` / `measured` get those fields filled.

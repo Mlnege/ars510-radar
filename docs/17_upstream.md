@@ -30,7 +30,7 @@ all-tracks candidate.
 Sizes: [`acc_target_parser.json`](../data/analysis/summaries/acc_target_parser.json) (`file_size`) and
 [`openpilot_file_parts.json`](../data/analysis/summaries/openpilot_file_parts.json).
 
-The `acc` proposal, [`upstream/opendbc_ars510.patch`](../upstream/opendbc_ars510.patch), applies to opendbc master as two
+The `acc` proposal, [`upstream/opendbc_ars510.patch`](../upstream/opendbc_ars510.patch), applies to opendbc master as three
 commits:
 1. **smasher816's implementation** ([smasher816/sunnypilot@3436526](https://github.com/smasher816/sunnypilot/commit/3436526cb80ec8988c1dfb09c5fcf7440cd28d02)), ported to opendbc master:
    - **DBC:** `opendbc/dbc/toyota_tss2_ars510.dbc` with `ACC_TARGET_1` (0x235) and `ACC_TARGET_2` (0x237).
@@ -47,6 +47,12 @@ commits:
      there is no target, nothing when the radar stops sending.
    - **No stale point:** no point while the frames are invalid (a stale or bad counter).
    - **Tests:** `opendbc/car/toyota/tests/test_ars510.py`.
+3. **The remaining DBC fields**, which the interface does not read: lateral speed and acceleration, in-path state, tracker
+   bytes and check bytes, the class and object-list flag on 0x239 and the target width on 0x23B (`ACC_TARGET_4`). They
+   match smasher816's later DBC, and through CANParser every signal equals the reference decoder on 9,574 frame sets.
+
+The C-HR and Yaris radars send the same frames ([01](01_radar_bus.md#c-hr-and-yaris)); the proposal keeps those two
+platforms radarless until a drive validates them.
 
 With the patch, opendbc's Toyota, platform-config, DBC-parser and car-interface tests pass and its ruff rules hold.
 Through opendbc's own CANParser the DBC decodes the bundled frames exactly like the reference decoder
@@ -75,7 +81,7 @@ What upstream review is likely to ask, from recent openpilot / opendbc radar PRs
    interface (Delphi MRR, 272 lines, 184 of them code) clusters raw detections into tracks and associates them over time.
 2. **Small, separable PRs.** Decode and points first (opendbc, decode only, tested on recorded frames), the
    filter second with before/after plots and process-replay diffs.
-3. **Fleet evidence.** Replays come from two cars on one firmware (`8821F0R03100`): the owner's, and 8.8 h from a second
+3. **Fleet evidence.** Replays come from two RAV4s on one firmware (`8821F0R03100`): the owner's, and 8.8 h from a second
    car that was held out of all tuning ([12](12_kalman_filter.md#on-a-second-car)). Its radar unit has the same speed noise
    ([06](06_accuracy.md#velocity)). Drives on other cars and firmware, through `--profile openpilot`, are what upstream would weigh.
 4. **Process replay coverage.** A route segment with the radar in openpilot's process-replay tests.
