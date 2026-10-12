@@ -46,7 +46,7 @@ This is opendbc's `DSU_CRUISE.LEAD_DISTANCE`, plus the Toyota name `D_VRCC` for 
 
 ### 0x366: target report, the ACC target and other states (◐)
 
-Fields count MSB-first from the first payload bit; `ars510.support.parse_0x366` returns them (`None` for the `7FFF` no-target word).
+Fields count MSB-first from the first payload bit; `ars510.support.parse_0x366` returns them (`None` for the `7FFF` idle word).
 
 | bits | field | coding |
 |---|---|---|

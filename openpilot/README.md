@@ -95,7 +95,7 @@ replay your own drives stock vs installed, see
 
 | symptom | what to check |
 |---|---|
-| `no opendbc/car/toyota/interface.py under …` | pass the openpilot checkout (`/data/openpilot`) or its `opendbc_repo` directly |
+| `expected opendbc/car/toyota/interface.py under …` | pass the openpilot checkout (`/data/openpilot`) or its `opendbc_repo` directly |
 | leads are still vision-only after installing | reboot (a full reboot reloads the Toyota modules); `--check` must show `hook … present`; the radar's firmware must be `8821F0R03100`, or bus 1 must carry 0x80 and 0x85 (`tools/decode_log.py` on a log from the car) |
 | radar leads disappeared after a fork update | the update reset `/data/openpilot`; run the installer again and reboot |
 | `radarUnavailableTemporary` alerts | the radar stopped sending its object list for more than 0.5 s; check the wiring / harness; openpilot longitudinal's radar disable keeps the object list running on `8821F0R03100` ([docs/01](../docs/01_radar_bus.md#openpilots-radar-disable)), so a log showing 0x80 stopping after the radar's `68 01` response points to other firmware or hardware in the radar line ([docs/08](../docs/08_openpilot_integration.md#checking-a-new-install-on-the-car)) |
