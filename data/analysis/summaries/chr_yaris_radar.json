@@ -1,0 +1,119 @@
+{
+ "description": "The C-HR (TOYOTA_CHR_TSS2) and Yaris (TOYOTA_YARIS) radar-ACC platforms carry the same ARS510 bus as the RAV4: one minute each from three opendbc test routes (logs from comma's public CI store), read with the repo's log reader and run through the acc interface (opendbc branch ars510-acc, with RAV4 car params) and the fused decoder (upstream/ars510_radar.py). Their radar part numbers differ from the RAV4's (8821F0R01100 / 8821F0R03100). Mostly parked or on an empty road, so these minutes show the bus, not driving behaviour.",
+ "cars": {
+  "C-HR 2021 (opendbc test route)": {
+   "radar_firmware": "8821FF410300",
+   "current_platform": "TOYOTA_CHR_TSS2",
+   "log_platform_label_radarUnavailable": false,
+   "seconds": 60,
+   "bus1_addresses": 36,
+   "frames_per_min": {
+    "0x80": 105647,
+    "0x85": 20930,
+    "0x235": 3002,
+    "0x237": 3002,
+    "0x239": 3002,
+    "0x23B": 3002
+   },
+   "acc_target_state": {
+    "5 (target)": 1289,
+    "1 (no target)": 1711
+   },
+   "counter_steps_of_1": "2999 of 2999",
+   "cycle_clock_changes_per_s": 16.4,
+   "acc_interface": {
+    "reports_per_s": 16.4,
+    "with_point": 413,
+    "mismatches_vs_reference_decoder": 0
+   },
+   "fused_object_list": {
+    "crc_valid_records": 996,
+    "published_points": 691
+   },
+   "ego_speed_m_s": [
+    0.0,
+    7.0
+   ],
+   "camera_lead_minus_acc_target_distance_m": {
+    "0-10 m (n 1402)": 1.69,
+    "10-20 m (n 1059)": 2.16,
+    "20-40 m (n 12)": 2.85
+   }
+  },
+  "C-HR Hybrid (opendbc test route, legacy 2018 label)": {
+   "radar_firmware": "8821FF410500",
+   "current_platform": "TOYOTA_CHR_TSS2",
+   "log_platform_label_radarUnavailable": false,
+   "seconds": 60,
+   "bus1_addresses": 36,
+   "frames_per_min": {
+    "0x80": 105552,
+    "0x85": 20898,
+    "0x235": 3000,
+    "0x237": 3000,
+    "0x239": 3000,
+    "0x23B": 3000
+   },
+   "acc_target_state": {
+    "1 (no target)": 3000
+   },
+   "counter_steps_of_1": "2999 of 2999",
+   "cycle_clock_changes_per_s": 16.3,
+   "acc_interface": {
+    "reports_per_s": 16.4,
+    "with_point": 0,
+    "mismatches_vs_reference_decoder": 0
+   },
+   "fused_object_list": {
+    "crc_valid_records": 995,
+    "published_points": 0,
+    "note": "0-2 objects per record on an empty road at 23 m/s"
+   },
+   "ego_speed_m_s": [
+    16.2,
+    23.0
+   ]
+  },
+  "Yaris (opendbc test route)": {
+   "radar_firmware": "8821F0D05300",
+   "current_platform": "TOYOTA_YARIS",
+   "log_platform_label_radarUnavailable": true,
+   "seconds": 60,
+   "bus1_addresses": 36,
+   "frames_per_min": {
+    "0x80": 105551,
+    "0x85": 20899,
+    "0x235": 3000,
+    "0x237": 3000,
+    "0x239": 3000,
+    "0x23B": 3000
+   },
+   "acc_target_state": {
+    "1 (no target)": 2945,
+    "5 (target)": 55
+   },
+   "counter_steps_of_1": "2999 of 2999",
+   "cycle_clock_changes_per_s": 17.1,
+   "acc_interface": {
+    "reports_per_s": 17.1,
+    "with_point": 19,
+    "mismatches_vs_reference_decoder": 0
+   },
+   "fused_object_list": {
+    "crc_valid_records": 994,
+    "published_points": 0,
+    "note": "no 0xB4 wheel-speed frame on this car, so the filter has no ego speed"
+   },
+   "ego_speed_m_s": [
+    0.0,
+    1.5
+   ]
+  }
+ },
+ "dbc_signals_vs_reference_decoder": {
+  "frame_sets": 9574,
+  "mismatches": 0,
+  "signals": "every signal of ACC_TARGET_1-4 in upstream/toyota_tss2_ars510.dbc through opendbc's CANParser against ars510.support (parse_acc_target, parse_0x239, parse_0x23b)"
+ },
+ "consequence": "Not enabled: the integration and the upstream proposal keep C-HR and Yaris radarless until a drive with traffic validates them. Enabling one is a radar DBC entry (toyota_tss2_ars510) in values.py and the platform in the installer hook's ARS510_PLATFORMS; fused would also need the Yaris ego speed source."
+}

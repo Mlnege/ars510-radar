@@ -115,3 +115,22 @@ which fingerprints as 2022). Both are the ARS510 and send the same bus (●, [`r
 
 The integration therefore selects the parser by the car model: both firmwares carry the same messages, and the cycle
 clock stays inside radard's 8-24 Hz window on both.
+
+### C-HR and Yaris
+
+The two other radar-ACC Toyotas have different radar part numbers but carry the same ARS510 bus (◐: one minute of an
+opendbc test route each, mostly parked or on an empty road; [`chr_yaris_radar.json`](../data/analysis/summaries/chr_yaris_radar.json)):
+
+| | C-HR 2021 (`8821FF410300`) | C-HR Hybrid (`8821FF410500`) | Yaris (`8821F0D05300`) |
+|---|---|---|---|
+| bus-1 addresses, 0x80 / 0x85 records | 36; 996 CRC-valid records per minute | 36; 995 | 36; 994 |
+| 0x235 / 0x237 / 0x239 / 0x23B | 50 Hz each, counter steps of 1 | the same | the same |
+| radar cycle clock (0x239) | 16.4 changes per s | 16.3 | 17.1 |
+| ACC target state 5 (target) | 1,289 of 3,000 frames | none (empty road) | 55 of 3,000 |
+| `acc` interface | 16.4 reports per s; 413 points, all equal the reference decoder | 16.4 per s, no target | 17.1 per s; 19 points, all equal |
+
+On the C-HR the camera's lead sits a steady 1.7-2.2 m beyond the ACC target's distance at 3-20 m, the camera-to-bumper
+offset, so the distance unit holds there too. The `fused` decoder reads the object list on all three, but the Yaris
+sends no 0xB4 wheel-speed frame, so the filter has no ego speed on that car. Both platforms (`TOYOTA_CHR_TSS2`,
+`TOYOTA_YARIS`) stay radarless in the integration and the upstream proposal until a drive with traffic validates them;
+enabling one is a radar DBC entry in `values.py`.

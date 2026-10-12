@@ -38,7 +38,8 @@ What sunnypilot, FrogPilot and StarPilot each do with a radar lead, and how the 
    (`ARS510_PLATFORMS`) gets `radarUnavailable = False` from the car model: both radar firmwares in openpilot's
    fingerprints (`8821F0R01100`, `8821F0R03100`) are the ARS510 ([01](01_radar_bus.md#radar-firmware)). The car model
    also covers a cold start, where the object list starts ~5.9 s after power-up, after fingerprinting. C-HR and Yaris
-   keep the fork's behaviour.
+   keep the fork's behaviour: their radars send the same frames, but no drive has validated them
+   ([01](01_radar_bus.md#c-hr-and-yaris)).
 2. **Hand-over** (hook on `CarInterface.RadarInterface`, which card instantiates). A radar-ACC Toyota with radar
    available is built as `Ars510RadarInterface`; every other car gets the fork's own RadarInterface. card runs as
    shipped.
