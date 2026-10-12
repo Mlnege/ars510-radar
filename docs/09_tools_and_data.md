@@ -145,7 +145,7 @@ until the last.
 
 The evidence comes mainly from the owner's RAV4 (TSS2, 2022), logged with openpilot, with drives U1-U3 from a second,
 unfiltered RAV4 and an 8.8 h replay set from the issue #66 tester's 2025 RAV4 Hybrid (S#, [12](12_kalman_filter.md#on-a-second-car)). Drives are named by role (A development,
-B city, C highway, D1-D4 closed-loop drives, E the ACC sample, O1-O4 owner road drives, O5 a parked owner test, U1-U3 a second
+B city, C highway, D1-D4 closed-loop drives, E the ACC sample, O1-O4 and O6-O7 owner road drives, O5 a parked owner test, U1-U3 a second
 unfiltered RAV4, S# the tester's drives); each drive carries its letter and times relative to an event. A few
 camera stills are included, with licence plates and place names blurred.
 
