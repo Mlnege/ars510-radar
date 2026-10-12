@@ -22,7 +22,7 @@ version of this installer is replaced automatically. `--profile fused` installs 
 Toyota modules. On the first drive after the reboot, `radarUnavailable` is false and leads are radar-backed.
 
 ```bash
-python /data/ars510-radar/openpilot/install.py /data/openpilot --check        # report state (read-only)
+python /data/ars510-radar/openpilot/install.py /data/openpilot --check        # report state (read-only), incl. whether the install matches this checkout
 python /data/ars510-radar/openpilot/install.py /data/openpilot --uninstall    # remove everything it added
 cd /data/ars510-radar && git pull && python openpilot/install.py /data/openpilot   # update, then reboot
 ```
@@ -99,6 +99,7 @@ replay your own drives stock vs installed, see
 |---|---|
 | `expected opendbc/car/toyota/interface.py under …` | pass the openpilot checkout (`/data/openpilot`) or its `opendbc_repo` directly |
 | leads are still vision-only after installing | reboot (a full reboot reloads the Toyota modules); `--check` must show `hook … present`; the car must fingerprint as `TOYOTA_RAV4_TSS2_2022`, `TOYOTA_RAV4_TSS2_2023`, `TOYOTA_CHR_TSS2` or `TOYOTA_YARIS` (a radar-ACC Toyota) |
+| `radarUnavailable` true on a RAV4 2022 / 2023 with the hook present | `--check` must show `installed files: match this checkout`; an install from before the car-model detection needed the radar firmware in `carFw` or 0x80 / 0x85 on bus 1 during fingerprinting, and a car picked manually (CarrotPilot's car selection, `FINGERPRINT`) at a cold start has neither: `git pull`, install again, reboot |
 | radar leads disappeared after a fork update | the update reset `/data/openpilot`; run the installer again and reboot |
 | `radarUnavailableTemporary` alerts | the radar stopped sending its object list for more than 0.5 s; check the wiring / harness; openpilot longitudinal's radar disable keeps the object list running on `8821F0R03100` ([docs/01](../docs/01_radar_bus.md#openpilots-radar-disable)), so a log showing 0x80 stopping after the radar's `68 01` response points to other firmware or hardware in the radar line ([docs/08](../docs/08_openpilot_integration.md#checking-a-new-install-on-the-car)) |
 | the lead chevron sits on the hood when stopped close behind a car | a UI quirk: the chevron is drawn from the radar distance in the camera frame; driving uses the measured distance |

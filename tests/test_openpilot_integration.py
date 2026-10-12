@@ -43,3 +43,25 @@ def test_install_check_uninstall(tmp_path: Path) -> None:
     assert r.returncode == 0, r.stdout + r.stderr
     assert (dst / "opendbc/car/toyota/interface.py").read_text() == before
     assert not (dst / "opendbc/car/toyota/ars510").exists()
+
+
+def test_check_reports_an_outdated_install(tmp_path: Path) -> None:
+    """--check tells an install from this checkout apart from one made with another ars510-radar version."""
+    toyota = tmp_path / "opendbc/car/toyota"
+    toyota.mkdir(parents=True)
+    (tmp_path / "opendbc/dbc").mkdir()
+    (toyota / "interface.py").write_text("class CarInterface:\n  pass\n")
+
+    def run(*args: str) -> str:
+        r = subprocess.run([sys.executable, "openpilot/install.py", str(tmp_path), *args], cwd=REPO, capture_output=True, text=True)
+        assert r.returncode == 0, r.stdout + r.stderr
+        return r.stdout
+
+    run("--profile", "fused")
+    assert "installed files: match this checkout" in run("--check")
+    old = toyota / "ars510_radar_interface.py"
+    old.write_text(old.read_text().replace("def detect(", "def detect_old("))
+    (toyota / "ars510/objects.py").write_text("# older\n")
+    assert "differ from this checkout (package, interface); run install.py again" in run("--check")
+    run()
+    assert "installed files: match this checkout" in run("--check")

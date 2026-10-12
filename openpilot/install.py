@@ -100,6 +100,37 @@ def legacy_patch(root: Path) -> Path | None:
   return None
 
 
+def sources() -> dict[str, Path]:
+  """What each target is copied from (the interface file differs from its source only by the profile line)."""
+  return {"package": REPO / "ars510", "interface": HERE / "ars510_radar_interface.py",
+          "upstream": REPO / "upstream" / "ars510_radar.py", "acc_target": REPO / "upstream" / "ars510_acc_target.py",
+          "shared_speed": HERE / "standalone" / "ars510_shared_speed.py",
+          "shared_range": HERE / "standalone" / "ars510_shared_range.py",
+          "acc_dbc": REPO / "upstream" / "toyota_tss2_ars510.dbc"}
+
+
+def stale(t: dict[str, Path]) -> list[str]:
+  """Installed targets that differ from this checkout: an install made with an older (or newer) ars510-radar."""
+  out = []
+  for name, src in sources().items():
+    dst = t[name]
+    if not dst.exists():
+      continue
+    if src.is_dir():
+      files = sorted(p.relative_to(src) for p in src.rglob("*.py"))
+      if files != sorted(p.relative_to(dst) for p in dst.rglob("*.py")) or \
+         any((src / f).read_bytes() != (dst / f).read_bytes() for f in files):
+        out.append(name)
+    elif name == "interface":
+      txt = dst.read_text()
+      prof = next((k for k in PROFILE_NAMES if f'PROFILE = PROFILES["{k}"]' in txt), None)
+      if prof is None or txt.replace(f'PROFILE = PROFILES["{prof}"]', PROFILE_LINE) != src.read_text():
+        out.append(name)
+    elif src.read_bytes() != dst.read_bytes():
+      out.append(name)
+  return out
+
+
 def remove_hook(text: str) -> str:
   if BEGIN not in text:
     return text
@@ -143,6 +174,10 @@ def main() -> int:
       print(f"{name}: {'present' if p.exists() else 'to be installed'} ({p})")
     for p in old_dbcs(root):
       print(f"leftover from an older install (removed on the next install): {p}")
+    if t["interface"].exists():
+      diff = stale(t)
+      print("installed files: " + ("match this checkout" if not diff else
+            f"differ from this checkout ({', '.join(diff)}); run install.py again, then reboot"))
     return 0
 
   if legacy is not None and not git_apply(root, legacy, "--reverse"):
