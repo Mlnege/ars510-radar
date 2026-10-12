@@ -1,5 +1,5 @@
 {
-  "status": "general_camera_share_not_identifiable",
+  "status": "general_camera_share_spans_0_to_0_9_under_these_observations",
   "slopes": {
     "d_onset": {
       "n": 101,
@@ -96,7 +96,7 @@
       16
     ]
   },
-  "counterexample_limits": "Unobserved-state algebra, not an inferred physical radar/camera model or share.",
-  "description": "Recomputation of cached owner-car association transitions and selection timing. Exact unobserved-state mixture identity shows total camera weight is not identifiable from these observations.",
+  "counterexample_limits": "Unobserved-state algebra: camera weights 0, 0.5 and 0.9 each reproduce the observed rows (2,501 per axis) to 7.1e-15.",
+  "description": "Recomputation of cached owner-car association transitions and selection timing. Exact unobserved-state mixture identity: any total camera weight (0, 0.5 and 0.9 tested) reproduces these observations, so they span that whole range.",
   "independent_check": "PASS: scalar cached-source allocations, acquisitions, all timing bins, covariance slopes; eight exact-rational mixture identities."
 }

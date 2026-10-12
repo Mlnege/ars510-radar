@@ -9,8 +9,8 @@ Ego drives at a constant 30 m/s (open loop). Demand is the proxy of forksim.py (
 
   E1  A lead pace-matched to the ego, with a false closing speed in the radar's vRel: ramps up over 1.5 s, holds 1 s,
       decays over 2 s (a synthetic stand-in for the far-range excursions of docs/07, which ramp up over about 1 s).
-      Reported: the extra demand over the same fork without the error. StarPilot's lead filters start warm (at the lead's speed).
-  E2  A radar-only, in-lane, moving object slower than the ego, with no vision lead (the camera sees nothing):
+      Reported: the extra demand over the same fork on the error-free radar. StarPilot's lead filters start warm (at the lead's speed).
+  E2  A radar-only, in-lane, moving object slower than the ego, while the vision lead is empty (the camera reports an empty scene):
       does the fork take it as the lead?
 """
 from __future__ import annotations

@@ -54,7 +54,7 @@
     "confirmation": 484
    },
    "inputs": "SCR-115: data/derived/ars510_signal_atlas/seg/* (split.json discovery 256 / confirmation 143 segments), exploration/acc_target.py per_seg + confirm.py C1/C1b logic; old values reproduced exactly (0.8965 n715; 0.8622 n421 CI 0.791-0.985)",
-   "method": "Re-ran acc_target.per_seg on the atlas caches, re-decoded 0x235 code exactly (code = acc_vrel/0.1, x0.125); same association (cost<1, margin>1, age>=60, vision prob>0.8, distance within max(25%,5 m)), same |native-ACC|>3 gate, same route bootstrap (seed 7, 2000). Discovery CI is new (original reported none). Selection changes with the unit (n 715->738, 421->484).",
+   "method": "Re-ran acc_target.per_seg on the atlas caches, re-decoded 0x235 code exactly (code = acc_vrel/0.1, x0.125); same association (cost<1, margin>1, age>=60, vision prob>0.8, distance within max(25%,5 m)), same |native-ACC|>3 gate, same route bootstrap (seed 7, 2000). The discovery CI is added in this recompute. Selection changes with the unit (n 715->738, 421->484).",
    "status": "recomputed"
   },
   {
@@ -157,7 +157,7 @@
     "coverage_windows": 1187
    },
    "inputs": "VID-6 addendum 2: data/derived/ars510_wheel_cell_mechanism_20261002/acc_independence.py (teacher dataset.parquet, ars510_video_looming_20261002/steps.parquet, ars510_native_quality_fields/slots_*.parquet, ars510_drift_mechanism/samples_{discovery,confirmation}.parquet); coverage: VID-7 data/derived/ars510_chain_interface_20261002 (decoder copy source/ars510/interface.py _acc_target_match); public summary video_truth.json acc_target_velocity",
-   "method": "acc_independence.py verbatim with O = stored oem_vrel x 1.25; three-cornered hat (N,O,L) as original. Old reproduced exactly. At 0.125 the 10-40 m ACC hat variance is ~1e-4 (sigma ~0.01): the ACC is no longer resolvable from zero there, var(ACC-loom) halves 0.40 -> 0.19; 40-70 m unchanged at 0.54. The vision-model shared-error signal disappears (var(O-M) ratio 0.77/0.63 -> 1.28/0.95). Coverage is unit-invariant: the fusion gate is position/age/presence only (cost<1, margin>1, age>=60), so 38% / 11% stand without recomputation.",
+   "method": "acc_independence.py verbatim with O = stored oem_vrel x 1.25; three-cornered hat (N,O,L) as original. The original values reproduce exactly. At 0.125 the 10-40 m ACC hat variance is ~1e-4 (sigma ~0.01): the ACC sits within noise of zero there, var(ACC-loom) halves 0.40 -> 0.19; 40-70 m unchanged at 0.54. The vision-model shared-error signal reads var(O-M) ratio 1.28/0.95 (0.77/0.63 at 0.1). Coverage is unit-invariant: the fusion gate is position/age/presence only (cost<1, margin>1, age>=60), so 38% / 11% carry over unchanged at both units.",
    "status": "recomputed"
   },
   {
@@ -198,7 +198,7 @@
     "discovery_episodes": 70,
     "confirmation_episodes": 31
    },
-   "inputs": "SCR-117: atlas caches + exploration/clean_labels.py per_seg/labels (no age filter); data/derived/ars510_signal_atlas/confirmation_round2.json; D4 producer not saved",
+   "inputs": "SCR-117: atlas caches + exploration/clean_labels.py per_seg/labels (all ages); data/derived/ars510_signal_atlas/confirmation_round2.json; D4 definition reconstructed (see method)",
    "method": "Clean labels verbatim (|nat-ACC|>3 & |nat-vis|>3 & |ACC-vis|<1.5; normal |nat-ACC|<0.7 & |nat-vis|<1). D4 definition reconstructed and verified to reproduce the saved values exactly at 0.1 (344/37,790 and 230/16,228 records; 79 / 32 episodes; 0.835 / 0.875; confirmation ratio 21.73x, rates 0.01026 / 0.22287): episodes = (seg, slot) runs split at > 0.5 s gaps; false closing = episode median(native-ACC) < 0; rate = glitch/normal records by native range. Discovery ratio reproduces as 30.1x (protocol quoted 31x). Labels change with the unit.",
    "status": "recomputed"
   },
@@ -330,7 +330,7 @@
     "gbm_fresh_segments": 40
    },
    "inputs": "SCR-417: data/derived/ars510_excursion_cause_20261003/{m30_prep_tables.py, m25_bias_scale_decode_check.py, m26_full_signal_scan.py, m34_gbm_fresh_validation.py}, code/reproduce/excursion_sigma_calibration.py; caches rebuilt from data/derived/ars510_signal_atlas/seg (700 segs) and ars510_unknown_signal_census_20261003/fresh_tables (114 segs) with a lean copy of build_unknown_signal_cache.py (aux limited to 0x235/0x237)",
-   "method": "m30 prep with vacc = (BE29|11-1024) x unit (only change), then the calibration, m25 and m26 (84|10 only) code verbatim and m34 GBM unchanged. K=0.045 and mu=-0.3 kept fixed. Old values reproduced exactly (227,388 / 13,257 rows; 5.15/6.45%, 6.91/5.52%; 84|10 R2 0.11373) except the GBM fresh R2 (0.424/0.470 here vs reported 0.408/0.465; small fit-level difference). Note the predicted incidence does not depend on the ACC unit.",
+   "method": "m30 prep with vacc = (BE29|11-1024) x unit (only change), then the calibration, m25 and m26 (84|10 only) code verbatim and m34 GBM unchanged. K=0.045 and mu=-0.3 kept fixed. Old values reproduced exactly (227,388 / 13,257 rows; 5.15/6.45%, 6.91/5.52%; 84|10 R2 0.11373); the GBM fresh R2 is 0.424/0.470 here vs reported 0.408/0.465 (small fit-level difference). The predicted incidence is the same at both units (6.45 % / 5.52 %).",
    "status": "recomputed"
   },
   {
@@ -443,7 +443,7 @@
    },
    "n": 15226,
    "inputs": "SCR-424: data/derived/ars510_acc_fields_calibration_20261004/accel_byte.py on rows.parquet (156 segments)",
-   "method": "accel_byte.py verbatim with acc_v re-decoded from h235 at 0.125 (asserted x0.1 matches stored) and byte 2 (code-100) x 0.125; old json reproduced byte-for-byte. Wobble = std of 17-record detrended signal (ego-accel term unchanged, so not exactly x1.25). The b2 lag vs the native reference is weakly identified (corr curve flat 0.636-0.643 over 0-0.6 s at both units), so 0.48 s -> 0.0 s is not a meaningful timing change.",
+   "method": "accel_byte.py verbatim with acc_v re-decoded from h235 at 0.125 (asserted x0.1 matches stored) and byte 2 (code-100) x 0.125; old json reproduced byte-for-byte. Wobble = std of 17-record detrended signal (ego-accel term at its original scale, so the wobble rises by x1.1, 0.12 -> 0.132). The b2 lag vs the native reference sits on a flat correlation curve (0.623-0.636 over 0-0.6 s at 0.125, 0.640-0.643 at 0.1), so 0.48 s -> 0.0 s lies inside that flat region.",
    "status": "recomputed"
   },
   {

@@ -22,7 +22,7 @@ CURVE_HEADING_ZERO, CURVE_HEADING_RAD = 31200, -1.8e-5      # code up = lane poi
 CURVE_CURVATURE_ZERO, CURVE_CURVATURE_PER_M = 16020, 2.5e-6  # code up = lane curving left
 CURVE_RATE_ZERO, CURVE_RATE_PER_M2 = 500, 4e-6               # c3, d(curvature)/ds; nominal unit (docs/04)
 
-# Bits of prefix bytes 17-19 that copy a cell's "not populated" flag (1 when bit 30 of that cell is 0). Cells 6-9 have no copy.
+# Bits of prefix bytes 17-19 that copy a cell's "empty" flag (1 when bit 30 of that cell is 0). Cells 0-5 carry the copies.
 PREFIX_UNPOPULATED_COPIES = {
     0: ((19, 4), (19, 5), (19, 6), (19, 7)), 1: ((19, 1), (19, 2), (19, 3)), 2: ((18, 4), (18, 6), (18, 7)),
     3: ((17, 2), (17, 3)), 4: ((17, 4), (17, 5), (17, 7)), 5: ((18, 1), (18, 3)),
@@ -73,7 +73,7 @@ class ShellCell:
 
     @property
     def lane_offset_m(self) -> float | None:
-        """Nominal c0 in metres (left positive), None when the cell holds no parameters."""
+        """Nominal c0 in metres (left positive), None for an empty cell."""
         return (self.offset_code - CURVE_OFFSET_ZERO) * CURVE_OFFSET_M if self.parameters_present else None
 
     @property

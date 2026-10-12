@@ -1,32 +1,37 @@
 {
  "description": "Kalman filter variants for the lead speed: offline bench (false closings vs the hidden ACC target, object list only) and openpilot replays (27 drives).",
- "units_note": "Bench reference: the ACC target speed read at 0.1 m/s per code (before the 0.125 correction in acc_summary_units.json), computed at that unit; replay_34_drives.fused is fused 2.0.",
+ "units_note": "Bench at the ACC target speed of 0.125 m/s per code: the cached per-cycle readings are rescaled exactly (acc speed over ground = ego + 1.25 x (value - ego); the code zero 1024 is common to both units) and the filters are retuned on the same 3 tuning groups. 'colored noise' uses the shipped COLORED_CONFIG constants; bench_colored_refit_at_0p125 is its refit. replay_34_drives.fused is fused 2.0; the key name replay_34_drives labels the 27-drive replay suite.",
  "bench_false_closing_pct": {
   "fused (random walk)": {
-   "heldout": 5.9,
-   "fresh": 5.7,
-   "owner": 5.8
+   "heldout": 7.6,
+   "fresh": 8.0,
+   "owner": 7.6
   },
   "Student-t update": {
-   "heldout": 6.1,
-   "fresh": 5.9,
-   "owner": 5.8
+   "heldout": 7.8,
+   "fresh": 8.7,
+   "owner": 7.4
   },
   "speed + acceleration state": {
-   "heldout": 6.7,
-   "fresh": 5.4,
-   "owner": 6.5
+   "heldout": 7.7,
+   "fresh": 8.5,
+   "owner": 7.6
   },
   "learned noise model": {
-   "heldout": 5.7,
-   "fresh": 5.5,
-   "owner": 5.2
+   "heldout": 7.2,
+   "fresh": 8.3,
+   "owner": 6.9
   },
   "colored noise (bias state)": {
-   "heldout": 5.1,
-   "fresh": 4.8,
-   "owner": 5.8
+   "heldout": 6.8,
+   "fresh": 7.8,
+   "owner": 7.8
   }
+ },
+ "bench_colored_refit_at_0p125": {
+  "heldout": 6.8,
+  "fresh": 8.1,
+  "owner": 7.5
  },
  "bench_definition": "share of cycles with estimate - ACC target < -2 m/s, d > 30 m, age >= 60; ACC target and summaries hidden from the filter; tuned on 3 drive groups, scored on held-out / fresh / owner drives",
  "colored_params": {
@@ -37,11 +42,11 @@
   "lead_accel_mps2": 1.0
  },
  "learned_noise_importance": {
-  "s240": 0.4767,
-  "v_ego": 0.2879,
-  "acc84": 0.1127,
-  "s200": 0.0691,
-  "y": 0.0674
+  "s240": 0.4225,
+  "v_ego": 0.2308,
+  "acc84": 0.0959,
+  "s200": 0.0887,
+  "d": 0.07
  },
  "replay_34_drives": {
   "fused": {
@@ -820,5 +825,66 @@
    -12.8
   ]
  },
- "acc_drop_response_summary": "kalman_response.json"
+ "acc_drop_response_summary": "kalman_response.json",
+ "replay_colored_vs_fused_2_6": {
+  "description": "The shipped COLORED_CONFIG (colored-noise state, ACC sigma 0.5, summaries on) on the code of fused 2.6, replayed with the fast suite (every drive set, 6-segment chunks, 16.91 moving h) beside fused 2.6; the fused 2.6 row reproduces profiles_vs_vision / acc_target_parser exactly.",
+  "moving_h": 16.91,
+  "fused_2_6": {
+   "hard": 8,
+   "hard_ticks": 16,
+   "mild": 27,
+   "flips_per_h": 332,
+   "unnecessary_s": 21.0,
+   "missed_s": 16.4,
+   "onset_vs_vision_s": -0.01
+  },
+  "colored": {
+   "hard": 7,
+   "hard_ticks": 18,
+   "mild": 26,
+   "flips_per_h": 332,
+   "unnecessary_s": 31.1,
+   "missed_s": 18.1,
+   "onset_vs_vision_s": 0.016
+  },
+  "colored_minus_fused_per_moving_h": {
+   "hard": {
+    "per_h": -0.059,
+    "ci95": [
+     -0.293,
+     0.129
+    ]
+   },
+   "mild": {
+    "per_h": -0.059,
+    "ci95": [
+     -0.369,
+     0.256
+    ]
+   },
+   "unnecessary_s": {
+    "per_h": 0.6,
+    "ci95": [
+     0.188,
+     1.15
+    ]
+   },
+   "missed_s": {
+    "per_h": 0.098,
+    "ci95": [
+     0.004,
+     0.216
+    ]
+   },
+   "flips": {
+    "per_h": 0.473,
+    "ci95": [
+     -3.552,
+     4.777
+    ]
+   },
+   "routes": 62
+  }
+ },
+ "learned_noise_importance_note": "Permutation importance of the gradient-boosting noise model (HistGradientBoostingRegressor, random_state 0, 300 iterations, learning rate 0.05, 31 leaves, min 200 samples per leaf); two runs give identical values."
 }

@@ -1,5 +1,5 @@
 {
-  "provenance": "Imported aggregate evidence from research workspace SCR-163; full captures are not bundled reruns. Formula selected on development; other partitions previously studied for other hypotheses.",
+  "provenance": "Imported aggregate evidence from research workspace SCR-163; the full captures stay in the research workspace. Formula selected on development data; the other partitions served earlier hypotheses.",
   "status": "exact startup law in tested scope",
   "scope": "born at age1; uninterrupted movement code5 prefix only",
   "formula": "min(30, floor(31*(2/3)**max(age-4,0)))",
@@ -52,6 +52,6 @@
     "labelled_excursions": 34,
     "real_closings": 29,
     "bit13_clear_alerts": 0,
-    "limitations": "Small previously studied vision-labelled cohort; not independent physical truth."
+    "limitations": "Small vision-labelled cohort used in earlier studies; the reference is the vision label."
   }
 }

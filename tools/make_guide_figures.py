@@ -5,7 +5,7 @@
 
 guide_pipeline.png and guide_lead_guards.png are schematics with numbers from the summaries. guide_cases.png plots
 data/analysis/lead_choice_cases.csv.gz: two road moments replayed through openpilot's planner with vision only, 2.1 and
-2.3 (relative time, no route identifiers; 2.4 asks the same as 2.3 in both, lead_choice_guards.json). guide_road_stats.png plots data/analysis/summaries/road_v21.json;
+2.3 (relative time, anonymised routes; 2.4 asks the same as 2.3 in both, lead_choice_guards.json). guide_road_stats.png plots data/analysis/summaries/road_v21.json;
 guide_parts_ledger.png plots data/analysis/summaries/openpilot_file_parts.json; guide_far_rule.png plots far_acc_only.json; guide_acc_target_parser.png plots acc_target_parser.json; guide_oracle.png plots
 data/analysis/summaries/oracle_reference.json.
 """
@@ -40,7 +40,6 @@ def _box(ax, x, y, w, h, title, body, color):
 
 def pipeline() -> None:
   """CAN frames to radard, one box per stage with its key numbers."""
-  lv = json.loads((SUM / "lead_choice_guards.json").read_text())["radar_share_of_leads_beyond_60m"]
   stages = [
     ("1  Radar bus", "0x80 frames on bus 1\n106 frames = 1 record\nevery ~60 ms (16.7 Hz)", GRAY),
     ("2  Reassemble", "742-byte record\nCRC32 check\nbad records dropped", GRAY),
@@ -69,9 +68,9 @@ def pipeline() -> None:
                                connectionstyle="arc3,rad=-0.2"))
   for i in range(4):
     ax.add_patch(FancyArrowPatch((bot[i][0] + 0.42, 1.2), (bot[i + 1][0] + 0.45 + wb + 0.03, 1.2), arrowstyle="-|>", mutation_scale=14, color=INK2))
-  ax.text(0.2, 4.62, "From CAN frames to openpilot: the parser's nine steps", fontsize=11.5, weight="bold", va="top")
-  ax.text(0.2, 0.12, f"Grey: decode (no tuning).  Yellow: the radar's own tracker outputs.  Green: the filter.  Blue: what reaches openpilot. "
-          f"Radar provides {lv['2.3 fused']:.0%} of leads beyond 60 m with the path gate ({lv['2.1 fused']:.0%} without); vision covers the rest.",
+  ax.text(0.2, 4.62, "From CAN frames to openpilot: the nine steps of fused (acc uses steps 5 and 9)", fontsize=11.5, weight="bold", va="top")
+  ax.text(0.2, 0.12, "Grey: decode (fixed constants).  Yellow: the radar's own tracker outputs.  Green: the filter.  Blue: what reaches openpilot. "
+          "Beyond 60 m only the ACC target's track is published; the camera covers the other far cars.",
           fontsize=7.8, color=INK2)
   fig.savefig(OUT / "guide_pipeline.png", dpi=130, bbox_inches="tight"); plt.close(fig)
 
@@ -222,7 +221,7 @@ def oracle() -> None:
   O = json.loads((SUM / "oracle_reference.json").read_text())
   sets = (("road drives, 2 cars (7.65 h)", O["confident"], ["vision", "2.1", "2.5", "2.6", "acc"]),
           ("27 replay drives (6.72 h)", O["suite_34_drives"]["confident"], ["vision", "2.1", "2.5", "2.6", "acc"]))
-  names = {"vision": "vision only", "2.1": "2.1", "2.5": "2.5", "2.6": "2.6 (fused, default)", "acc": "acc (ACC target)"}
+  names = {"vision": "vision only", "2.1": "2.1", "2.5": "2.5", "2.6": "2.6 (fused)", "acc": "acc (default, ACC target)"}
   col = {"vision": VIS, "2.1": V21, "2.5": GRAY, "2.6": V23, "acc": S4}
   fig, axs = plt.subplots(2, 2, figsize=(11.5, 6.6))
   for r, (label, C, vers) in enumerate(sets):
@@ -266,7 +265,7 @@ def far_rule() -> None:
 
 def acc_target_parser() -> None:
   """The ACC target alone against 2.6, from acc_target_parser.json: file size; braking over every drive set; lead flips
-  over every drive; unnecessary braking on drives never used for fitting; close cut-ins by a faster car."""
+  over every drive; unnecessary braking on drives held out from fitting; close cut-ins by a faster car."""
   J = json.loads((SUM / "acc_target_parser.json").read_text()); F, A = J["file_size"], J["by_version_and_set"]
   M = J["hard_and_mild_moving_vs_standstill"]; ALL = "all sets"; E, H, C = J["every_drive"], J["drives_not_used_for_development_pooled"], J["close_cut_ins"]["faster_car"]
   col = {"vision only": VIS, "2.6": V23, "ACC target only": S4}

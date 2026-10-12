@@ -1,11 +1,11 @@
 {
-  "scope": "700 previously researched segments; 1,253,081 occupied rows; no independent physical-motion supervision",
+  "scope": "700 previously researched segments; 1,253,081 occupied rows; supervised by the decoded codes alone",
   "primary_rows": 1223999,
-  "eligibility": "Age 2..126, positive forward range, non-sentinel lateral position; origin-containing bins have undefined direction",
-  "cohorts": "Young ages 2..59; mature age >=60, split at nominal component norm 5 m/s; not independently measured target motion",
+  "eligibility": "Age 2..126, positive forward range, non-sentinel lateral position; origin-containing bins span every direction",
+  "cohorts": "Young ages 2..59; mature age >=60, split at nominal component norm 5 m/s; target motion is the decoded nominal components",
   "model": "Current velocity-bin angle, clipped below zero, with +/-1 code input bounds, independent .14-.16 m/s units, output interval [q-.5,q+1] pi/64",
   "component_code_zero": 510.5,
-  "output_clipping": "Feasible zero and near-pi intervals remain separate; no convex hull across the discontinuity",
+  "output_clipping": "Feasible zero and near-pi intervals stay separate; each is clipped on its own side of the discontinuity",
   "bounds_are_factory_calibration": false,
   "cohort_scores": [
     {
@@ -345,6 +345,6 @@
       ]
     }
   ],
-  "interpretation": "Current-bin quantization alone is insufficient within the stated bounds. Values update separately from the transmitted component codes (docs/03).",
+  "interpretation": "Current-bin quantization leaves part of the heading output unexplained within the stated bounds. Values update separately from the transmitted component codes (docs/03).",
   "runtime_changed": false
 }

@@ -3,11 +3,11 @@
 
     python openpilot/install.py /data/openpilot                     # install (acc profile, the default), then reboot
     python openpilot/install.py /data/openpilot --profile raw       # the unfiltered decode, for comparison
-    python openpilot/install.py /data/openpilot --check             # report state, change nothing
+    python openpilot/install.py /data/openpilot --check             # report the state only
     python openpilot/install.py /data/openpilot --uninstall         # remove everything this installer added
 
 The path may be the openpilot checkout or its opendbc_repo. The same install works on openpilot, sunnypilot,
-StarPilot, CarrotPilot and other forks: no fork file is patched in place. The installer
+StarPilot, CarrotPilot and other forks: the installer adds new files and one marked block to the fork. The installer
   - copies the decoder package to        opendbc/car/toyota/ars510/
   - copies the radar interface to        opendbc/car/toyota/ars510_radar_interface.py (profile line set)
   - copies the openpilot version to      opendbc/car/toyota/ars510_upstream.py (used by --profile openpilot)
@@ -26,12 +26,10 @@ Profiles (docs/08 has the details and replay numbers):
             the object list and the radar's ACC target by their own uncertainty, with a path gate (= the openpilot version)
   raw       BASE_CONFIG: the unfiltered radar decode with only what radard
             needs to run. Velocity excursions reach the planner unfiltered; for research and comparison only
-  colored   experimental: fused with the object-list error as its own (colored-noise) state; fewer false closings
-            offline, slower to let go of a far excursion that recovers (docs/12). For road tests only
   openpilot fused in one file (upstream/ars510_radar.py, opendbc style), driving identically, points with trackId /
             dRel / yRel / vRel only. The all-tracks upstream alternative; the proposal is acc
-  shared_speed / shared_range  research only: every object and the ACC target through one gate-free Kalman model
-            (speed, or range and range rate). The object list's correlated errors reach the planner (docs/10)
+  Also tried, set aside (installable for research; docs/12, docs/10): colored (fused with a colored-noise state) and
+  shared_speed / shared_range (every object and the ACC target through one gate-free Kalman model)
 
 Legacy names are aliases: anchor/steady select fused, upstream selects openpilot,
 and stock/default select raw. Every alias prints its selection. Omit --profile for the recommended acc default.
@@ -51,7 +49,7 @@ LEGACY_PATCHES = sorted((HERE / "legacy").glob("*.patch"))
 PROFILE_LINE = 'PROFILE = PROFILES["acc"]'
 PROFILE_NAMES = ("acc", "fused", "openpilot", "raw", "colored", "shared_speed", "shared_range")
 LEGACY_NAMES = {"anchor": "fused", "steady": "fused", "stock": "raw", "default": "raw", "upstream": "openpilot"}
-DBCS = ("ars510_radar_bus.dbc", "ars510_objects_vbus.dbc")  # repo dbc/ is for Cabana on a PC; not installed
+DBCS = ("ars510_radar_bus.dbc", "ars510_objects_vbus.dbc")  # repo dbc/ serves Cabana on a PC and stays in the repo
 BEGIN = "# >>> ars510-radar: added by ars510-radar/openpilot/install.py; remove with install.py --uninstall"
 END = "# <<< ars510-radar"
 HOOK = f"""
@@ -81,7 +79,7 @@ def targets(root: Path) -> dict[str, Path]:
 
 
 def old_dbcs(root: Path) -> list[Path]:
-  """Cabana DBCs that older versions of this installer copied into the fork; parsing never used them."""
+  """Cabana DBCs that older versions of this installer copied into the fork; parsing reads the decoder package alone."""
   return [p for p in (root / "opendbc" / "dbc" / dbc for dbc in DBCS) if p.exists()]
 
 
@@ -114,7 +112,7 @@ def main() -> int:
   ap.add_argument("openpilot", type=Path, help="openpilot (or fork) checkout, or its opendbc_repo")
   ap.add_argument("--profile", choices=PROFILE_NAMES + tuple(LEGACY_NAMES), default="acc",
                   metavar="{" + ",".join(PROFILE_NAMES) + "}", help="default: acc; legacy aliases also accepted")
-  ap.add_argument("--flavor", help=argparse.SUPPRESS)  # accepted for old instructions; no longer needed
+  ap.add_argument("--flavor", help=argparse.SUPPRESS)  # accepted for old instructions; ignored
   g = ap.add_mutually_exclusive_group()
   g.add_argument("--check", action="store_true")
   g.add_argument("--uninstall", action="store_true")
@@ -126,7 +124,7 @@ def main() -> int:
     args.profile = new
   root = find_opendbc(args.openpilot)
   if root is None:
-    print(f"no opendbc/car/toyota/interface.py under {args.openpilot} (or its opendbc_repo)", file=sys.stderr)
+    print(f"expected opendbc/car/toyota/interface.py under {args.openpilot} (or its opendbc_repo)", file=sys.stderr)
     return 2
   t = targets(root)
   interface_py = root / "opendbc" / "car" / "toyota" / "interface.py"
@@ -135,20 +133,20 @@ def main() -> int:
 
   if args.check:
     print(f"opendbc: {root}")
-    print(f"hook in toyota/interface.py: {'present' if BEGIN in text else 'missing'}")
+    print(f"hook in toyota/interface.py: {'present' if BEGIN in text else 'to be installed'}")
     print(f"older patch-based install: {legacy.name if legacy else 'none'}")
     if t["interface"].exists():
       txt = t["interface"].read_text()
-      prof = next((k for k in PROFILE_NAMES + tuple(LEGACY_NAMES) if f'PROFILE = PROFILES["{k}"]' in txt), "unknown")
+      prof = next((k for k in PROFILE_NAMES + tuple(LEGACY_NAMES) if f'PROFILE = PROFILES["{k}"]' in txt), "other")
       print(f"profile: {prof}")
     for name, p in t.items():
-      print(f"{name}: {'present' if p.exists() else 'missing'} ({p})")
+      print(f"{name}: {'present' if p.exists() else 'to be installed'} ({p})")
     for p in old_dbcs(root):
       print(f"leftover from an older install (removed on the next install): {p}")
     return 0
 
   if legacy is not None and not git_apply(root, legacy, "--reverse"):
-    print(f"could not remove the older install ({legacy.name}); nothing changed", file=sys.stderr)
+    print(f"could not remove the older install ({legacy.name}); the checkout stays as it was", file=sys.stderr)
     return 1
   text = remove_hook(interface_py.read_text())
   for p in old_dbcs(root):
@@ -165,7 +163,7 @@ def main() -> int:
     return 0
 
   if "class CarInterface" not in text:
-    print("toyota/interface.py defines no CarInterface; nothing changed", file=sys.stderr)
+    print("expected a CarInterface class in toyota/interface.py; the checkout stays as it was", file=sys.stderr)
     return 1
   if t["package"].exists():
     shutil.rmtree(t["package"])
@@ -183,11 +181,11 @@ def main() -> int:
         "). Reboot the device to activate.")
   if args.profile in ("shared_speed", "shared_range"):
     print("warning: a research profile. The object list's slow, correlated errors reach the planner: replays ask for hard\n"
-          "radar-only braking 7-21 times as often as fused (docs/10). Not for driving.")
+          "radar-only braking 7-21 times as often as fused (docs/10). Keep to research use.")
   if args.profile == "raw":
     print("warning: the raw profile publishes the unfiltered radar decode. Velocity excursions (false closings beyond 40 m)\n"
-          "reach the planner unfiltered and cause about three times the hard radar-only braking of fused. Use it for research\n"
-          "and comparison only; install.py with no --profile installs the recommended fused profile.")
+          "reach the planner unfiltered: 93 hard radar-only braking ticks on the held-out replay routes against 16 for fused and\n"
+          "14 for acc (docs/11). Use it for research and comparison; install.py alone installs acc.")
   return 0
 
 

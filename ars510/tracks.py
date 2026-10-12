@@ -1,8 +1,8 @@
 """Track IDs from the radar's own slot / age lifecycle.
 
 An object keeps its slot while the radar tracks it and its age counts up by one per cycle (saturating at 126).
-A new ID starts whenever a slot's age fails to increase (restart, age 0) or the slot goes quiet for longer than
-`max_gap_s`. No ID is ever live in two slots; within 60 m the track keeps one camera identity for at least 95% of its
+A new ID starts whenever a slot's age stays level or drops (restart, age 0) or the slot goes quiet for longer than
+`max_gap_s`. Every ID lives in one slot only; within 60 m the track keeps one camera identity for at least 95% of its
 life on 77 of 87 camera-checked tracks (docs/06_accuracy.md).
 """
 from __future__ import annotations

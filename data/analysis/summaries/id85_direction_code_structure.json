@@ -80,7 +80,7 @@
     "maximum_interpolation_gap_s": 0.1,
     "future_heading_forward_m": 16,
     "radar_origin_ahead_m": 3.6,
-    "limits": "Nominal origin; ego path does not certify the selected boundary or its identity."
+    "limits": "Nominal origin; the ego path selects the boundary, and boundary identity is a candidate (\u25cb)."
   },
   "independent_check": {
     "motion_and_raw_cell_rows": true,

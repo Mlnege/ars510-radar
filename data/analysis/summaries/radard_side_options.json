@@ -1,9 +1,9 @@
 {
- "description": "Replays with a patched radard (copy of the pinned openpilot; unchanged planner) against fused 2.4 with the stock radard: where the ARS510's extra information could be used outside the interface. 27 replay drives (counts as in docs/09) and the road drives against the hindsight-lead oracle (oracle_reference.json). Extra per-point values reached radard through RadarPoint's deprecated fields (replay only).",
+ "description": "Replays with a patched radard (copy of the pinned openpilot; stock planner) against fused 2.4 with the stock radard: where the ARS510's extra information could be used outside the interface. 27 replay drives (counts as in docs/09) and the road drives against the hindsight-lead oracle (oracle_reference.json). Extra per-point values reached radard through RadarPoint's deprecated fields (replay only).",
  "variants": {
   "radar_arel": "aLeadK = ego acceleration + the ACC target's relative acceleration (0x235 byte 2) for the ACC target's track; radard's filter otherwise",
   "vision_fusion": "radard fuses the vision lead's speed into the matched radar track (sigma 2 x model vStd), fixed radar variance; interface = fused 2.4",
-  "pass_through": "interface without its speed filter or range fusion (ACC target's values for its track, raw object list otherwise, age 60, path gate, saturation guard); radard fuses vision and weights each radar reading by max(1, sigma^2), sigma = 0.045 x 240|7 (young-scaled) or 0.5 for the ACC target"
+  "pass_through": "interface with its speed filter and range fusion off (ACC target's values for its track, raw object list otherwise, age 60, path gate, saturation guard); radard fuses vision and weights each radar reading by max(1, sigma^2), sigma = 0.045 x 240|7 (young-scaled) or 0.5 for the ACC target"
  },
  "replay_27_drives": {
   "fused_2_4":    {"hard_ticks_heldout_further_owner": [30, 1, 0], "target_episodes_heldout": 3, "onset_vs_vision_s": -0.010, "radar_only_braking_per_h": 0.22, "oracle_unnecessary_missed_s": [7.1, 3.0]},
@@ -16,5 +16,5 @@
   "radar_arel":   {"owner_hard": 0, "owner_mild": 7, "oracle_unnecessary_missed_s": [4.5, 10.8], "note": "a newly acquired ACC target's relative acceleration starts near zero and replaces the deceleration radard's filter had built up: one added 2.4 s miss (oracle -3.5 m/s2, variant -0.49) and a far real closing answered later"},
   "vision_fusion":{"owner_hard": 0, "owner_mild": 7, "oracle_unnecessary_missed_s": [3.8, 8.4]}
  },
- "reading": "the per-point weighting does not move into radard as a variance: radard's [vLead, aLead] filter, tuned for responsive radars, cannot stand in for the interface's low-process-noise speed filter; the radar's relative acceleration needs a hand-over rule for new targets before radard could use it"
+ "reading": "the per-point weighting stays in the interface: radard weighting each reading by sigma^2 (pass_through) gives 57 against 30 held-out hard ticks, 11 against 3 target episodes and 96.9 against 7.1 s of unnecessary braking relative to fused 2.4; radard's [vLead, aLead] filter is tuned for responsive radars and the interface's low-process-noise speed filter does a different job; the radar's relative acceleration (radar_arel) cuts unnecessary braking from 7.1 to 3.0 s on replay and needs a hand-over rule for new ACC targets before radard can use it on the road (one added 2.4 s miss)"
 }

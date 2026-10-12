@@ -53,7 +53,7 @@ class CycleHeader:
 def parse_0x190(data: bytes) -> CycleHeader | None:
     """0x190 (7 bytes, once per radar cycle): summary count, microsecond timestamp, cycle counter (docs/05).
 
-    Byte 0 = count << 2 | 2; the count equals the number of non-sentinel 0x191 / 0x193 frames in every logged cycle after start-up
+    Byte 0 = count << 2 | 2; the count equals the number of populated 0x191 / 0x193 frames in every logged cycle after start-up
     (681,864 of 681,879; the rest are startup frames).
     Returns None for a short frame or the all-ones start-up frame."""
     if len(data) < 7 or data[0] == 0xFF:
@@ -189,9 +189,9 @@ class AccTarget:
 
 
 def parse_acc_target(data235: bytes, data237: bytes) -> AccTarget | None:
-    """Every field of the radar's ACC target from one 0x235 / 0x237 pair, or None while there is no target (docs/05).
+    """Every field of the radar's ACC target from one 0x235 / 0x237 pair, or None while the target is idle (docs/05).
 
-    Field boundaries come from the carry structure of 2 M frames; with no target every numeric field sits at its zero
+    Field boundaries come from the carry structure of 2 M frames; while the target is idle every numeric field sits at its zero
     code. The driving interface keeps using the single-field helpers below."""
     if len(data235) != 8 or len(data237) != 8 or data235[1] & 0x0F != 5 or not _be_field(data237, 10, 1):
         return None
@@ -204,7 +204,7 @@ def parse_acc_target(data235: bytes, data237: bytes) -> AccTarget | None:
 
 @dataclass(frozen=True)
 class AccTargetInfo:
-    target_class: int     # 1 car, 2 truck (the 0x191 template class); 0, 4, 5, 6 other; 7 no target
+    target_class: int     # 1 car, 2 truck (the 0x191 template class); 0, 4, 5, 6 other; 7 idle
     present: bool
     in_object_list: bool  # the target also has an object in the 0x80 list
     timestamp_us: int     # radar cycle clock of this target update, same clock as 0x190
@@ -225,7 +225,7 @@ A23B_CRC_XOROUT = 0x59
 
 
 def crc8_0x1d_bits(bits) -> int:
-    """CRC-8, polynomial 0x1D (x^8+x^4+x^3+x^2+1), MSB first, init 0, no reflection, over an iterable of bits."""
+    """CRC-8, polynomial 0x1D (x^8+x^4+x^3+x^2+1), MSB first, init 0, direct bit order in and out, over an iterable of bits."""
     crc = 0
     for bit in bits:
         crc = ((crc << 1) & 0xFF) ^ ((((crc >> 7) & 1) ^ bit) * 0x1D)
@@ -243,8 +243,8 @@ def parse_0x23b(data: bytes) -> tuple[int, int, bool] | None:
     """0x23B (3 bytes, 50 Hz), in frame order as received: (ACC target width in cm, rolling counter 0-15, check byte valid).
 
     Byte 0 = CRC-8, byte 1 = counter << 4 | width high nibble, byte 2 = width low byte. The width is 0 exactly while
-    there is no target, 140-220 for the car class (median 171) and 200-280 for the truck class (docs/05). The startup
-    frame 00 0f ff fails the check; every other frame passes."""
+    the target is idle, 140-220 for the car class (median 171) and 200-280 for the truck class (docs/05). The startup
+    frame 00 0f ff is the one frame with a mismatching check byte; every other frame carries a valid one."""
     if len(data) != 3:
         return None
     return (data[1] & 0x0F) << 8 | data[2], data[1] >> 4, crc_0x23b(data[2], data[1]) == data[0]
@@ -261,7 +261,7 @@ class Target366:
 
     @property
     def y_rel(self) -> float | None:
-        """Lateral offset in metres, left positive, -0.34 m per code; None for 15 (no target) and -16 (invalid, mostly beyond +-5 m)."""
+        """Lateral offset in metres, left positive, -0.34 m per code; None for 15 (idle) and -16 (invalid, mostly beyond +-5 m)."""
         return None if self.lateral_code in (15, -16) else -0.34 * self.lateral_code
 
     @property
@@ -276,7 +276,7 @@ class Target366:
 
 
 def parse_0x366(data: bytes) -> Target366 | None:
-    """Decode a seven-byte car-bus report, or None for the 7FFF no-target word.
+    """Decode a seven-byte car-bus report, or None for the 7FFF idle word.
 
     0x366 arrives about 90 ms after 0x365. It agrees with the ACC target in matched mature-target comparisons and
     also reports while the ACC target is idle (docs/13). An analysis helper; the profiles read the ACC target frames.

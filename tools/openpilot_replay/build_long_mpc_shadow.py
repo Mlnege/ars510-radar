@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Build openpilot's longitudinal MPC solver OUTSIDE the openpilot checkout, for offline replay.
 
-A source checkout that has not been built with scons has `long_mpc.py` but not its generated acados solver,
-and building it in place modifies the checkout. This copies `long_mpc.py` unchanged into
+A source checkout before its scons build holds `long_mpc.py`, and the generated acados solver comes from that build,
+which modifies the checkout in place. This copies `long_mpc.py` unchanged into
 `<out>/longitudinal_mpc_lib/`, runs its code generation there, and compiles the solver and Cython wrapper the
 way the checkout's SConscript does. `replay_radard.py --mpc-shadow <out>` prepends that directory to
 `openpilot.selfdrive.controls.lib.__path__`, so openpilot's unmodified `LongitudinalPlanner` imports it.
-If your checkout is already built (scons), you do not need this.
+A checkout that is already built (scons) runs replay_radard.py directly.
 
   PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$OP $OP/.venv/bin/python build_long_mpc_shadow.py --openpilot $OP --out op_shadow
 Tested against openpilot 10b9e73 (September 2026); the file list may change in other versions.

@@ -78,7 +78,7 @@ def profiles_figure() -> None:
         if runs["raw"]["acc_t"]:  # the acc profile publishes exactly this target as its one point
             av.plot(runs["raw"]["acc_t"], runs["raw"]["acc_v"], color=S4, lw=1.4, ls="--", label="radar's ACC target (0x235) = acc")
         else:
-            ad.text(0.98, 0.04, "no ACC target in this drive: acc publishes no point\n(radard uses the camera lead)", transform=ad.transAxes,
+            ad.text(0.98, 0.04, "ACC target absent in this drive: acc publishes an empty list\n(radard takes the camera lead)", transform=ad.transAxes,
                     ha="right", va="bottom", fontsize=7.5, color=INK2)
         if runs["raw"]["accd_t"]:
             ad.plot(runs["raw"]["accd_t"], runs["raw"]["acc_d"], color=S4, lw=1.4, ls="--", label="ACC target distance = acc")

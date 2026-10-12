@@ -149,7 +149,7 @@
   }
  },
  "scale_check": {
-  "note": "object - ACC speed against ego speed on steady leads; scale and constant offset are not separable here",
+  "note": "object - ACC speed against ego speed on steady leads; the fit returns scale and constant offset as one combined pair",
   "slope_per_mps": -0.00394,
   "intercept": -0.116,
   "implied_ground_scale": 0.9961,

@@ -1,5 +1,5 @@
 {
-  "provenance": "Imported aggregate evidence from research workspace SCR-177; full captures are not bundled reruns. Fixed grouping selected on development; all groups have prior research use.",
+  "provenance": "Imported aggregate evidence from research workspace SCR-177; full captures stay in the research workspace. Fixed grouping selected on development; all groups have prior research use.",
   "status": "supported nearly normalized raw triplet (lane-association shares)",
   "fields": [
     {
@@ -187,7 +187,7 @@
       "hits": 1
     }
   ],
-  "event_scope": "Any active or mixed triplet in [-3,+1) seconds around existing disagreement trigger; no tuned component/cutoff or proven physical-onset timing.",
+  "event_scope": "Any active or mixed triplet in [-3,+1) seconds around existing disagreement trigger; untuned component and cutoff; timing is relative to the trigger.",
   "limits": [
     "All-zero triplets go with lane states 1 / 5 / 7 (docs/03).",
     "Weights are read as lane-association shares in 1/15 steps.",

@@ -1,6 +1,6 @@
 {
   "status": "supported raw recoding",
-  "provenance": "Imported research-workspace SCR-205 aggregates. Full captures are not bundled reruns. All groups had prior research use. Discovery selected the dictionary; other groups tested it unchanged.",
+  "provenance": "Imported research-workspace SCR-205 aggregates. The full captures stay in the research workspace. All groups had prior research use. Discovery selected the dictionary; other groups tested it unchanged.",
   "mapping_163_to_140": {
     "1": 0,
     "2": 5,
@@ -263,7 +263,7 @@
     "excluded_bad_sequence": 1,
     "excluded_bad_crc": 0,
     "excluded_partial": 8,
-    "limits": "Exact observed raw recoding, not physical classes or low-nibble confidence units. Native full default slots checked separately from atlas counts."
+    "limits": "Exact observed raw recoding; its classes are raw code groups. Native full default slots checked separately from atlas counts."
   },
-  "runtime_use": "none; Cabana raw views only; preserve both raw values and any future disagreement"
+  "runtime_use": "Cabana raw views (offline); keep both raw values and any future disagreement"
 }

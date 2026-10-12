@@ -89,18 +89,18 @@ def how_it_works() -> None:
 
 
 def path_gate_lines() -> int:
-    """Source lines of the path-gate block inside Ars510NativeRadarInterface._payload."""
+    """Code lines of the path-gate block inside Ars510NativeRadarInterface._payload."""
     import inspect
     from ars510.interface import Ars510NativeRadarInterface as I
     src = inspect.getsource(I._payload).splitlines()
     i = next(k for k, line in enumerate(src) if "cfg.path_gate_m > 0" in line)
     ind = len(src[i]) - len(src[i].lstrip())
     j = next(k for k in range(i + 1, len(src)) if len(src[k]) - len(src[k].lstrip()) <= ind)
-    return j - i
+    return sum(1 for line in src[i:j] if line.strip() and not line.strip().startswith("#"))
 
 
 def acc_lines() -> int:
-    """Code lines of upstream/ars510_acc_target.py, counted as the parts ledger counts them (no docstrings, comments, blanks)."""
+    """Code lines of upstream/ars510_acc_target.py, counted as the parts ledger counts them (docstrings, comments and blanks excluded)."""
     import ast, io, tokenize
     src = (REPO / "upstream" / "ars510_acc_target.py").read_text(); tree = ast.parse(src); doc = set()
     for node in ast.walk(tree):
@@ -112,10 +112,19 @@ def acc_lines() -> int:
 
 
 def layers() -> None:
-    """Which processing each profile applies (rows) and how many code lines each part takes (counted from ars510)."""
+    """Which processing each profile applies (rows) and the size of each part in code lines (comments, docstrings and blanks excluded): its functions in ars510/ and, for acc, upstream/ars510_acc_target.py."""
     import inspect
     from ars510.interface import Ars510NativeRadarInterface as I
-    n = lambda *fs: sum(len(inspect.getsource(f).splitlines()) for f in fs)
+    import ast, textwrap
+
+    def code(f) -> int:
+        src = textwrap.dedent(inspect.getsource(f)); doc = set()
+        for node in ast.walk(ast.parse(src)):
+            if isinstance(node, (ast.FunctionDef, ast.ClassDef)) and ast.get_docstring(node):
+                doc.update(range(node.body[0].lineno, node.body[0].end_lineno + 1))
+        return sum(1 for i, ln in enumerate(src.splitlines(), 1) if ln.strip() and not ln.strip().startswith("#") and i not in doc)
+
+    n = lambda *fs: sum(code(f) for f in fs)
     from ars510.tracks import NativeTrackIdAssigner
     rows = [("validity, track IDs, ego subtraction", n(NativeTrackIdAssigner.update, I._fresh_ego_speed), (1, 1)),
             ("track-ID relink across short losses", n(I._relink), (1, 0)),
@@ -127,7 +136,7 @@ def layers() -> None:
             ("summaries (fork option, on in colored)", n(I._summary_update, I._summary_speed, I._summary_match), (0, 0, 0), ""),
             ("ACC target (0x235 / 0x237) as the only point", acc_lines(), (0, 0, 1), " (the whole acc file)")]
     rows = [r if len(r) == 4 else (*r[:2], (*r[2], 0), "") for r in rows]
-    prof = ["raw", "fused (default)", "acc"]; colors = [GRAY, FUS, ACCP]
+    prof = ["raw", "fused", "acc (default)"]; colors = [GRAY, FUS, ACCP]
     fig, ax = plt.subplots(figsize=(9.6, 3.9))
     for i, (name, lines, on, note) in enumerate(rows):
         y = len(rows) - 1 - i
@@ -146,7 +155,7 @@ def vs_vision() -> None:
     S = json.loads((REPO / "data" / "analysis" / "summaries" / "profiles_vs_vision.json").read_text())
     ev, req = S["heldout_events"], S["heldout_one_system_requests_and_overrides"]
     prof = ["raw", "fused_no_trackers", "fused", "acc"]; colors = [GRAY, "#8fd9bb", FUS, ACCP]
-    names = ["raw", "fused,\nno ACC target", "fused\n(default)", "acc\n(ACC target)"]
+    names = ["raw", "fused,\nno ACC target", "fused", "acc (default)\n(ACC target)"]
     fig, (a1, a2, a3) = plt.subplots(1, 3, figsize=(15, 4.2))
     m = [ev[p]["onset_diff_mean_s"] for p in prof]; ci = np.array([ev[p]["onset_diff_ci"] for p in prof]).T
     a1.bar(names, m, color=colors, yerr=[np.array(m) - ci[0], ci[1] - np.array(m)], capsize=4)
@@ -177,7 +186,7 @@ def kalman_variants() -> None:
     for k, (g, c) in enumerate(zip(groups, [FUS, S1, ANC])):
         a1.barh(y + (k - 1) * 0.26, [S["bench_false_closing_pct"][n][g] for n in names], 0.26, color=c, label=g.replace("heldout", "held-out"))
     a1.set_yticks(y, names); a1.invert_yaxis(); a1.set_xlabel("false closings (% of cycles, error < −2 m/s)")
-    a1.set_xlim(0, 8.6); a1.set_title("Offline bench: object list only, vs the hidden ACC target"); a1.legend(loc="lower right", fontsize=8)
+    a1.set_xlim(0, 11); a1.set_title("Offline bench: object list only, vs the hidden ACC target (ACC at 0.125 m/s per code)"); a1.legend(loc="lower right", fontsize=8)
     T = S["trace"]; t = np.array(T["t"])
     a2.plot(t, T["raw_vrel"], color=GRAY, lw=1, label="object-list vRel")
     a2.plot(t, T["fused_vrel"], color=FUS, lw=2, label="fused (one speed state)")
@@ -263,7 +272,7 @@ def kalman_ablation() -> None:
 
 
 def kalman_combinations() -> None:
-    """Each tested version of the 2.0 filter: lines in the openpilot file of that time, driving numbers, pass or fail (27 drives)."""
+    """Each tested version of the 2.0 filter: lines in the openpilot file of that time, driving numbers, acceptance verdict (27 drives)."""
     C = json.loads((REPO / "data" / "analysis" / "summaries" / "fused_filter.json").read_text())["combinations_34_drives"]
     names = {"fused": "fused 2.0 (all parts)", "no_L": "− track-ID relink", "no_S": "− summaries", "no_RL": "− range fusion − relink",
              "no_SL": "− summaries − relink",
@@ -280,7 +289,7 @@ def kalman_combinations() -> None:
         ax.text(r["openpilot_file_lines"] + 4, yi, f'{r["openpilot_file_lines"]} lines', va="center", fontsize=8.5, color=INK)
         ax.text(375, yi, f'unjustified hard braking {r["unjustified_ticks"]} ticks   lead switches {r["switches"]}', va="center",
                 fontsize=8.2, color=INK2)
-        ax.text(700, yi, ("passes: base of today's fused" if key == "no_SL" else "passes") if r["passes"] else why.get(key, "fails"), va="center", fontsize=8.2,
+        ax.text(700, yi, ("passes: base of fused 2.6" if key == "no_SL" else "passes") if r["passes"] else why.get(key, "fails"), va="center", fontsize=8.2,
                 color=FUS if r["passes"] else S4)
     ax.set_yticks(y, [n for n, _, _ in rows]); ax.invert_yaxis(); ax.set_xlim(0, 960); ax.set_xticks([0, 100, 200, 300])
     ax.set_xlabel("total lines of the openpilot file at 2.0 (upstream/ars510_radar.py)")
@@ -294,16 +303,16 @@ def kalman_justified() -> None:
              "fused - S - R - L - Y - G", "fused - ego scale", "fused - age 60", "fused - std gate", "fused - young factor",
              "fused - ACC (summaries kept)", "fused - ACC - summaries", "colored", "tuned (anchor)"]
     names = {"fused, ACC/summary units corrected": "fused 2.1 (with summaries)", "fused": "fused 2.0 (with summaries)",
-             "fused - S - L": "2.0 − summaries − relink (base of today's fused)",
+             "fused - S - L": "2.0 − summaries − relink (the base of fused 2.6)",
              "fused - S - R - L": "2.0 − summaries − relink − range fusion", "fused - S - R - L - Y - G": "… − young factor − std gate",
              "fused - ACC (summaries kept)": "2.0 − ACC target", "fused - ACC - summaries": "2.0 − ACC target − summaries",
-             "colored": "colored (experimental)", "tuned (anchor)": "earlier tuned profile"}
+             "colored": "colored (experimental)", "tuned (anchor)": "tuned profile (anchor)"}
     rows = [(names.get(k, k.replace("fused - ", "2.0 − ").replace(" - ", " − ")), S[k]) for k in order if k in S]
     y = np.arange(len(rows))
     fig, ax = plt.subplots(figsize=(11, 0.42 * len(rows) + 1.5))
     left = np.zeros(len(rows))
     for key, color, lab in (("justified", FUS, "real: the gap was closing and the driver slowed too"),
-                            ("unclear", GRAY, "unclear"), ("unjustified", S4, "unjustified: no real closing, driver did not slow")):
+                            ("unclear", GRAY, "unclear"), ("unjustified", S4, "unjustified: little real closing, driver kept speed")):
         vals = np.array([r[key]["ticks"] for _, r in rows], dtype=float)
         ax.barh(y, vals, left=left, color=color, label=lab, height=0.6); left += vals
     for yi, (_, r) in zip(y, rows):

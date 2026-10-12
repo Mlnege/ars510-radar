@@ -148,7 +148,7 @@ def standstill_codes():
 
 
 def _lat_bins(half_width_m: float, codes_per_bin: int) -> np.ndarray:
-    """Lateral bin edges on the code grid (whole codes per bin, edges between codes), so histograms do not alias."""
+    """Lateral bin edges on the code grid (whole codes per bin, edges between codes), so histograms align with the code grid."""
     n = int(half_width_m / LATERAL_M_PER_CODE) // codes_per_bin * codes_per_bin
     return (np.arange(-n, n + 1, codes_per_bin) - 0.5) * LATERAL_M_PER_CODE
 
@@ -198,7 +198,7 @@ def ground_contact():
         ax.set_ylim(0, 40)
     axes[0].set_ylabel("camera ground-contact distance (m)")
     save(fig, "range_ground_contact",
-         "Camera distance = box bottom projected onto a flat road with the log's liveCalibration and openpilot intrinsics (no model output). "
+         "Camera distance = box bottom projected onto a flat road with the log's liveCalibration and openpilot intrinsics (camera geometry only). "
          "Drive B is hilly (flat-road assumption). The flat cluster near 7.7 m on A is the hood clipping box bottoms.")
 
 
@@ -450,7 +450,7 @@ def range_walk():
     axes[0].set_ylabel("disagreement with camera size ratio over 1.5 s (m)")
     axes[0].legend(fontsize=7.5, loc="upper left")
     NUMBERS["range_walk"] = out
-    save(fig, "range_walk_vs_integrated_vrel", "The camera box-height ratio over 1.5 s needs no calibration. "
+    save(fig, "range_walk_vs_integrated_vrel", "The camera box-height ratio over 1.5 s is calibration-free. "
                                                "Integrating the radar's velocity tracks it 1.4-3.7x better than the radar's own range change.")
 
 
@@ -988,7 +988,7 @@ def excursion_sigma_scale():
     """Native-minus-ACC velocity error against the reported 240|7 code, and observed vs Gaussian-predicted excursion incidence."""
     info = summary("excursion_sigma_scale")
     fig, (a, b) = plt.subplots(1, 2, figsize=(10.5, 4.3))
-    for key, col, lab in (("corpus_700_segments", S1, "development + held-out drives"), ("fresh_114_segments", S2, "fresh drives")):
+    for key, col, lab in (("corpus_700_segments", S1, "development + held-out drives"),):
         r = info[key]["rms_by_code"]
         x = [v["code"] for v in r.values() if v["n"] >= 70]; y = [v["rms"] for v in r.values() if v["n"] >= 70]
         a.plot(x, y, marker="o", color=col, label=lab)
@@ -1001,9 +1001,9 @@ def excursion_sigma_scale():
     for lab, c in (("40–55 m", S1), ("55–70 m", S2), ("70–85 m", S3), ("85–110 m", S4)): b.scatter([], [], color=c, label=lab)
     b.set_xlabel("predicted excursion rate (%), Gaussian σ = 0.045 × code"); b.set_ylabel("observed rate (%)"); b.set_title("Excursion incidence per range band and code quartile"); b.legend(loc="upper left")
     fig.tight_layout()
-    save(fig, "excursion_sigma_scale", "Matched to the radar's own ACC target (227 k development/held-out records, 13 k fresh). Excursion = 9-record median of native − ACC below −2.5 m/s. "
+    save(fig, "excursion_sigma_scale", "Matched to the radar's own ACC target (210 k development/held-out records, ACC speed at 0.125 m/s per code). Excursion = 9-record median of native − ACC below −2.5 m/s. "
          "ACC reference error (about 0.6 m/s) is included in the RMS; kurtosis beyond 2.5σ exceeds Gaussian. "
-         "ACC speed at 0.1 m/s per code; at the decoded 0.125 the per-count RMS is 0-6 % higher (acc_unit_recompute.json).")
+         "Fresh-drive incidence at the same unit: acc_unit_recompute.json.")
 
 
 def video_truth_excursions():
@@ -1021,31 +1021,6 @@ def video_truth_excursions():
     ax.legend(loc="upper left")
     fig.tight_layout()
     save(fig, "video_truth_excursions", "2,657 selected windows; ECC metric scale uses native range; the reference has its own error.")
-
-
-def kalman_response():
-    """Paired route uncertainty for the fixed current colored recurrence against scalar RW."""
-    info = summary("kalman_response")
-    names = [("development", "Development"), ("prior_evaluation", "Prior evaluation"),
-             ("recent_reused", "Recent, reused"), ("owner", "Owner"), ("combined", "Combined")]
-    fig, ax = plt.subplots(figsize=(9, 4.2))
-    for y, (key, label) in enumerate(names):
-        row = info["cohorts"][key]
-        delta = row["paired_lag_difference_s"]["currentCN_minus_RW"]
-        mean = 1000 * delta["mean"]
-        lo, hi = (1000 * v for v in delta["route_block_bootstrap_95"])
-        ax.errorbar(mean, y, xerr=[[mean - lo], [hi - mean]], fmt="o", capsize=4,
-                    color=S1 if key != "combined" else INK, markersize=6)
-    labels = [f"{label}  ({info['cohorts'][key]['event_count']} windows)" for key, label in names]
-    ax.set_yticks(range(len(names)), labels)
-    ax.invert_yaxis()
-    ax.axvline(0, color=INK2, lw=1, ls=":")
-    ax.set_xlim(-220, 245)
-    ax.set_xlabel("Colored model − scalar model response lag (ms); negative = earlier")
-    ax.set_title("ACC-defined response: combined interval spans zero")
-    fig.tight_layout()
-    save(fig, "kalman_response", "252 windows, 33 routes; paired route-block bootstrap 95% intervals. Trackers hidden during estimation.\n"
-         "The reference is the same radar's ACC target, so this compares the filters with each other.")
 
 
 def summary_owner_case():
@@ -1066,7 +1041,7 @@ def summary_owner_case():
         ax.axvspan(0, info["episode"]["duration_s"], color=S2, alpha=.10)
         ax.set_ylabel(label)
     axes[0].axhline(-1, color=INK2, lw=1, ls=":")
-    axes[0].set_title("A far lead without an ACC target: the summaries soften the request; the slowdown was real")
+    axes[0].set_title("A far lead while the ACC target is idle: the summaries soften the request; the slowdown was real")
     axes[0].legend(loc="lower left", fontsize=8)
     axes[-1].set_xlabel("Seconds relative to episode onset (owner drive O1)")
     fig.tight_layout()
@@ -1103,7 +1078,7 @@ def target_366_coding():
 
 
 def target_366_coverage():
-    """Owner-only report states, without treating a non-idle word as physical truth."""
+    """Owner-only report states of the car-bus 0x366 word against the ACC target."""
     info = summary("target_366_coverage")
     fig, ax = plt.subplots(figsize=(9, 3.7))
     categories = [("range_agrees", "ACC present, range agrees", S1),
@@ -1130,14 +1105,14 @@ def target_366_coverage():
 def pcs_flag_0x344():
     """0x320 bit 13 against the radar's / replayed car-bus frames on O5 (pcs_flag_0x344.json)."""
     D = summary("pcs_flag_0x344")
-    colors = {"radar": S1, "none": "#d6d4ce", "283": S2, "344opr1": S3, "344opr0": S3, "283+344opr1": S4, "283+344opr0": S4}
-    names = {"radar": "radar", "none": "silent", "283": "0x283", "344opr1": "0x344\nPCSOPR 1", "344opr0": "0x344\nPCSOPR 0",
+    colors = {"radar": S1, "silent": "#d6d4ce", "283": S2, "344opr1": S3, "344opr0": S3, "283+344opr1": S4, "283+344opr0": S4}
+    names = {"radar": "radar", "silent": "silent", "283": "0x283", "344opr1": "0x344\nPCSOPR 1", "344opr0": "0x344\nPCSOPR 0",
              "283+344opr1": "0x283 +\n0x344 (1)", "283+344opr0": "0x283 +\n0x344 (0)"}
     t_end = D["radar_silent_s"][1] + 20
     fig, ax = plt.subplots(figsize=(10, 3.0))
     for p in D["phases"]:
         a, b = p["start_s"], min(p["end_s"], t_end)
-        ax.axvspan(a, b, ymin=0.0, ymax=0.62, color=colors[p["label"]], alpha=0.35 if p["label"] != "none" else 0.6, lw=0)
+        ax.axvspan(a, b, ymin=0.0, ymax=0.62, color=colors[p["label"]], alpha=0.35 if p["label"] != "silent" else 0.6, lw=0)
         ax.text((a + b) / 2, -0.32, names[p["label"]], ha="center", va="center", fontsize=7.5, color=INK2)
     ts, bs = [0.0], [D["bit13_transitions"][0]["bit13"]]
     for tr in D["bit13_transitions"]:
@@ -1146,12 +1121,12 @@ def pcs_flag_0x344():
     ax.plot(ts, bs, color=INK, lw=1.8, drawstyle="default")
     ax.set_xlim(0, t_end)
     ax.set_ylim(-0.6, 1.25)
-    ax.set_yticks([0, 1], ["0 (link ok)", "1 (0x344 missing)"])
+    ax.set_yticks([0, 1], ["0 (link ok)", "1 (0x344 stopped)"])
     ax.set_xlabel("seconds from the start of the log (O5, parked)")
     ax.set_title("0x320 bit 13 follows 0x344 alone: set while the radar is silent, clear whenever 0x344 is replayed")
     ax.grid(axis="y", visible=False)
     fig.subplots_adjust(bottom=0.2)
-    save(fig, "pcs_flag_0x344", "\nBands: what was on the car bus (the radar's own frames, nothing, or openpilot's replay of the radar's idle frames). "
+    save(fig, "pcs_flag_0x344", "\nBands: what was on the car bus (the radar's own frames, an empty bus, or openpilot's replay of the radar's idle frames). "
          "The dash PCS malfunction warning stayed on through every replay phase.\nNumbers: data/analysis/summaries/pcs_flag_0x344.json.")
 
 
@@ -1189,7 +1164,7 @@ NUMBERS: dict = {}
 FIGURES = {f.__name__: f for f in (record_raster, field_map, vground_vs_ego, standstill_codes, lateral_hist, bev_density, ground_contact,
                                    lateral_scale, lifetimes, slot_gantt, track_lifecycle, lane_weights, object_size, heading_field,
                                    age_convergence, vrel_hexbin, vrel_mse, range_walk, brake_events, fault_injection,
-                                   event_code_context, initial_attribute_zeros, id85_direction_code_structure, lane_curve_cells, excursion_sigma_scale, video_truth_excursions, kalman_response, summary_owner_case,
+                                   event_code_context, initial_attribute_zeros, id85_direction_code_structure, lane_curve_cells, excursion_sigma_scale, video_truth_excursions, summary_owner_case,
                                    acc_frame_map, camera_association, lateral_unit_evidence, far_range_distance, tracker_range, target_366_coding, target_366_coverage, pcs_flag_0x344, pcs_activation_u3)}
 
 

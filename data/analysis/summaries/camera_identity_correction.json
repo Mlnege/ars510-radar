@@ -1,11 +1,11 @@
 {
   "experiment": "SCR-216",
   "date": "2026-09-28",
-  "provenance": "Imported research-workspace rerun; full route and video inputs are not bundled in the public repository.",
-  "scope": "89 previously researched segments, native raw decoder without relink; narrow camera only. Additional historical wide-camera rows excluded from reported shadow counts.",
-  "interpretation": "Heuristic camera-chain scores and geometric shadow candidates, not independently verified physical identity or occlusion.",
+  "provenance": "Imported research-workspace rerun; full route and video inputs stay in the research workspace.",
+  "scope": "89 previously researched segments, native raw decoder with raw track IDs; narrow camera. Reported shadow counts cover the narrow camera.",
+  "interpretation": "Heuristic camera-chain scores and geometric shadow candidates (physical identity and occlusion: \u25cb).",
   "legacy_compatibility": {
-    "claim": "Finite branch reconstruction reproduces saved outputs; this is not recovery or proof of historical source versions.",
+    "claim": "Finite branch reconstruction reproduces saved outputs (a behavioural match to the saved results).",
     "A": {
       "remove_short_sandwiched_runs": false,
       "scaled_link": true
@@ -285,9 +285,9 @@
   },
   "limits": [
     "Camera chains use radar continuity and range-scaled apparent size.",
-    "Post-shadow matching does not require the same camera ID; ID changes may also be camera retracking.",
+    "Post-shadow matching accepts a different camera ID; ID changes can reflect camera retracking.",
     "Native lifetimes are censored by segment boundaries.",
-    "No runtime change, physical merge/split flag, or early excursion discriminator.",
+    "Analysis only; runtime unchanged; the output is a heuristic score for offline review.",
     "Relink, far-range calibration and brake-event labels require separate audits."
   ]
 }

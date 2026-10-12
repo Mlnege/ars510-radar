@@ -81,7 +81,7 @@
       "object_list": 3.3
     }
   },
-  "limits": "sender, not camera independence; association to object-list tracks is positional",
+  "limits": "the clock evidence identifies the sender (the radar clock for 0x235 / 0x237); association to object-list tracks is by position",
   "drive_E_minute_phase_vs_radar_0x190_ms": {
     "0x235 (ACC target)": [
       0.0,

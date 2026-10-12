@@ -1,5 +1,5 @@
 {
-  "provenance": "SCR-289 source/arithmetic audit of existing research and bundled tables; velocity regressions are imported, not newly fitted; no independent survey or OEM schema",
+  "provenance": "SCR-289 source/arithmetic audit of existing research and bundled tables; velocity regressions are imported from earlier fits; the evidence is the logged signals and the decoded tables",
   "status": "nominal decode retained; physical zero/scale precision bounded",
   "affine_fields": [
     {
@@ -51,7 +51,7 @@
       "dominant_four_weighted_mean": 510.486,
       "code_510_over_511_ratio": 1.088262910798122,
       "nominal_decoded_mean_mps": -0.0020841263799042053,
-      "selection": "occupied object slots age>=10 while interpolated host 0xB4 speed<0.05 m/s; target motion not independently selected"
+      "selection": "occupied object slots age>=10 while interpolated host 0xB4 speed<0.05 m/s; target motion taken as decoded"
     },
     {
       "drive": "B",
@@ -67,7 +67,7 @@
       "dominant_four_weighted_mean": 510.4,
       "code_510_over_511_ratio": 1.5626463700234192,
       "nominal_decoded_mean_mps": -0.01499387380028736,
-      "selection": "occupied object slots age>=10 while interpolated host 0xB4 speed<0.05 m/s; target motion not independently selected"
+      "selection": "occupied object slots age>=10 while interpolated host 0xB4 speed<0.05 m/s; target motion taken as decoded"
     },
     {
       "drive": "C",
@@ -83,7 +83,7 @@
       "dominant_four_weighted_mean": 510.198,
       "code_510_over_511_ratio": 1.3391572456320657,
       "nominal_decoded_mean_mps": -0.04525171624713948,
-      "selection": "occupied object slots age>=10 while interpolated host 0xB4 speed<0.05 m/s; target motion not independently selected"
+      "selection": "occupied object slots age>=10 while interpolated host 0xB4 speed<0.05 m/s; target motion taken as decoded"
     }
   ],
   "velocity_scale": [
@@ -148,7 +148,7 @@
   "surveyed_range_zero_or_lateral_scale_established": false,
   "installed_profile_ground_mps_per_code": 0.149,
   "gps_pitch_yaw_used_in_native_affine_decoder": false,
-  "upstream_motion_compensation": "ground-referenced Cartesian components supported; exact upstream inputs, filtering and pitch/elevation handling unassigned",
+  "upstream_motion_compensation": "ground-referenced Cartesian components supported; upstream inputs, filtering and pitch/elevation handling are candidates (\u25cb)",
   "sensitivity": {
     "zero_change_510_5_to_511_mps": -0.075,
     "zero_change_510_5_to_512_mps": -0.225,
@@ -166,7 +166,7 @@
         "reduction_mps": 0.1488842937003254
       }
     ],
-    "projection_scope": "illustrative pure horizontal projection at 30 m/s; same constant road grade, no association/multipath/filter effect; not a fit to drives",
+    "projection_scope": "illustrative pure horizontal projection at 30 m/s; constant road grade: the geometric term alone (closed-form arithmetic over assumed values)",
     "rotating_frame_example": {
       "left_yaw_rad_s": 0.1,
       "forward_m": 100,

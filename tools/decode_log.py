@@ -56,7 +56,7 @@ def main() -> int:
     ap.add_argument("log", type=Path)
     ap.add_argument("-o", "--out", type=Path, default=Path("ars510_points.csv"))
     ap.add_argument("--profile", choices=tuple(PROFILES), default="raw",
-                    help="install profiles fused / raw, "
+                    help="install profiles fused / raw (the default install profile acc is the one-point file upstream/ars510_acc_target.py), "
                          "or all-tracks: every track from age 1 with the radar's own IDs")
     args = ap.parse_args()
 

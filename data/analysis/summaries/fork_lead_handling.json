@@ -1,10 +1,10 @@
 {
- "description": "How the radar's lead is consumed by the radard and MPC lead handling of sunnypilot, FrogPilot and StarPilot, and what that does with this radar. Each fork's own source is executed unmodified on recorded drives U1 (stock ACC, 21 min) and U2 (openpilot alpha longitudinal, 26 min) and on synthetic scenarios (tools/fork_lead). Radar profiles: raw and fused as of ars510 2.5.0, 'acc' = the radar's own ACC target (0x235 / 0x237) as the only radar point, the reference (the radar's own ACC tracker). 'Demand' is a proxy, not the planner: the constant deceleration that keeps the MPC's lead-based safety distance over 10 s, applied to the lead trajectory each fork hands its MPC; 'nominal' starts the ego at the desired spacing so it isolates what the lead's predicted speed and acceleration ask for, independent of the gap the driver kept. Open loop; the MPC solver and the rest of each planner are not run. Section keys: A lead supplier, B added by radar noise against the ACC-target reference, C braking added or removed against the same fork on vision only, D StarPilot lead paths, E leads only FrogPilot accepts, F first braking request in 10 lead-braking events (a hint: one proxy, 10 events; on the openpilot path it contradicts the real-planner replay of docs/08), E1 / E2 synthetic.",
+ "description": "How the radar's lead is consumed by the radard and MPC lead handling of sunnypilot, FrogPilot and StarPilot, and what that does with this radar. Each fork's own source is executed unmodified on recorded drives U1 (stock ACC, 21 min) and U2 (openpilot alpha longitudinal, 26 min) and on synthetic scenarios (tools/fork_lead). Radar profiles: raw and fused as of ars510 2.6.0, 'acc' = the radar's own ACC target (0x235 / 0x237) as the only radar point, the reference (the radar's own ACC tracker). 'Demand' is a proxy for the planner: the constant deceleration that keeps the MPC's lead-based safety distance over 10 s, applied to the lead trajectory each fork hands its MPC; 'nominal' starts the ego at the desired spacing so it isolates what the lead's predicted speed and acceleration ask for, independent of the gap the driver kept. Open loop; the proxy stands in for the MPC solver and the rest of each planner. Section keys: A lead supplier, B added by radar noise against the ACC-target reference, C braking added or removed against the same fork on vision only, D StarPilot lead paths, E leads only FrogPilot accepts, F first braking request in 10 lead-braking events (a hint: one proxy, 10 events; on the openpilot path it contradicts the real-planner replay of docs/08), E1 / E2 synthetic.",
  "fork_sources": {
   "sunnypilot": {
    "branch": "master",
    "commit": "3323aaf",
-   "note": "radard equals openpilot's for a Toyota (its change is Hyundai-only)"
+   "note": "radard equals openpilot's for a Toyota (its change applies to Hyundai)"
   },
   "frogpilot": {
    "branch": "FrogPilot-Staging",
@@ -24,7 +24,7 @@
    "note": "FrogPilot and StarPilot: LeadDetectionThreshold default 35, user range 25-50"
   },
   "frogpilot_human_following": "LongitudinalTune and HumanFollowing default on; default model version v9, which selects the long_mpc model-trajectory path",
-  "starpilot_uncertainty_and_panic_bypass": "0 / off (the model-uncertainty inputs to its filter time are not replayed)"
+  "starpilot_uncertainty_and_panic_bypass": "0 / off (the replay sets the model-uncertainty inputs to its filter time to zero)"
  },
  "code_facts": {
   "lead_accel_tau_s": {
@@ -36,16 +36,16 @@
    "filter_tau_s": 0.5,
    "threshold": 0.63,
    "requires": "moving > 1 m/s, between the model's lane lines, nearer than the model path end",
-   "applies": "only when no lead was matched and low_speed_override is set (leadOne)"
+   "applies": "when the lead match comes back empty and low_speed_override is set (leadOne)"
   },
-  "frogpilot_model_path": "radar sets dRel and vLead at t=0; the model supplies the deltas; aLeadK / aLeadTau unused; no braking-lead exception",
+  "frogpilot_model_path": "radar sets dRel and vLead at t=0; the model supplies the deltas; aLeadK / aLeadTau ignored; braking leads take the same path",
   "starpilot_model_path": {
    "max_lead_brake_m_s2": 0.5,
    "max_closing_ttc_s": 7.0,
    "min_model_prob": 0.5,
    "legacy_path": "radar lead used as in openpilot, through lead_v_filter / lead_a_filter"
   },
-  "starpilot_lead_filter_time_s": "0 below 47 mph, rising to 1.2 at 65 mph and above; both filters start at 0 and update only on the legacy path",
+  "starpilot_lead_filter_time_s": "0 below 47 mph, rising to 1.2 at 65 mph and above; both filters start at 0 and update on the legacy path",
   "starpilot_dynamic_t_follow_max_extra_s": 0.162,
   "starpilot_vision_lead_caps_bypassed_for_radar_leads": 11
  },
@@ -56,8 +56,8 @@
  "A_lead_source": {
   "sunnypilot/fused": {
    "lead_min": 35.9,
-   "radar_pct": 85.0,
-   "radar_only_pct": 0.73
+   "radar_pct": 83.8,
+   "radar_only_pct": 0.66
   },
   "sunnypilot/raw": {
    "lead_min": 35.9,
@@ -65,9 +65,9 @@
    "radar_only_pct": 0.74
   },
   "frogpilot-hf/fused": {
-   "lead_min": 36.9,
-   "radar_pct": 83.5,
-   "radar_only_pct": 0.63
+   "lead_min": 36.8,
+   "radar_pct": 82.2,
+   "radar_only_pct": 0.42
   },
   "frogpilot-hf/raw": {
    "lead_min": 36.9,
@@ -75,9 +75,9 @@
    "radar_only_pct": 0.61
   },
   "frogpilot/fused": {
-   "lead_min": 36.9,
-   "radar_pct": 83.5,
-   "radar_only_pct": 0.63
+   "lead_min": 36.8,
+   "radar_pct": 82.2,
+   "radar_only_pct": 0.42
   },
   "frogpilot/raw": {
    "lead_min": 36.9,
@@ -86,8 +86,8 @@
   },
   "starpilot/fused": {
    "lead_min": 37.2,
-   "radar_pct": 81.7,
-   "radar_only_pct": 0.5
+   "radar_pct": 80.4,
+   "radar_only_pct": 0.46
   },
   "starpilot/raw": {
    "lead_min": 37.2,
@@ -97,12 +97,12 @@
  },
  "B_noise_vs_acc_reference": {
   "sunnypilot/fused": {
-   "minutes": 29.5,
-   "rms": 0.102,
-   "p95": 0.14,
-   "p99": 0.39,
-   "events_ge_0p5_per_h": 24.4,
-   "events_ge_1p0_per_h": 14.3
+   "minutes": 29.4,
+   "rms": 0.081,
+   "p95": 0.07,
+   "p99": 0.24,
+   "events_ge_0p5_per_h": 20.4,
+   "events_ge_1p0_per_h": 10.2
   },
   "sunnypilot/raw": {
    "minutes": 29.2,
@@ -114,9 +114,9 @@
   },
   "frogpilot-hf/fused": {
    "minutes": 29.5,
-   "rms": 0.029,
-   "p95": 0.02,
-   "p99": 0.07,
+   "rms": 0.025,
+   "p95": 0.01,
+   "p99": 0.04,
    "events_ge_0p5_per_h": 2.0,
    "events_ge_1p0_per_h": 0.0
   },
@@ -130,11 +130,11 @@
   },
   "frogpilot/fused": {
    "minutes": 29.5,
-   "rms": 0.102,
-   "p95": 0.14,
-   "p99": 0.39,
-   "events_ge_0p5_per_h": 24.4,
-   "events_ge_1p0_per_h": 14.2
+   "rms": 0.081,
+   "p95": 0.07,
+   "p99": 0.24,
+   "events_ge_0p5_per_h": 20.3,
+   "events_ge_1p0_per_h": 10.2
   },
   "frogpilot/raw": {
    "minutes": 29.3,
@@ -146,11 +146,11 @@
   },
   "starpilot/fused": {
    "minutes": 29.5,
-   "rms": 0.192,
-   "p95": 0.1,
-   "p99": 0.52,
-   "events_ge_0p5_per_h": 32.6,
-   "events_ge_1p0_per_h": 4.1
+   "rms": 0.133,
+   "p95": 0.04,
+   "p99": 0.3,
+   "events_ge_0p5_per_h": 10.2,
+   "events_ge_1p0_per_h": 2.0
   },
   "starpilot/raw": {
    "minutes": 29.4,
@@ -163,7 +163,7 @@
  },
  "C_added_removed_vs_vision": {
   "sunnypilot/fused": {
-   "added_per_h": 13.4,
+   "added_per_h": 11.8,
    "removed_per_h": 6.7
   },
   "sunnypilot/raw": {
@@ -171,7 +171,7 @@
    "removed_per_h": 6.7
   },
   "frogpilot-hf/fused": {
-   "added_per_h": 9.8,
+   "added_per_h": 8.2,
    "removed_per_h": 0.0
   },
   "frogpilot-hf/raw": {
@@ -179,7 +179,7 @@
    "removed_per_h": 0.0
   },
   "frogpilot/fused": {
-   "added_per_h": 14.7,
+   "added_per_h": 11.4,
    "removed_per_h": 6.5
   },
   "frogpilot/raw": {
@@ -187,7 +187,7 @@
    "removed_per_h": 6.5
   },
   "starpilot/fused": {
-   "added_per_h": 9.7,
+   "added_per_h": 6.5,
    "removed_per_h": 3.2
   },
   "starpilot/raw": {
@@ -216,12 +216,12 @@
   },
   "fused": {
    "legacy_pct": 12.9,
-   "runs_per_h": 528.0,
-   "median_run_s": 0.3,
-   "stale_entry_pct": 27.0,
-   "extra_demand_median": 0.23,
-   "extra_demand_p90": 0.91,
-   "extra_ge_1p0": "14 of 159"
+   "runs_per_h": 554.0,
+   "median_run_s": 0.25,
+   "stale_entry_pct": 30.0,
+   "extra_demand_median": 0.09,
+   "extra_demand_p90": 0.79,
+   "extra_ge_1p0": "10 of 141"
   },
   "acc": {
    "legacy_pct": 12.7,
@@ -235,13 +235,13 @@
  },
  "E_frogpilot_far_lead": {
   "fused": {
-   "episodes": 15,
+   "episodes": 11,
    "lead_min": 37.0,
-   "per_h": 24.4,
-   "median_s": 0.2,
-   "longest_s": 1.7,
-   "peak_ge_0p5": 7,
-   "peak_ge_1p0": 4
+   "per_h": 17.9,
+   "median_s": 0.15,
+   "longest_s": 0.9,
+   "peak_ge_0p5": 5,
+   "peak_ge_1p0": 2
   },
   "raw": {
    "episodes": 15,
@@ -467,9 +467,9 @@
    "radar_only": 1
   },
   "starpilot": {
-   "same": 9,
+   "same": 8,
    "radar_earlier": 0,
-   "radar_later": 0,
+   "radar_later": 1,
    "radar_only": 1
   }
  }

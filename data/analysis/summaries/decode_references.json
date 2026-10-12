@@ -61,9 +61,9 @@
   "interpretation": "Approximate clipped heading association and angular scale; the component-disagreement gates fit both a separately held heading state and one derived from the velocity components, with the best agreement at zero lag (docs/03).",
   "reference_limits": [
    "Uses native radar x/y to select the future ego-path point, with an assumed 3.6 m radar lever arm.",
-   "No independently measured target direction or physical identity; road-following assumption is unverified per target.",
-   "The distinguishing gate requires at least 60% preference in both transfer partitions; neither direction passes.",
-   "The exact scale gate requires both transfer confidence intervals to contain one; the other partition interval excludes one."
+   "The reference direction is the nominal road-following assumption, applied per target (\u25cb).",
+   "The distinguishing gate requires at least 60% preference in both transfer partitions; the 0x208 heading is the closer reading in 47.5 % / 52.7 % / 44.2 % of disagreements (confirmation / discovery / other), an even split.",
+   "The exact scale gate requires both transfer confidence intervals to contain one: confirmation 0.813-1.144 contains it, the other partition 1.019-1.159 lies above one."
   ]
  },
  "lateral_velocity_74": {
@@ -557,7 +557,7 @@
     }
    }
   },
-  "analysis_view": "Little-endian two's-complement raw word; a rank association, not a decoded angular scale.",
+  "analysis_view": "Little-endian two's-complement raw word; a rank association (the angular scale is a candidate, \u25cb).",
   "physical_interpretation": "Candidate angle or offset; requires an encoding and independently associated boundary reference.",
   "raw_structure_summary": "id85_direction_code_structure.json"
  },
@@ -567,7 +567,7 @@
    "straight": "y = 0",
    "yaw_path": "y = (yaw rate / v) * x^2 / 2, yaw rate from Toyota 0x24",
    "yaw_path_plus_cells": "robust fit on development drives",
-   "yaw_path_plus_cells_residual": "cells correct only the yaw-path residual"
+   "yaw_path_plus_cells_residual": "cells model the yaw-path residual"
   },
   "objects": {
    "confirmation": {

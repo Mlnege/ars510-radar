@@ -1,33 +1,34 @@
-"""openpilot radar tracks from the Toyota / Continental ARS510 native object list.
+"""openpilot radar tracks from the Toyota / Continental ARS510: the ACC target (`acc`, default) or the native object list (`fused`, `raw`).
 
 Installed by `openpilot/install.py` as `opendbc/car/toyota/ars510_radar_interface.py`, together with the `ars510`
 decoder package as `opendbc/car/toyota/ars510/`. The installer appends a marked block to the end of
-`opendbc/car/toyota/interface.py` that calls `hook_car_interface(CarInterface)`; nothing else in the fork is edited,
+`opendbc/car/toyota/interface.py` that calls `hook_car_interface(CarInterface)`; every other file of the fork stays as shipped,
 so the same install works on openpilot and its forks (sunnypilot, StarPilot, CarrotPilot, FrogPilot-style trees):
   - detection: a RADAR_ACC Toyota whose radar FW is in ARS510_FW_VERSIONS, or with 0x80 and 0x85 on bus 1 at
-    fingerprinting, gets radarUnavailable = False (stock leaves radar-ACC Toyotas radar-unavailable);
+    fingerprinting, gets radarUnavailable = False (stock keeps radar-ACC Toyotas radar-unavailable);
   - tracks: `CarInterface.RadarInterface` becomes a thin dispatcher that builds `Ars510RadarInterface` for such a car
-    and the fork's own RadarInterface otherwise. No ToyotaFlags bit is added, so fork flag bits cannot collide.
+    and the fork's own RadarInterface otherwise. ToyotaFlags stays as shipped, so fork flag bits stay free.
 Worth knowing (docs/07, docs/08, docs/12):
-  - vRel has occasional 1-10 s excursions (mostly false closings beyond 40 m); the `fused` speed filter handles them, and the default `acc` publishes only the ACC target, which has none;
+  - the object list's vRel has occasional 1-10 s excursions (mostly false closings beyond 40 m, docs/07): `fused` filters them with the ACC target's speed, and the default `acc` publishes the ACC target alone;
   - the radar deletes most new stationary objects at age 5, more often the faster ego drives (7 % kept above 10 m/s),
     so a car that was already stopped when it came into view comes mostly from vision;
   - radard weights lateral position only through the camera's uncertainty when it picks the lead; `fused` adds a
     yaw-rate path gate.
 
-Why there is no CANParser: the object list is ONE 742-byte record sent as 106 ISO-TP-style frames on 0x80 every
-~60 ms. CANParser keeps only the latest value per address (or a per-call list in vl_all), and a DBC cannot say which
-part of the record a frame carries (the sequence nibble wraps every 16 frames). The frames are reassembled from the
-raw `can_packets` card.py passes in, CRC-checked, and decoded in `ars510`. The DBCs are for cabana, not for parsing.
+The object-list profiles (`fused`, `raw`) parse from card's raw `can_packets`: the object list is ONE 742-byte record sent as 106 ISO-TP-style frames on 0x80 every
+~60 ms. CANParser keeps the latest value per address (or a per-call list in vl_all), and a DBC maps address and bits, while the
+part of the record a frame carries follows from its sequence nibble (which wraps every 16 frames). The frames are reassembled from the
+raw `can_packets` card.py passes in, CRC-checked, and decoded in `ars510`. The DBCs in `dbc/` are for cabana; the `acc`
+profile parses its two 50 Hz ACC target messages with CANParser and `toyota_tss2_ars510.dbc`.
 
 Output cadence: one RadarData per completed record (~16.7 Hz, inside radard's 8-24 Hz radarTracks window).
 - After power-up the radar sends its first object record ~6 s after first CAN. Until the first valid record, this
-  behaves like openpilot's radarless default: empty RadarData at 20 Hz, no error, vision-only leads. A warning is
-  logged if no record has arrived NO_RECORD_WARN_S after start (e.g. wiring, or firmware that also silences bus 1 on
-  the alpha-longitudinal radar disable; 8821F0R03100 does not).
-- Once records have arrived, if none arrives for STALE_S, a radarUnavailableTemporary RadarData is sent at 20 Hz
-  until records resume, instead of radard silently reusing the last tracks.
-- A CRC-failed record is dropped. It is not flagged as a CAN error: the staleness check covers sustained loss.
+  behaves like openpilot's radarless default: empty RadarData at 20 Hz, error-free status, vision-only leads. A warning is
+  logged when the record count is still 0 at NO_RECORD_WARN_S after start (e.g. wiring, or firmware that also silences bus 1 on
+  the alpha-longitudinal radar disable; on 8821F0R03100 bus 1 keeps running).
+- Once records have arrived and STALE_S passes between two of them, a radarUnavailableTemporary RadarData is sent at 20 Hz
+  until records resume, so radard sees that report in place of the last tracks.
+- A CRC-failed record is dropped; the staleness check covers sustained loss.
 """
 import importlib
 from dataclasses import replace
@@ -39,10 +40,10 @@ from opendbc.car.toyota.ars510 import BASE_CONFIG, COLORED_CONFIG, FUSED_CONFIG,
 from opendbc.car.toyota.ars510.constants import (ACC_TARGET_POS_ADDR, ACC_TARGET_VREL_ADDR, CAR_BUS, ID80_ADDR, RADAR_BUS, SUMMARY_ADDRS,
                                                  TOYOTA_KINEMATICS_ADDR, TOYOTA_SPEED_ADDR)
 
-# Decoder profile (docs/08): "fused" (FUSED_CONFIG, default: one Kalman speed filter fusing the object list and the ACC
-# target by the radar's own uncertainty, plus a path gate, docs/12), "raw" (BASE_CONFIG: the unfiltered radar
-# decode, research only), "openpilot" (fused in one file, ars510_upstream.py) or "acc"
-# (the radar's ACC target alone as one point, ars510_acc_target.py, docs/10). "colored" is an experimental fused
+# Decoder profile (docs/08): "acc" (default: the radar's ACC target alone as one point, ars510_acc_target.py, docs/10),
+# "fused" (FUSED_CONFIG: one Kalman speed filter fusing the object list and the ACC target by the radar's own
+# uncertainty, plus a path gate, docs/12), "raw" (BASE_CONFIG: the unfiltered radar decode, research only) or
+# "openpilot" (fused in one file, ars510_upstream.py). "colored" is an experimental fused
 # variant for road tests (docs/12); "shared_speed" / "shared_range" are research files with one gate-free Kalman model
 # over every object (docs/10). `install.py --profile` rewrites this one line.
 STANDALONE = {"acc": "ars510_acc_target", "shared_speed": "ars510_shared_speed", "shared_range": "ars510_shared_range"}
@@ -56,9 +57,9 @@ ARS510_FW_VERSIONS = {
   b'\x018821F0R03100\x00\x00\x00\x00',
 }
 
-STALE_S = 0.5  # radard has no staleness check of its own on track content
+STALE_S = 0.5  # radard leaves track-content staleness to this interface
 NO_RECORD_WARN_S = 15.0
-EMPTY_PERIOD = 5  # without records, report every 5th update (card calls update at 100 Hz -> 20 Hz)
+EMPTY_PERIOD = 5  # during record gaps, report every 5th update (card calls update at 100 Hz -> 20 Hz)
 # 0x24 (yaw rate) feeds yvRel, which forks with the legacy RadarPoint fields (sunnypilot) publish
 WANTED = {(RADAR_BUS, ID80_ADDR), (CAR_BUS, TOYOTA_SPEED_ADDR), (CAR_BUS, TOYOTA_KINEMATICS_ADDR), (RADAR_BUS, ACC_TARGET_VREL_ADDR),
           (RADAR_BUS, ACC_TARGET_POS_ADDR)} | {(RADAR_BUS, a) for a in SUMMARY_ADDRS}
@@ -101,9 +102,9 @@ class Ars510RadarInterface(RadarInterfaceBase):
     if latest is None:
       if self.frame % EMPTY_PERIOD != 0:
         return None
-      if self.last_record_s is None:  # radar not started yet (or silenced): radarless behaviour, no error
+      if self.last_record_s is None:  # radar still starting (or silenced): radarless behaviour, error-free status
         if not self.warned and now_s - self.start_s > NO_RECORD_WARN_S:
-          carlog.warning("ARS510: no valid 0x80 object record on bus 1 yet; radar tracks unavailable")
+          carlog.warning("ARS510: waiting for the first valid 0x80 object record on bus 1; radar tracks unavailable until then")
           self.warned = True
         return structs.RadarData()
       if now_s - self.last_record_s > STALE_S:
@@ -129,7 +130,7 @@ def _point(p: dict) -> structs.RadarData.RadarPoint:
 
 
 class UpstreamCandidate:
-  """The single-file fused version behind the decoder's update_frame call (no aRel / yvRel: legacy defaults)."""
+  """The single-file fused version behind the decoder's update_frame call (aRel / yvRel at their legacy defaults)."""
   def __init__(self):
     from opendbc.car.toyota.ars510_upstream import Ars510Radar
     self.radar = Ars510Radar()

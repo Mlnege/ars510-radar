@@ -118,10 +118,10 @@
   "fresh": {
     "points_changed": 938,
     "share_beyond_60m": 0.857,
-    "gates": "all pass, no event changes"
+    "gates": "all pass, 0 event changes"
   },
   "replay_34_drives_summary_as_replacement": {
-    "note": "anchor + summary anchor with one far layer removed, vs anchor + summary anchor; both removals fail and the layers stay",
+    "note": "anchor + summary anchor with one far layer removed, vs anchor + summary anchor; removing far smoothing raises target episodes 9 -> 11 and further-drive hard ticks 1 -> 3, removing far settling raises them 9 -> 10 and 1 -> 9, and the layers stay",
     "without_far_smoothing": {
       "heldout_hard": [
         48,
@@ -182,10 +182,10 @@
       "summary_clip_mps": 3.0,
       "summary_max_range_m": 80.0
     },
-    "why_80m": "optical check: summary closer to the camera reference at 40-60 and 60-80 m, not beyond 80 m"
+    "why_80m": "optical check: summary closer to the camera reference at 40-60 m (median abs error 0.349 vs 0.562) and 60-80 m (0.748 vs 0.985); beyond 80 m the object list is closer (0.977 vs 1.176)"
   },
   "current_units_recompute": {
-    "note": "Recomputed from the same SCR-426 / SCR-429 rows with the current units (summary range (code-160)/16 m, lateral 0.015 m, ACC speed 0.125 m/s per code); the blocks above used the earlier scales listed in scales_m_per_code.",
+    "note": "Recomputed from the same SCR-426 / SCR-429 rows with the current units (summary range (code-160)/16 m, lateral 0.015 m, ACC speed 0.125 m/s per code); the blocks above used the scales listed in scales_m_per_code.",
     "speed_vs_acc_same_object": {
       "corr": 0.984,
       "median_abs_diff_mps": 0.176,
@@ -201,7 +201,7 @@
       "60-80": "14.9 -> 10.1",
       "80+": "11.5 -> 8.2",
       "closer_share": 0.973,
-      "note": "approximate: window matching not redone"
+      "note": "approximate: window matching taken from the SCR-426 / SCR-429 rows"
     },
     "present_without_acc_target": {
       "0x192": {

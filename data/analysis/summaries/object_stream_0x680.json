@@ -280,7 +280,7 @@
   }
  },
  "vehicle_witness": {
-  "note": "0x680 moving same-direction vehicle frames (stationary flag clear, over-ground speed > 3 m/s, ego > 5 m/s) on 700 one-minute segments: which tracker target they are, their speed against the ACC speed, and the object-list track at their position (lateral within 1 m, range within max(8 m, 20 %), age >= 60): share of frames where the object list reads more than 2.5 m/s too closing, and object-list range minus 0x680 range, by 0x680 range in metres; drive_halves repeats the table on two halves of the drives; slot_field_auc_range_stratified: how well each slot field separates the too-closing frames from frames within 1 m/s (0.5 = not at all; ax = 84|10, s240 = 240|7)",
+  "note": "0x680 moving same-direction vehicle frames (stationary flag clear, over-ground speed > 3 m/s, ego > 5 m/s) on 700 one-minute segments: which tracker target they are, their speed against the ACC speed, and the object-list track at their position (lateral within 1 m, range within max(8 m, 20 %), age >= 60): share of frames where the object list reads more than 2.5 m/s too closing, and object-list range minus 0x680 range, by 0x680 range in metres; drive_halves repeats the table on two halves of the drives; slot_field_auc_range_stratified: how well each slot field separates the too-closing frames from frames within 1 m/s (0.5 = chance level; ax = 84|10, s240 = 240|7)",
   "frames_0x680": 81919,
   "moving_vehicle_frames": 6730,
   "share_of_live_frames_while_driving": 0.12852341303185394,

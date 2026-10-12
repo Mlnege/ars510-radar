@@ -12,7 +12,7 @@
   "empty_pairs_with_ego_above_3_mps": 1443,
   "long_spans_reaching_ego_above_3_mps": 1,
   "definitions": {
-    "active_pair": "235 active state and non-idle237 tail, latest235 age at most30ms; malformed and duplicate observations excluded",
+    "active_pair": "235 active state and non-idle237 tail, latest235 age at most30ms; well-formed, unique observations only",
     "fresh_native_record": "latest completed sequence/CRC/time-valid record at most60ms old",
     "empty_native_list": "header object count0 and every slot age0; live count otherwise includes all indices and allocation templates",
     "span": "split at inactive/stale/missing rows, gap above100ms, fine-range step above256codes or lateral step above64codes"

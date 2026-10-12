@@ -230,6 +230,6 @@
     "R4_window_min"
    ]
   },
-  "note": "same filter constants; only the ACC speed unit and the summary distance conversion differ"
+  "note": "same filter constants; the two changes are the ACC speed unit and the summary distance conversion"
  }
 }

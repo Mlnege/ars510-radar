@@ -1,5 +1,5 @@
 {
-  "status": "Supported additional report coverage: reports also made without an ACC target (candidate PCS target, docs/13)",
+  "status": "Supported additional report coverage: reports also made at ACC state 1 (idle) (candidate PCS target, docs/13)",
   "message": "0x366",
   "selection": {
     "nonidle": "bytes 2:4 != 7FFF",
@@ -40,13 +40,13 @@
     "consecutive_nonidle_reports": 32,
     "duration_s": 6.200070188999689,
     "ACC_state": 1,
-    "state_meaning": "no target",
+    "state_meaning": "idle",
     "fresh_ACC_both": true
   },
   "limits": [
-    "Non-idle reports include objects without an ACC target.",
+    "Non-idle reports occur at ACC state 1 (idle): 32 consecutive reports over 6.2 s on O2.",
     "Matched mature-target coding covers the reports made while the ACC target is present.",
-    "One target report per message (no per-object speeds)."
+    "One target report per message (one target's fields per frame)."
   ],
   "absent_ACC_context_drive_O2": {
     "reports": 224,
@@ -68,6 +68,6 @@
       "large_vehicle": 12,
       "unclassified": 4
     },
-    "note": "speed of high codes wrapped by -512 for this description only; matching by range only"
+    "note": "speed of high codes wrapped by -512 for this description; matching by range"
   }
 }

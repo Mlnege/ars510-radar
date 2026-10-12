@@ -1,5 +1,5 @@
 {
- "provenance": "research-workspace run 2026-09-26 (SCR-134), provenance-labelled, not a bundled rerun (rlogs not in this repo)",
+ "provenance": "research-workspace run 2026-09-26 (SCR-134), provenance-labelled; the rlogs stay in the research workspace",
  "openpilot": "0.11.2 process_replay card->radard->plannerd, open loop; radard.py identical to master 2026-08-10",
  "interface": "public OPENPILOT_CONFIG",
  "selection": "development drives A, B (2 routes), C; pre-registered decision rule before held-out/fresh replays",

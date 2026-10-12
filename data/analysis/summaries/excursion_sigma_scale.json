@@ -1,613 +1,395 @@
 {
  "description": "Object-list velocity error against the radar's own ACC target, as a function of the reported 240|7 code; Gaussian sigma = K*code reproduction of the excursion incidence.",
  "confidence": {
-  "error_scale_proportional_to_240_7": "likely (RMS 0.04-0.05 m/s per count over codes 14-75; ACC reference error floor about 0.6 m/s)",
-  "excursions_as_expected_tail": "likely (incidence within a factor 1.3; tails beyond 2.5 sigma heavier than Gaussian)",
-  "error_scale_is_fitted_not_decoded": "K is a fitted Gaussian-equivalent: the robust (MAD) core is about 0.027 m/s per count over codes 12-70, the RMS 0.04-0.05 because of heavy tails; the unit of the code itself is not decoded",
-  "mean_offset": "not a decode-constant error: it is about -0.08 m/s below 20 m, -0.37 at 40-60 m and -0.62 at 80-110 m, has no ego-speed slope, and differs by drive (std 0.34 m/s)",
-  "offset_follows_tracker_acceleration_state": "likely (out-of-sample R2 0.11; ACC acceleration explains none)",
-  "error_predictable_from_object_state": "likely (fresh-drive R2 0.41-0.47 from the radar's own object state; no single field carries it; unvalidated as a correction)"
+  "error_scale_proportional_to_240_7": "likely (RMS 0.04-0.06 m/s per count over codes 12-75, 0.038-0.043 at codes 30-60; ACC reference error floor about 0.6 m/s)",
+  "excursions_as_expected_tail": "likely (observed incidence 5.3 % against 6.4 % predicted by a Gaussian with K = 0.045; tails beyond 2.5 sigma heavier than Gaussian, kurtosis 8.0)",
+  "error_scale_is_fitted_not_decoded": "K is a fitted Gaussian-equivalent: the robust (MAD) core is about 0.025-0.04 m/s per count over codes 12-75, the RMS 0.04-0.06 because of heavy tails; K carries the code's unit as a fitted scale",
+  "mean_offset": "a range-dependent offset: about -0.09 m/s below 20 m, -0.34 at 40-60 m and -0.59 at 80-110 m, with an ego-speed slope of 0.008 m/s per m/s, varying by drive (std 0.38 m/s)",
+  "offset_follows_tracker_acceleration_state": "likely (out-of-sample R2 0.11; the ACC speed derivative reaches R2 0.0001)",
+  "error_predictable_from_object_state": "likely (fresh-drive R2 0.41-0.47 from the radar's own object state; spread across fields, the best single field 84|10 + range code reaches R2 0.105 fresh; the correction itself is a candidate, ○)"
  },
  "method": {
-  "reference": "OEM ACC target 0x235/0x237, speed read at 0.1 m/s per code (before the 0.125 correction)",
-  "units_note": "Measured with the ACC speed at 0.1 m/s per code. At 0.125 (acc_unit_recompute.json, SCR-417 claim): RMS 0.04-0.06 m/s per count over codes 12-75, MAD core 0.025-0.04, incidence 5.3 % observed vs 6.5 % predicted (fresh 7.7 % vs 5.5 %), fresh-drive state-model R2 0.33-0.43.",
+  "reference": "OEM ACC target 0x235/0x237, speed at 0.125 m/s per code",
+  "units_note": "corpus_700_segments is computed at 0.125 m/s per code from the 209,645 cached matched rows with range above 5 m; the fresh-drive incidence at the same unit is in fresh_114_segments.",
   "excursion": "native vRel - ACC speed, 9-record median below -2.5 m/s",
   "K_m_per_s_per_count": 0.045,
-  "mean_offset_m_per_s": -0.3,
+  "mean_offset_m_per_s": -0.29,
   "matching": "ACC target matched to the nearest slot by lateral position and coarse distance (cost < 3.5), mature state-1 tracks"
  },
  "corpus_700_segments": {
-  "matched_rows": 227388,
-  "tracks": 849,
+  "matched_rows": 209645,
+  "tracks": 823,
   "rms_by_code": {
    "(3, 8]": {
-    "n": 36594.0,
-    "code": 5.5768,
-    "rms": 0.5844,
-    "rng": 13.5625,
-    "rms_per_code": 0.1048
+    "n": 36138.0,
+    "code": 5.5889,
+    "rms": 0.6336,
+    "rng": 13.6875,
+    "rms_per_code": 0.1134
    },
    "(8, 12]": {
     "n": 9511.0,
     "code": 10.314,
-    "rms": 1.1238,
+    "rms": 1.1411,
     "rng": 23.6875,
-    "rms_per_code": 0.109
+    "rms_per_code": 0.1106
    },
    "(12, 16]": {
     "n": 16059.0,
     "code": 14.7875,
-    "rms": 0.8162,
+    "rms": 0.8643,
     "rng": 36.75,
-    "rms_per_code": 0.0552
+    "rms_per_code": 0.0584
    },
    "(16, 20]": {
     "n": 21935.0,
     "code": 18.542,
-    "rms": 0.9128,
+    "rms": 0.9701,
     "rng": 41.5,
-    "rms_per_code": 0.0492
+    "rms_per_code": 0.0523
    },
    "(20, 25]": {
     "n": 32837.0,
     "code": 23.0294,
-    "rms": 1.0818,
+    "rms": 1.1277,
     "rng": 48.9375,
-    "rms_per_code": 0.047
+    "rms_per_code": 0.049
    },
    "(25, 30]": {
     "n": 29979.0,
     "code": 27.993,
-    "rms": 1.1474,
+    "rms": 1.2014,
     "rng": 56.625,
-    "rms_per_code": 0.041
+    "rms_per_code": 0.0429
    },
    "(30, 40]": {
     "n": 38147.0,
     "code": 34.3791,
-    "rms": 1.3398,
+    "rms": 1.3573,
     "rng": 64.9375,
-    "rms_per_code": 0.039
+    "rms_per_code": 0.0395
    },
    "(40, 50]": {
     "n": 11017.0,
     "code": 45.3038,
-    "rms": 1.8032,
+    "rms": 1.833,
     "rng": 79.3125,
-    "rms_per_code": 0.0398
+    "rms_per_code": 0.0405
    },
    "(50, 60]": {
     "n": 7736.0,
     "code": 54.8392,
-    "rms": 2.2013,
+    "rms": 2.213,
     "rng": 90.6875,
-    "rms_per_code": 0.0401
+    "rms_per_code": 0.0404
    },
    "(60, 75]": {
     "n": 5487.0,
     "code": 66.2867,
-    "rms": 3.2304,
+    "rms": 3.2485,
     "rng": 103.0625,
-    "rms_per_code": 0.0487
+    "rms_per_code": 0.049
    },
    "(75, 90]": {
     "n": 686.0,
     "code": 80.0787,
-    "rms": 5.1325,
+    "rms": 5.1172,
     "rng": 104.0625,
-    "rms_per_code": 0.0641
+    "rms_per_code": 0.0639
    },
    "(90, 126]": {
     "n": 113.0,
     "code": 101.2655,
-    "rms": 9.3327,
+    "rms": 7.7535,
     "rng": 98.4375,
-    "rms_per_code": 0.0922
+    "rms_per_code": 0.0766
    }
   },
   "z_far": {
    "rows": 138416,
-   "std": 0.9060679319896195,
-   "skew": -0.2875867369909294,
-   "kurtosis": 8.164797632099948,
+   "std": 0.9419015656535631,
+   "skew": -0.24505970071430888,
+   "kurtosis": 7.9646945890067276,
    "tails": {
     "1": {
-     "obs_neg": 0.10507455785458329,
-     "obs_pos": 0.07918882210149115,
+     "obs_neg": 0.11031239163102531,
+     "obs_pos": 0.0895127730898162,
      "gauss": 0.15865525393145707
     },
     "1.5": {
-     "obs_neg": 0.05117905444457288,
-     "obs_pos": 0.03624580973297885,
+     "obs_neg": 0.05234943937117096,
+     "obs_pos": 0.04213385735753092,
      "gauss": 0.06680720126885807
     },
     "2": {
-     "obs_neg": 0.026073575309212806,
-     "obs_pos": 0.01796035140446191,
+     "obs_neg": 0.027388452202057566,
+     "obs_pos": 0.020532308403652756,
      "gauss": 0.022750131948179195
     },
     "2.5": {
-     "obs_neg": 0.012664720841521211,
-     "obs_pos": 0.007845913767194544,
+     "obs_neg": 0.013379956074442262,
+     "obs_pos": 0.00942087619928332,
      "gauss": 0.006209665325776132
     },
     "3": {
-     "obs_neg": 0.00657438446422379,
-     "obs_pos": 0.003438908796670905,
+     "obs_neg": 0.006798347011906138,
+     "obs_pos": 0.00442867876546064,
      "gauss": 0.0013498980316300933
     }
    }
   },
   "incidence_cells": {
    "(40, 55]|q0": {
-    "obs": 0.0145,
+    "obs": 0.0168,
     "pred": 0.0041,
     "n": 14899.0,
-    "rms": 0.8431
+    "rms": 0.8874
    },
    "(40, 55]|q1": {
-    "obs": 0.0226,
+    "obs": 0.0254,
     "pred": 0.0121,
     "n": 14898.0,
-    "rms": 1.0118
+    "rms": 1.0658
    },
    "(40, 55]|q2": {
-    "obs": 0.029,
+    "obs": 0.0295,
     "pred": 0.0213,
     "n": 14898.0,
-    "rms": 1.1079
+    "rms": 1.1443
    },
    "(40, 55]|q3": {
-    "obs": 0.0862,
+    "obs": 0.0821,
     "pred": 0.0476,
     "n": 14899.0,
-    "rms": 1.6063
+    "rms": 1.6493
    },
    "(55, 70]|q0": {
-    "obs": 0.0231,
+    "obs": 0.024,
     "pred": 0.0347,
     "n": 12852.0,
-    "rms": 0.9964
+    "rms": 1.0385
    },
    "(55, 70]|q1": {
-    "obs": 0.0207,
+    "obs": 0.0236,
     "pred": 0.0526,
     "n": 12852.0,
-    "rms": 1.0123
+    "rms": 1.0439
    },
    "(55, 70]|q2": {
-    "obs": 0.0338,
+    "obs": 0.0321,
     "pred": 0.0689,
     "n": 12852.0,
-    "rms": 1.1237
+    "rms": 1.1417
    },
    "(55, 70]|q3": {
-    "obs": 0.0766,
+    "obs": 0.074,
     "pred": 0.0985,
     "n": 12852.0,
-    "rms": 1.851
+    "rms": 1.817
    },
    "(70, 85]|q0": {
-    "obs": 0.0162,
+    "obs": 0.0214,
     "pred": 0.0859,
     "n": 3591.0,
-    "rms": 1.3144
+    "rms": 1.3328
    },
    "(70, 85]|q1": {
-    "obs": 0.032,
+    "obs": 0.0401,
     "pred": 0.1102,
     "n": 3591.0,
-    "rms": 1.394
+    "rms": 1.4143
    },
    "(70, 85]|q2": {
-    "obs": 0.073,
+    "obs": 0.0735,
     "pred": 0.1342,
     "n": 3591.0,
-    "rms": 1.5666
+    "rms": 1.5785
    },
    "(70, 85]|q3": {
-    "obs": 0.137,
+    "obs": 0.1465,
     "pred": 0.1687,
     "n": 3591.0,
-    "rms": 2.2245
+    "rms": 2.2258
    },
    "(85, 110]|q0": {
-    "obs": 0.0932,
+    "obs": 0.0852,
     "pred": 0.1593,
     "n": 3263.0,
-    "rms": 1.8022
+    "rms": 1.8131
    },
    "(85, 110]|q1": {
-    "obs": 0.1229,
+    "obs": 0.1211,
     "pred": 0.1846,
     "n": 3262.0,
-    "rms": 2.0171
+    "rms": 2.0345
    },
    "(85, 110]|q2": {
-    "obs": 0.16,
+    "obs": 0.1634,
     "pred": 0.2078,
     "n": 3262.0,
-    "rms": 2.3423
+    "rms": 2.3513
    },
    "(85, 110]|q3": {
-    "obs": 0.22,
+    "obs": 0.2403,
     "pred": 0.241,
     "n": 3263.0,
-    "rms": 3.8589
+    "rms": 3.8896
    }
   },
   "incidence_overall": {
-   "observed": 0.05146803837706623,
+   "observed": 0.05251560513235464,
    "predicted": 0.06445082252242751
   },
   "robust_scale_by_code": {
    "(3, 6]": {
-    "n": 27155,
+    "n": 26699,
     "code": 4.94,
-    "rms_per_code": 0.1174,
-    "mad_sigma_per_code": 0.0562
+    "rms_per_code": 0.1271,
+    "mad_sigma_per_code": 0.0576
    },
    "(6, 9]": {
     "n": 12459,
     "code": 7.8,
-    "rms_per_code": 0.0845,
-    "mad_sigma_per_code": 0.0604
+    "rms_per_code": 0.0907,
+    "mad_sigma_per_code": 0.0629
    },
    "(9, 12]": {
     "n": 6491,
     "code": 10.93,
-    "rms_per_code": 0.1134,
-    "mad_sigma_per_code": 0.0523
+    "rms_per_code": 0.1143,
+    "mad_sigma_per_code": 0.0512
    },
    "(12, 15]": {
     "n": 10903,
     "code": 14.21,
-    "rms_per_code": 0.0572,
-    "mad_sigma_per_code": 0.038
+    "rms_per_code": 0.0605,
+    "mad_sigma_per_code": 0.0419
    },
    "(15, 18]": {
     "n": 15856,
     "code": 17.02,
-    "rms_per_code": 0.0515,
-    "mad_sigma_per_code": 0.0388
+    "rms_per_code": 0.055,
+    "mad_sigma_per_code": 0.04
    },
    "(18, 21]": {
     "n": 17325,
     "code": 20.04,
-    "rms_per_code": 0.0467,
-    "mad_sigma_per_code": 0.0336
+    "rms_per_code": 0.0494,
+    "mad_sigma_per_code": 0.0354
    },
    "(21, 24]": {
     "n": 20328,
     "code": 23.02,
-    "rms_per_code": 0.0477,
-    "mad_sigma_per_code": 0.0324
+    "rms_per_code": 0.0493,
+    "mad_sigma_per_code": 0.0345
    },
    "(24, 27]": {
     "n": 18440,
     "code": 25.98,
-    "rms_per_code": 0.0436,
-    "mad_sigma_per_code": 0.0299
+    "rms_per_code": 0.046,
+    "mad_sigma_per_code": 0.0309
    },
    "(27, 30]": {
     "n": 17958,
     "code": 28.99,
-    "rms_per_code": 0.04,
-    "mad_sigma_per_code": 0.0267
+    "rms_per_code": 0.0416,
+    "mad_sigma_per_code": 0.0275
    },
    "(30, 35]": {
     "n": 25861,
     "code": 32.85,
-    "rms_per_code": 0.0375,
-    "mad_sigma_per_code": 0.0256
+    "rms_per_code": 0.0382,
+    "mad_sigma_per_code": 0.0266
    },
    "(35, 40]": {
     "n": 12286,
     "code": 37.61,
-    "rms_per_code": 0.041,
-    "mad_sigma_per_code": 0.0273
+    "rms_per_code": 0.0413,
+    "mad_sigma_per_code": 0.0276
    },
    "(40, 45]": {
     "n": 5774,
     "code": 42.86,
-    "rms_per_code": 0.0418,
-    "mad_sigma_per_code": 0.0285
+    "rms_per_code": 0.0427,
+    "mad_sigma_per_code": 0.0289
    },
    "(45, 50]": {
     "n": 5243,
     "code": 47.99,
-    "rms_per_code": 0.0379,
-    "mad_sigma_per_code": 0.0257
+    "rms_per_code": 0.0383,
+    "mad_sigma_per_code": 0.026
    },
    "(50, 60]": {
     "n": 7736,
     "code": 54.84,
-    "rms_per_code": 0.0401,
-    "mad_sigma_per_code": 0.0252
+    "rms_per_code": 0.0404,
+    "mad_sigma_per_code": 0.0247
    },
    "(60, 70]": {
     "n": 4590,
     "code": 65.03,
-    "rms_per_code": 0.0448,
-    "mad_sigma_per_code": 0.0266
+    "rms_per_code": 0.0451,
+    "mad_sigma_per_code": 0.0264
    },
    "(70, 80]": {
     "n": 1317,
     "code": 74.31,
-    "rms_per_code": 0.0615,
-    "mad_sigma_per_code": 0.027
+    "rms_per_code": 0.0617,
+    "mad_sigma_per_code": 0.0298
    },
    "(80, 100]": {
     "n": 331,
     "code": 86.14,
-    "rms_per_code": 0.0697,
-    "mad_sigma_per_code": 0.0671
+    "rms_per_code": 0.0698,
+    "mad_sigma_per_code": 0.0615
    },
    "(100, 126]": {
     "n": 48,
     "code": 108.58,
-    "rms_per_code": 0.1094,
-    "mad_sigma_per_code": 0.0934
+    "rms_per_code": 0.0784,
+    "mad_sigma_per_code": 0.0752
    }
   },
   "bias_by_range_m": {
    "(3, 20]": {
-    "n": 32938,
-    "mean": -0.082,
-    "median": -0.062
+    "n": 32482,
+    "mean": -0.089,
+    "median": -0.075
    },
    "(20, 40]": {
     "n": 37500,
-    "mean": -0.285,
-    "median": -0.185
+    "mean": -0.229,
+    "median": -0.145
    },
    "(40, 60]": {
     "n": 77280,
-    "mean": -0.366,
-    "median": -0.293
+    "mean": -0.339,
+    "median": -0.268
    },
    "(60, 80]": {
     "n": 44005,
-    "mean": -0.261,
-    "median": -0.165
+    "mean": -0.226,
+    "median": -0.127
    },
    "(80, 110]": {
     "n": 17151,
-    "mean": -0.619,
-    "median": -0.453
+    "mean": -0.593,
+    "median": -0.436
    }
   },
-  "bias_vs_ego_slope_per_mps": 0.0103,
+  "bias_vs_ego_slope_per_mps": 0.0083,
   "per_segment_median_dv": {
-   "mean": -0.289,
-   "std": 0.335,
-   "segments": 244
+   "mean": -0.292,
+   "std": 0.378,
+   "segments": 245
   }
  },
  "fresh_114_segments": {
-  "matched_rows": 13257,
-  "tracks": 89,
-  "rms_by_code": {
-   "(3, 8]": {
-    "n": 3986.0,
-    "code": 5.4062,
-    "rms": 0.7763,
-    "rng": 10.8125,
-    "rms_per_code": 0.1436
-   },
-   "(8, 12]": {
-    "n": 1036.0,
-    "code": 10.5811,
-    "rms": 0.8446,
-    "rng": 22.5,
-    "rms_per_code": 0.0798
-   },
-   "(12, 16]": {
-    "n": 874.0,
-    "code": 14.3753,
-    "rms": 0.7993,
-    "rng": 31.5938,
-    "rms_per_code": 0.0556
-   },
-   "(16, 20]": {
-    "n": 1100.0,
-    "code": 18.56,
-    "rms": 1.1364,
-    "rng": 37.6875,
-    "rms_per_code": 0.0612
-   },
-   "(20, 25]": {
-    "n": 1605.0,
-    "code": 23.1445,
-    "rms": 1.3508,
-    "rng": 46.375,
-    "rms_per_code": 0.0584
-   },
-   "(25, 30]": {
-    "n": 1066.0,
-    "code": 27.5929,
-    "rms": 1.6885,
-    "rng": 49.375,
-    "rms_per_code": 0.0612
-   },
-   "(30, 40]": {
-    "n": 765.0,
-    "code": 34.5425,
-    "rms": 1.419,
-    "rng": 58.25,
-    "rms_per_code": 0.0411
-   },
-   "(40, 50]": {
-    "n": 433.0,
-    "code": 44.2771,
-    "rms": 1.6981,
-    "rng": 74.875,
-    "rms_per_code": 0.0384
-   },
-   "(50, 60]": {
-    "n": 145.0,
-    "code": 56.1379,
-    "rms": 2.6021,
-    "rng": 92.75,
-    "rms_per_code": 0.0464
-   },
-   "(60, 75]": {
-    "n": 73.0,
-    "code": 62.9178,
-    "rms": 1.4395,
-    "rng": 101.25,
-    "rms_per_code": 0.0229
-   },
-   "(75, 90]": {
-    "n": 5.0,
-    "code": 86.0,
-    "rms": 1.0117,
-    "rng": 44.625,
-    "rms_per_code": 0.0118
-   },
-   "(90, 126]": {
-    "n": 12.0,
-    "code": 100.0833,
-    "rms": 2.2096,
-    "rng": 51.8438,
-    "rms_per_code": 0.0221
-   }
-  },
-  "z_far": {
-   "rows": 4109,
-   "std": 1.130747585238214,
-   "skew": 0.1603904380338932,
-   "kurtosis": 1.2699574176156272,
-   "tails": {
-    "1": {
-     "obs_neg": 0.1990752007787783,
-     "obs_pos": 0.11170601119493793,
-     "gauss": 0.15865525393145707
-    },
-    "1.5": {
-     "obs_neg": 0.11973716232660014,
-     "obs_pos": 0.07495741056218058,
-     "gauss": 0.06680720126885807
-    },
-    "2": {
-     "obs_neg": 0.052567534679970794,
-     "obs_pos": 0.04477975176441957,
-     "gauss": 0.022750131948179195
-    },
-    "2.5": {
-     "obs_neg": 0.021173034801654902,
-     "obs_pos": 0.019956193721100024,
-     "gauss": 0.006209665325776132
-    },
-    "3": {
-     "obs_neg": 0.009734728644439037,
-     "obs_pos": 0.008761255779995133,
-     "gauss": 0.0013498980316300933
-    }
-   }
-  },
-  "incidence_cells": {
-   "(40, 55]|q0": {
-    "obs": 0.0558,
-    "pred": 0.0061,
-    "n": 681.0,
-    "rms": 1.3079
-   },
-   "(40, 55]|q1": {
-    "obs": 0.0558,
-    "pred": 0.0176,
-    "n": 681.0,
-    "rms": 1.3844
-   },
-   "(40, 55]|q2": {
-    "obs": 0.069,
-    "pred": 0.0302,
-    "n": 681.0,
-    "rms": 1.525
-   },
-   "(40, 55]|q3": {
-    "obs": 0.1424,
-    "pred": 0.0679,
-    "n": 681.0,
-    "rms": 1.8394
-   },
-   "(55, 70]|q0": {
-    "obs": 0.0302,
-    "pred": 0.0293,
-    "n": 232.0,
-    "rms": 1.1827
-   },
-   "(55, 70]|q1": {
-    "obs": 0.0346,
-    "pred": 0.0604,
-    "n": 231.0,
-    "rms": 1.4399
-   },
-   "(55, 70]|q2": {
-    "obs": 0.0866,
-    "pred": 0.0847,
-    "n": 231.0,
-    "rms": 1.2431
-   },
-   "(55, 70]|q3": {
-    "obs": 0.0043,
-    "pred": 0.1228,
-    "n": 232.0,
-    "rms": 1.128
-   },
-   "(70, 85]|q0": {
-    "obs": 0.15,
-    "pred": 0.1113,
-    "n": 60.0,
-    "rms": 2.0888
-   },
-   "(70, 85]|q1": {
-    "obs": 0.1356,
-    "pred": 0.1321,
-    "n": 59.0,
-    "rms": 1.8521
-   },
-   "(70, 85]|q2": {
-    "obs": 0.1356,
-    "pred": 0.1417,
-    "n": 59.0,
-    "rms": 2.034
-   },
-   "(70, 85]|q3": {
-    "obs": 0.0508,
-    "pred": 0.1712,
-    "n": 59.0,
-    "rms": 4.1442
-   },
-   "(85, 110]|q0": {
-    "obs": 0.0,
-    "pred": 0.1498,
-    "n": 56.0,
-    "rms": 0.972
-   },
-   "(85, 110]|q1": {
-    "obs": 0.0,
-    "pred": 0.1884,
-    "n": 55.0,
-    "rms": 1.6251
-   },
-   "(85, 110]|q2": {
-    "obs": 0.0,
-    "pred": 0.2033,
-    "n": 55.0,
-    "rms": 0.6544
-   },
-   "(85, 110]|q3": {
-    "obs": 0.0,
-    "pred": 0.2173,
-    "n": 56.0,
-    "rms": 0.5511
-   }
-  },
   "incidence_overall": {
-   "observed": 0.06911657337551716,
-   "predicted": 0.05518668781132747
-  }
+   "observed": 0.0767,
+   "predicted": 0.0552
+  },
+  "note": "fresh drives at 0.125 m/s per code, recomputed in acc_unit_recompute.json (claim 5); Gaussian sigma = 0.045 x code"
  },
  "signal_scan": {
   "description": "Exploratory scan of 13.6 k candidate signals (slot, header, 0x85 bit windows, every aux CAN address, ego, livePose, derived kinematics) against the native-minus-ACC velocity residual after range, 240|7 and ACC-speed strata; score = out-of-sample R2 of a level-mean predictor fitted on half of the segments and scored on the other half.",
@@ -778,7 +560,7 @@
     ]
    }
   },
-  "no_predictor": "ego speed, acceleration, yaw rate, brake, gas, cruise, livePose, record header bytes and every aux CAN address stay below R2 0.006 for the offset; no candidate exceeds R2 0.016 for the scale",
+  "no_predictor": "ego speed, acceleration, yaw rate, brake, gas, cruise, livePose, record header bytes and every aux CAN address reach at most R2 0.006 for the offset; candidates reach at most R2 0.016 for the scale",
   "timing": {
    "ego_or_acc_clock_shift_range_s": [
     -0.4,
@@ -796,7 +578,7 @@
   }
  },
  "state_model": {
-  "description": "Gradient-boosted regression of the native-minus-ACC velocity error (clipped at 6 m/s) on the object's own decoded slot fields and its 0.5-3 s track history; no ACC input and no velocity level (vrel, vx). Corpus scores are out-of-fold across segments; fresh scores are from a model trained on the corpus only.",
+  "description": "Gradient-boosted regression of the native-minus-ACC velocity error (clipped at 6 m/s) on the object's own decoded slot fields and its 0.5-3 s track history; inputs are slot fields and track history (the ACC and the velocity level vrel, vx are held out). Corpus scores are out-of-fold across segments; fresh scores are from a model trained on the corpus only.",
   "r2_corpus_out_of_fold": {
    "ax_range_code": 0.1742,
    "state_no_velocity_level": 0.3399,
@@ -1209,6 +991,6 @@
    "ay only": 0.0163,
    "ego only": -0.021
   },
-  "caveat": "reference is the radar's own ACC target; shrinkage on vRel alone scores well but biases genuine closings; not compared with the shipped filter profiles"
+  "caveat": "reference is the radar's own ACC target; shrinkage on vRel alone scores well but biases genuine closings (corpus mean error after shrinkage +1.26 m/s for fast closings)"
  }
 }

@@ -1,5 +1,5 @@
 {
- "description": "Second car (2025 RAV4 Hybrid, radar firmware 8821F0R03100, never used for tuning): 20 drives with openpilot longitudinal or stock ACC, 55 twelve-segment chains, 8.8 h (6.5 h moving), replayed open loop through the pinned openpilot of the 27-drive suite with vision only, 2.5 fused and the X60 slim variants (X60 is the far rule adopted in 2.6.0). Gates fixed before any variant result: hard radar-only braking 0 (a_target <= -2 while vision >= -0.5); false mild episodes (a_target <= -1 while vision >= -0.3, no driver/ego braking and no camera or ACC-target closing) not above 2.5; the driver's 11 reported false brakes (from an older profile) not braked for more often than 2.5; the six real closings 2.5 brakes for kept, first -1 m/s2 at most 0.5 s after 2.5 (the far new track excepted, where the ACC target and camera read about -3 to -3.6 m/s).",
+ "description": "Second car (2025 RAV4 Hybrid, radar firmware 8821F0R03100, used for evaluation only): 20 drives with openpilot longitudinal or stock ACC, 55 twelve-segment chains, 8.8 h (6.5 h moving), replayed open loop through the pinned openpilot of the 27-drive suite with vision only, 2.5 fused and the X60 slim variants (X60 is the far rule adopted in 2.6.0). Gates fixed before any variant result: hard radar-only braking 0 (a_target <= -2 while vision >= -0.5); false mild episodes (a_target <= -1 while vision >= -0.3, outside moments of driver/ego braking or camera or ACC-target closing) at most 2.5; the driver's 11 reported false brakes (from an older profile) braked for at most as often as 2.5; the six real closings 2.5 brakes for kept, first -1 m/s2 at most 0.5 s after 2.5 (the far new track judged separately, where the ACC target and camera read about -3 to -3.6 m/s).",
  "hours": 8.842,
  "moving_hours": 6.493,
  "vision_only": {
@@ -294,8 +294,8 @@
   }
  },
  "notes": [
-  "2.5's hard brake: a lead published at 86 m, -7.3 m/s, with no ACC target and the camera range opening; X60 removes it.",
-  "X60's real-closing delay: on the 86 m closing the object list has the car 0.75 s before the radar picks it as its ACC target; X60 waits for that pick (vision only never brakes there). The owner car's 95 m closing showed the same (about 1 s).",
-  "Without the young-track factor and std gate a new track at 31 m is published at -13 m/s for 0.15 s (ACC target, camera and range slope -2 to -3) and the planner asks -2.9 m/s2."
+  "2.5's hard brake: a lead published at 86 m, -7.3 m/s, with the ACC target idle and the camera range opening; X60 removes it.",
+  "X60's real-closing delay: on the 86 m closing the object list has the car 0.75 s before the radar picks it as its ACC target; X60 waits for that pick (vision only holds its request above the braking threshold there). The owner car's 95 m closing showed the same (about 1 s).",
+  "With the young-track factor and std gate removed, a new track at 31 m is published at -13 m/s for 0.15 s (ACC target, camera and range slope -2 to -3) and the planner asks -2.9 m/s2."
  ]
 }

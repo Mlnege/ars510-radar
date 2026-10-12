@@ -1,0 +1,37 @@
+{
+  "description": "Header timing offset (record bits 104-114, little-endian: byte 13 plus the low 3 bits of byte 14) against the record's arrival time. Arrival residual = time of the record's first CAN frame minus a linear fit on the record clock code (bytes 1-4); the residual sd is the arrival jitter. Computed on the three bundled CAN samples by decoding the 0x80 records with ars510.transport.Id80RecordAssembler.",
+  "samples": {
+    "highway_acc_anchor_24s": {
+      "records": 398,
+      "arrival_residual_sd_ms": 6.74,
+      "field_min": 425,
+      "field_max": 456,
+      "corr_level": 0.962,
+      "corr_record_to_record_change": 0.992,
+      "ms_per_count": 0.923,
+      "ms_per_count_change": 0.981
+    },
+    "highway_following_30s": {
+      "records": 497,
+      "arrival_residual_sd_ms": 5.03,
+      "field_min": 423,
+      "field_max": 450,
+      "corr_level": 0.935,
+      "corr_record_to_record_change": 0.985,
+      "ms_per_count": 0.888,
+      "ms_per_count_change": 0.97
+    },
+    "highway_vrel_excursion_25s": {
+      "records": 414,
+      "arrival_residual_sd_ms": 5.77,
+      "field_min": 423,
+      "field_max": 475,
+      "corr_level": 0.943,
+      "corr_record_to_record_change": 0.981,
+      "ms_per_count": 0.904,
+      "ms_per_count_change": 0.954
+    }
+  },
+  "reading": "The field tracks the record's arrival offset at about 0.9-1.0 ms per count (level correlation 0.94-0.96, record-to-record change correlation 0.98-0.99) on all three bundled drives; the physical meaning (the time between the radar's measurement and the start of transmission) is the reading the numbers support.",
+  "confidence": "likely (three drives of one car, one radar firmware)"
+}

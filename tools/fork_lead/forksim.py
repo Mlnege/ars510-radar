@@ -1,7 +1,7 @@
-"""Run a fork's own radard and MPC lead-handling code on recorded ticks, without openpilot's runtime.
+"""Run a fork's own radard and MPC lead-handling code on recorded ticks, outside openpilot's runtime.
 
 The fork's source is executed unmodified: its import statements are dropped and the few things it imports (messaging,
-params, the solver) are replaced by stand-ins, so nothing here is a re-implementation of the fork's logic. What is
+params, the solver) are replaced by stand-ins, so the fork's own logic is what runs. What is
 exercised:
 
   - radard: `Track`, `match_vision_to_track`, `get_lead`, `RadarD.update` (lead selection, per-track Kalman filter)
@@ -10,7 +10,7 @@ exercised:
 Runs radard and process_lead only; the MPC solver, the rest of the planner and the controls are replaced by the "demand"
 proxy below: the constant
 deceleration that keeps the lead-based safety distance, applied to the lead trajectory the fork hands to its MPC. It
-ranks forks and radar profiles against each other; it is not the planner's output.
+ranks forks and radar profiles against each other; the planner's own output is a separate quantity.
 
 A fork checkout is the directory that holds `selfdrive/` and `common/` (for sunnypilot, its `openpilot/` subdirectory;
 `fork_root()` finds it).
@@ -222,7 +222,7 @@ class MpcLead:
                                        lead_detection_probability=0.35)
 
     def _init_starpilot(self):
-        """The attributes StarPilot's __init__ sets after creating the solver (which is not needed here)."""
+        """The attributes StarPilot's __init__ sets after creating the solver (the replay uses a stand-in for it)."""
         fo = self.ns["FirstOrderFilter"]
         m = self.m
         m.current_filter_time = self.ns["LEAD_FILTER_TIME_LOW"]

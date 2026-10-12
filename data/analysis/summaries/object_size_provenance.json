@@ -1,5 +1,5 @@
 {
- "description": "ACC target width (0x23B, cm) and class code (0x239) every 5th 50 Hz frame over every stored rlog (three cars); object-list class, class confidence, size and camera association (112|3) on every 20th rlog, rows with age >= 25. 0x239 codes other than 1 (car) and 2 (truck) are not named.",
+ "description": "ACC target width (0x23B, cm) and class code (0x239) every 5th 50 Hz frame over every stored rlog (three cars); object-list class, class confidence, size and camera association (112|3) on every 20th rlog, rows with age >= 25. 0x239 codes 1 = car and 2 = truck.",
  "acc_target_by_class_code": {
   "0": {
    "samples": 68081,

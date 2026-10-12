@@ -1,6 +1,6 @@
 {
  "what": "End-to-end replay of openpilot/ (installed into opendbc 4134c0d) through openpilot 10b9e73 process_replay: card -> radard -> plannerd, stock vs patched opendbc, same logs. Open-loop; FrogPilot-recorded drives; alpha long off in replay (see tools/openpilot_replay/process_replay_ars510.py).",
- "provenance": "research-workspace run 2026-09-24, provenance-labelled; not a bundled rerun (the rlogs are not in this repo)",
+ "provenance": "research-workspace run 2026-09-24, provenance-labelled; the rlogs stay in the research workspace",
  "drives": {
   "A": {
    "minutes": 26.0,
@@ -158,10 +158,10 @@
    0.15,
    0.87
   ],
-  "consequence": "0x80/0x85 are absent during CAN fingerprinting, so detection uses the radar FW version; a bus-1-only rule missed the radar on every ignition start in replay"
+  "consequence": "0x80/0x85 first appear 5.83-5.92 s after the first logged CAN frame, while the car's own frames (0x191) start at 0.15-0.87 s: the radar's frames arrive after CAN fingerprinting, so detection uses the radar FW version; a bus-1-only rule missed the radar on every ignition start in replay"
  },
  "episode_cross_check": {
-  "what": "braking-only-in-patched episodes matched (within 1 s) to an earlier camera-classified episode census (research workspace)",
+  "what": "episodes where only the patched run brakes, matched (within 1 s) to the camera-classified episode census (research workspace)",
   "C": {
    "episodes": 11,
    "matched": 10,
