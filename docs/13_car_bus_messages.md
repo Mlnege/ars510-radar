@@ -32,7 +32,7 @@ after each of 27 cold starts).
 
 ### 0x365: lead distance and relative speed (●)
 
-Byte 4 is the distance to the radar's ACC target in metres, and 0xFC means no target. Byte 5 is the relative speed in km/h,
+Byte 4 is the distance to the radar's ACC target in metres, and 0xFC marks an idle target. Byte 5 is the relative speed in km/h,
 signed, negative when closing. The other bytes are zero. Both fields match the ACC target (0x235 / 0x237,
 [05](05_acc_target_and_support.md#the-radars-acc-target-0x235--0x237), 0.125 m/s and 0.025 m per code) on two owner drives and on a second car up to 37 m/s:
 
@@ -51,14 +51,14 @@ Fields count MSB-first from the first payload bit; `ars510.support.parse_0x366` 
 | bits | field | coding |
 |---|---|---|
 | `16\|9` | relative speed | `(code − 155) × 0.5 km/h` for codes below 256; codes 442-506 (eight reports) fit `code − 512` and return `None` |
-| `25\|7` | distance | ≈ 0.8 m per code (fit 0.79); 127 = no target |
-| `40\|5` | lateral offset | signed, −0.34 m per code (right positive, ±5 m); 15 = no target, −16 = invalid (mostly a target beyond ±5 m) |
+| `25\|7` | distance | ≈ 0.8 m per code (fit 0.79); 127 = idle target |
+| `40\|5` | lateral offset | signed, −0.34 m per code (right positive, ±5 m); 15 = idle target, −16 = invalid (mostly a target beyond ±5 m) |
 
 **While the radar has an ACC target, 0x366 reports that target.** Against the latest `0x235`/`0x237` on an owner drive
 (820 frames) the residuals are 0.06 m/s, 0.26 m and 0.14 m, about the quantization of both frames, and 99 % agree in
 distance within 1.5 m ([summary](../data/analysis/summaries/target_366_coding.json)).
 
-**It also reports while the ACC frames say "no target"**: 224 of 1,059 reports on owner drive O2 and 8 of 467 on O3, with fresh
+**It also reports while the ACC frames say "idle"**: 224 of 1,059 reports on owner drive O2 and 8 of 467 on O3, with fresh
 (fresh ACC frames, one span of 32 reports over 6.2 s). On O2 the car moves slowly during them (median ego 1.6 m/s, median relative speed −7 m/s); the 61 that match an
 object-list track sit a median 4 m to the side, and their speeds correlate at 0.81; these reports are a candidate PCS target (○)
 ([coverage](../data/analysis/summaries/target_366_coverage.json)).
@@ -149,7 +149,7 @@ openpilot's Toyota longitudinal TX list (DSU-unplugged TSS-P support) already co
 opendbc's `toyotacan.create_pcs_commands` builds 0x283 + 0x344.
 
 
-## AEB without a CAN filter
+## AEB on an unfiltered radar line
 
 **Today:** stock AEB runs with stock ACC (openpilot lateral only, radar line unfiltered) and with openpilot longitudinal through a
 radar CAN filter. With openpilot longitudinal on an unfiltered radar line, the radar is disabled and the car's PCS brake request is off; the dash

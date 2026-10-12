@@ -171,7 +171,7 @@ The goal: tell a velocity excursion from a real closing within about 1 s ([07](0
 disables the radar and its AEB. The disabled radar keeps assessing threats on bus 1, and openpilot would pass its brake
 decision to the car as 0x283 / 0x344, keep 0x344 running for the brake system's link check, and show PCS on the dash only
 while the relay is healthy. How it would work, and what is needed first, are in
-[13](13_car_bus_messages.md#aeb-without-a-can-filter); the first item is one recorded stock AEB activation with bus 0 and
+[13](13_car_bus_messages.md#aeb-on-an-unfiltered-radar-line); the first item is one recorded stock AEB activation with bus 0 and
 bus 1 logged ([15](15_pcs_testing.md)).
 
 *What does the radar's PCS alarm react to, and from what size of object?* U3's alarm came with a parked pickup tracked at

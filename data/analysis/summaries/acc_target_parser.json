@@ -524,7 +524,7 @@
    "hard_moving": 7,
    "mild_moving": 27
   },
-  "no target-present flags": {
+  "target-present flags removed": {
    "hard": 13,
    "mild": 32,
    "unnecessary_s": 21.6,

@@ -72,10 +72,10 @@
   "observed_followup": {
     "strict_exits": 5516,
     "exit_age": 2,
-    "no_strict_exit_observed": 258,
+    "slots_counted_apart": 258,
     "nonzero_to_zero_strict_edges": 0,
     "zero_to_zero_strict_edges": 0,
-    "note": "A strict exit is a lifecycle marker of the capture's continuity/support (5,516 exits at age 2; 258 slots are counted separately as no_strict_exit_observed)."
+    "note": "A strict exit is a lifecycle marker of the capture's continuity/support (5,516 exits at age 2; 258 slots are counted separately as slots_counted_apart)."
   },
   "partition_counts": [
     {

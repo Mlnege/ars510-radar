@@ -166,7 +166,7 @@ filter with replay evidence for every part: [docs/12](docs/12_kalman_filter.md).
   `8821F0R03100` car through 26 min of alpha long, [01](docs/01_radar_bus.md#openpilots-radar-disable)).
 - **AEB under openpilot longitudinal** relies on a radar CAN filter: the radar disable takes the car's AEB with it, and
   stock ACC keeps AEB. A relay of the radar's own decision and the one recording it needs are in
-  [13](docs/13_car_bus_messages.md#aeb-without-a-can-filter).
+  [13](docs/13_car_bus_messages.md#aeb-on-an-unfiltered-radar-line).
 - **Community integration.** It installs on top of openpilot; `acc` is the candidate for an upstream PR
   ([10](docs/10_research_directions.md#towards-an-upstream-comma-interface)).
 

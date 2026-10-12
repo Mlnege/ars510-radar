@@ -135,7 +135,7 @@ Two companion frames at the same 50 Hz describe the same target (`support.parse_
 
 | frame | bits | field | conf. |
 |---|---|---|---|
-| 0x239 | byte 1 low nibble | **target class**: 1 car, 2 truck; 0, 4, 5, 6 other; 7 no target | ● 1 / 2, ○ others |
+| 0x239 | byte 1 low nibble | **target class**: 1 car, 2 truck; 0, 4, 5, 6 other; 7 idle | ● 1 / 2, ○ others |
 | 0x239 | bit 39 | the target also has an object in the 0x80 list | ◐ |
 | 0x239 | bit 35 | target present | ● |
 | 0x239 | bits 3-34 | **microsecond timestamp** of the radar cycle the target data belong to (the 0x190 clock) | ● |

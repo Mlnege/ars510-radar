@@ -1105,14 +1105,14 @@ def target_366_coverage():
 def pcs_flag_0x344():
     """0x320 bit 13 against the radar's / replayed car-bus frames on O5 (pcs_flag_0x344.json)."""
     D = summary("pcs_flag_0x344")
-    colors = {"radar": S1, "none": "#d6d4ce", "283": S2, "344opr1": S3, "344opr0": S3, "283+344opr1": S4, "283+344opr0": S4}
-    names = {"radar": "radar", "none": "silent", "283": "0x283", "344opr1": "0x344\nPCSOPR 1", "344opr0": "0x344\nPCSOPR 0",
+    colors = {"radar": S1, "silent": "#d6d4ce", "283": S2, "344opr1": S3, "344opr0": S3, "283+344opr1": S4, "283+344opr0": S4}
+    names = {"radar": "radar", "silent": "silent", "283": "0x283", "344opr1": "0x344\nPCSOPR 1", "344opr0": "0x344\nPCSOPR 0",
              "283+344opr1": "0x283 +\n0x344 (1)", "283+344opr0": "0x283 +\n0x344 (0)"}
     t_end = D["radar_silent_s"][1] + 20
     fig, ax = plt.subplots(figsize=(10, 3.0))
     for p in D["phases"]:
         a, b = p["start_s"], min(p["end_s"], t_end)
-        ax.axvspan(a, b, ymin=0.0, ymax=0.62, color=colors[p["label"]], alpha=0.35 if p["label"] != "none" else 0.6, lw=0)
+        ax.axvspan(a, b, ymin=0.0, ymax=0.62, color=colors[p["label"]], alpha=0.35 if p["label"] != "silent" else 0.6, lw=0)
         ax.text((a + b) / 2, -0.32, names[p["label"]], ha="center", va="center", fontsize=7.5, color=INK2)
     ts, bs = [0.0], [D["bit13_transitions"][0]["bit13"]]
     for tr in D["bit13_transitions"]:
