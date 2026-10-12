@@ -69,11 +69,18 @@
   "lead_accel_mps2": 1.0
  },
  "learned_noise_importance": {
-  "s240": 0.3577,
-  "v_ego": 0.2219,
-  "acc84": 0.096,
-  "d": 0.0675,
-  "y": 0.0623
+  "s240": [
+   0.36,
+   0.53
+  ],
+  "v_ego": [
+   0.22,
+   0.29
+  ],
+  "acc84": [
+   0.1,
+   0.11
+  ]
  },
  "replay_34_drives": {
   "fused": {
@@ -913,5 +920,5 @@
    "routes": 62
   }
  },
- "learned_noise_importance_note": "Gradient-boosting importance at the 0.125 m/s unit; the ranking s240 > v_ego > acc84 is the same as at 0.1 m/s (0.53 / 0.27 / 0.11), and the values vary by about 0.05 between runs."
+ "learned_noise_importance_note": "Gradient-boosting importance, range over two runs of the same script (0.1 and 0.125 m/s ACC unit): the order s240 > v_ego > acc84 holds in each."
 }

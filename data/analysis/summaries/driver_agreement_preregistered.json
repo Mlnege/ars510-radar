@@ -578,7 +578,7 @@
     ]
    },
    "radar_only_on_gas_per_human_hour": 0.88,
-   "verdict": "P1-P4 fail their Holm gates (Holm p 0.196 / 0.763 / 0.000 / 0.578; P3 worse for radar); the G1 timing guard passes",
+   "verdict": "P1-P4 Holm p 0.196 / 0.763 / 0.000 / 0.578, with P3 favouring vision (radar worse); the G1 timing guard passes",
    "worse_for_radar": [
     "P3"
    ]
@@ -1161,7 +1161,7 @@
     ]
    },
    "radar_only_on_gas_per_human_hour": 4.71,
-   "verdict": "P1-P4 fail their Holm gates (Holm p 0.117 / 0.117 / 0.032 / 0.302; P3 worse for radar); the G1 timing guard passes",
+   "verdict": "P1-P4 Holm p 0.117 / 0.117 / 0.032 / 0.302, with P3 favouring vision (radar worse); the G1 timing guard passes",
    "worse_for_radar": [
     "P3"
    ]
