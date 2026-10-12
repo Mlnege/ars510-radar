@@ -189,6 +189,14 @@ def hook_car_interface(car_interface):
 
   class RadarInterface(fork_radar_interface):
     def __new__(cls, CP, *args, **kwargs):
+      native_supported = getattr(fork_radar_interface, "supports_ars510", None)
+      native_api = getattr(fork_radar_interface, "ARS510_CARROT_API", 0)
+      if (PROFILE is FUSED_CONFIG
+          and type(native_api) is int and native_api == 1
+          and getattr(fork_radar_interface, "ARS510_CARROT_PROFILE", None) == "fused"
+          and callable(native_supported) and native_supported(CP)):
+        # 지원을 명시한 당근 수신기의 MyTrack·시각 처리를 설치 후에도 보존한다.
+        return fork_radar_interface(CP, *args, **kwargs)
       if is_ars510(CP):
         return Ars510RadarInterface(CP, *args, **kwargs)
       return fork_radar_interface(CP, *args, **kwargs)

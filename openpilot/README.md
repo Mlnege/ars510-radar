@@ -30,6 +30,19 @@ cd /data/ars510-radar && git pull && python openpilot/install.py /data/openpilot
 A fork update resets `/data/openpilot`: run the installer again after updating (and turn off automatic updates
 while testing).
 
+### native fork의 공유 패키지 소유권
+
+`toyota/radar_interface.py`의 `RadarInterface`가 literal `ARS510_CARROT_API = 1`,
+`ARS510_CARROT_PROFILE = "fused"`와 `supports_ars510` predicate를 선언하면 공유 `toyota/ars510/`은
+fork 소유다. installer는 fork Python을 실행하지 않고 이 AST 계약을 읽는다. 어떤 profile을 선택해도
+이 package·LICENSE·fork 부속 파일을 덮거나 삭제하지 않는다. package의 Python 파일 목록/원바이트가
+현재 checkout과 같을 때만 외부 hook/wrapper를 설치한다. 누락·다른 버전 또는 불명확한 native 계약이면
+파일을 바꾸기 전에 중단한다. `--check`도 native 불일치/불명확 상태를 표시하고 exit2를 반환한다.
+
+native fork의 `--uninstall`은 외부 hook/wrapper 등 관리 파일만 제거하고 공유 package와 native 수신기/factory를
+그대로 둔다. package가 fork 업데이트로 달라졌어도 삭제하지 않는다. native 계약이 없는 vanilla에서는 기존처럼
+installer가 package를 설치·삭제하고, 오래된 설치를 보고하는 `--check`의 exit0 정책을 유지한다.
+
 | profile | config |
 |---|---|
 | `acc` (default) | the radar's ACC target alone as one point, the upstream proposal ([`upstream/ars510_acc_target.py`](../upstream/ars510_acc_target.py) with [`toyota_tss2_ars510.dbc`](../upstream/toyota_tss2_ars510.dbc), opendbc's CANParser, 33 code lines): the car Toyota's own ACC follows, published as soon as the radar picks it; every other car comes from the camera ([docs/17](../docs/17_upstream.md#towards-an-upstream-comma-interface)) |

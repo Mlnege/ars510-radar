@@ -37,6 +37,7 @@ and stock/default select raw. Every alias prints its selection. Omit --profile f
 from __future__ import annotations
 
 import argparse
+import ast
 import os
 import shutil
 import subprocess
@@ -109,6 +110,76 @@ def sources() -> dict[str, Path]:
           "acc_dbc": REPO / "upstream" / "toyota_tss2_ars510.dbc"}
 
 
+def native_package_owner(root: Path) -> tuple[str, str]:
+  """fork Python을 실행하지 않고 명시한 native package 보호 계약만 읽는다."""
+  path = root / "opendbc" / "car" / "toyota" / "radar_interface.py"
+  if not path.exists():
+    return "installer", "no native contract"
+  try:
+    text = path.read_text(encoding="utf-8")
+  except (OSError, UnicodeError):
+    return "ambiguous", "cannot read native contract source"
+  markers = ("ARS510_CARROT_API", "ARS510_CARROT_PROFILE")
+  if not any(name in text for name in markers):
+    return "installer", "no native contract"
+  try:
+    tree = ast.parse(text)
+  except SyntaxError:
+    return "ambiguous", "cannot parse native contract"
+  if not any((isinstance(node, ast.Name) and node.id in markers) or
+             (isinstance(node, ast.Attribute) and node.attr in markers) for node in ast.walk(tree)):
+    return "installer", "no native contract"
+  classes = [node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "RadarInterface"]
+  if len(classes) != 1:
+    return "ambiguous", "expected one native RadarInterface class"
+  values: dict[str, list[ast.expr]] = {name: [] for name in (*markers, "supports_ars510")}
+  predicate_functions = 0
+  for node in classes[0].body:
+    if isinstance(node, ast.FunctionDef) and node.name == "supports_ars510":
+      predicate_functions += 1
+    if isinstance(node, ast.Assign):
+      targets, value = node.targets, node.value
+    elif isinstance(node, ast.AnnAssign):
+      targets, value = [node.target], node.value
+    else:
+      continue
+    for target in targets:
+      if isinstance(target, ast.Name) and target.id in values and value is not None:
+        values[target.id].append(value)
+  api, profile = values[markers[0]], values[markers[1]]
+  if not (len(api) == len(profile) == 1 and isinstance(api[0], ast.Constant)
+          and type(api[0].value) is int and api[0].value == 1
+          and isinstance(profile[0], ast.Constant) and profile[0].value == "fused"):
+    return "ambiguous", "unsupported or nonliteral native API/profile"
+  support = values["supports_ars510"]
+  if predicate_functions + len(support) != 1:
+    return "ambiguous", "expected one native support predicate declaration"
+  predicate = predicate_functions == 1
+  if len(support) == 1:
+    value = support[0]
+    predicate |= isinstance(value, (ast.Name, ast.Attribute, ast.Lambda)) or (
+      isinstance(value, ast.Call) and isinstance(value.func, ast.Name)
+      and value.func.id in ("staticmethod", "classmethod") and len(value.args) == 1
+      and isinstance(value.args[0], (ast.Name, ast.Attribute, ast.Lambda)))
+  if not predicate:
+    return "ambiguous", "missing native support predicate declaration"
+  return "fork", "API 1, fused, support predicate declared"
+
+
+def package_state(src: Path, dst: Path) -> str:
+  """version 문자열 대신 공유 Python 파일 목록과 원바이트를 대조한다."""
+  if not dst.is_dir():
+    return "missing"
+  try:
+    files = sorted(p.relative_to(src) for p in src.rglob("*.py"))
+    if files != sorted(p.relative_to(dst) for p in dst.rglob("*.py")) or \
+       any((src / f).read_bytes() != (dst / f).read_bytes() for f in files):
+      return "different"
+  except OSError:
+    return "unreadable"
+  return "compatible"
+
+
 def stale(t: dict[str, Path]) -> list[str]:
   """Installed targets that differ from this checkout: an install made with an older (or newer) ars510-radar."""
   out = []
@@ -160,6 +231,8 @@ def main() -> int:
   t = targets(root)
   interface_py = root / "opendbc" / "car" / "toyota" / "interface.py"
   text = interface_py.read_text()
+  owner, ownership_reason = native_package_owner(root)
+  native_state = package_state(REPO / "ars510", t["package"]) if owner == "fork" else None
   legacy = legacy_patch(root)
 
   if args.check:
@@ -174,11 +247,38 @@ def main() -> int:
       print(f"{name}: {'present' if p.exists() else 'to be installed'} ({p})")
     for p in old_dbcs(root):
       print(f"leftover from an older install (removed on the next install): {p}")
+    if owner == "fork":
+      print(f"native decoder package: fork-owned ({native_state}); install/uninstall preserve it")
+    elif owner == "ambiguous":
+      print(f"native decoder contract: ambiguous ({ownership_reason}); no changes permitted")
     if t["interface"].exists():
       diff = stale(t)
+      if owner == "fork" and native_state != "compatible":
+        remedy = "update the fork or use a matching ars510-radar checkout; do not overwrite the native package"
+      elif owner == "ambiguous":
+        remedy = "review the fork's native contract before making changes"
+      else:
+        remedy = "run install.py again, then reboot"
       print("installed files: " + ("match this checkout" if not diff else
-            f"differ from this checkout ({', '.join(diff)}); run install.py again, then reboot"))
-    return 0
+            f"differ from this checkout ({', '.join(diff)}); {remedy}"))
+    if owner == "fork" and native_state != "compatible":
+      print("native decoder alignment required: update the fork or use a matching ars510-radar checkout; no package overwrite")
+    elif owner == "ambiguous":
+      print("native contract review required: verify the fork's API/profile/predicate declaration before making changes")
+    return 2 if owner == "ambiguous" or (owner == "fork" and (native_state != "compatible" or legacy is not None)) else 0
+
+  # 공유 package 문제는 legacy reverse·hook/DBC 제거보다 앞에서 중단한다.
+  if owner == "ambiguous":
+    print(f"native decoder contract: ambiguous ({ownership_reason}); checkout unchanged", file=sys.stderr)
+    return 2
+  if owner == "fork" and not args.uninstall and native_state != "compatible":
+    print(f"native decoder package: fork-owned ({native_state}); update the fork or use a matching ars510-radar checkout; "
+          "checkout unchanged", file=sys.stderr)
+    return 2
+  if owner == "fork" and legacy is not None:
+    print("native decoder contract with an older patch-based install; cannot reverse fork-owned files; checkout unchanged",
+          file=sys.stderr)
+    return 2
 
   if legacy is not None and not git_apply(root, legacy, "--reverse"):
     print(f"could not remove the older install ({legacy.name}); the checkout stays as it was", file=sys.stderr)
@@ -189,20 +289,25 @@ def main() -> int:
 
   if args.uninstall:
     interface_py.write_text(text)
-    for p in t.values():
+    for name, p in t.items():
+      if name == "package" and owner == "fork":
+        continue
       if p.is_dir():
         shutil.rmtree(p)
       elif p.exists():
         p.unlink()
     print("removed" + (f" (including the older {legacy.name})" if legacy else ""))
+    if owner == "fork":
+      print(f"preserved fork-owned native decoder package ({native_state})")
     return 0
 
   if "class CarInterface" not in text:
     print("expected a CarInterface class in toyota/interface.py; the checkout stays as it was", file=sys.stderr)
     return 1
-  if t["package"].exists():
-    shutil.rmtree(t["package"])
-  shutil.copytree(REPO / "ars510", t["package"], ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+  if owner != "fork":
+    if t["package"].exists():
+      shutil.rmtree(t["package"])
+    shutil.copytree(REPO / "ars510", t["package"], ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
   shutil.copyfile(REPO / "upstream" / "ars510_radar.py", t["upstream"])
   shutil.copyfile(REPO / "upstream" / "ars510_acc_target.py", t["acc_target"])
   shutil.copyfile(REPO / "upstream" / "toyota_tss2_ars510.dbc", t["acc_dbc"])
@@ -212,6 +317,8 @@ def main() -> int:
   assert src.count(PROFILE_LINE) == 1
   t["interface"].write_text(src.replace(PROFILE_LINE, f'PROFILE = PROFILES["{args.profile}"]'))
   interface_py.write_text(text.rstrip("\n") + "\n" + HOOK)
+  if owner == "fork":
+    print("preserved fork-owned native decoder package (compatible)")
   print(f"installed into {root} ({args.profile} profile" + (f"; replaced the older {legacy.name}" if legacy else "") +
         "). Reboot the device to activate.")
   if args.profile in ("shared_speed", "shared_range"):
