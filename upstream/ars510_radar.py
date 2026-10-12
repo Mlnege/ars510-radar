@@ -1,7 +1,7 @@
 """Toyota / Continental ARS510 front radar (RAV4 2022+, fwdRadar 8821F0R03100): object list to RadarData.
 
 The radar sends its object list on bus 1 as one 742-byte record split over 106 frames on 0x80 (consecutive-frame
-numbers wrap every 16 frames, so a DBC cannot describe it and it is reassembled here). Each of its 20 slots holds one
+numbers wrap every 16 frames, so it is reassembled here instead of read through a DBC). Each of its 20 slots holds one
 object; the radar keeps an object in its slot while the slot's age counts up, which gives the track IDs.
 
 The slot speed has slow, correlated errors at range (false closings of 1-10 s beyond ~40 m). Their size follows the
@@ -64,7 +64,7 @@ class Ars510Radar:
       self.yaw = (t, (((dat[0] & 0x03) << 8 | dat[1]) * 0.244 - 125.0) * pi / 180.0)
     elif bus == RADAR_BUS and addr in (ACC_SPEED_ADDR, ACC_POS_ADDR):
       if len(dat) != 8 or (not dat[1] & 4 if addr == ACC_SPEED_ADDR else dat[2:] == bytes.fromhex("003E80000000")):
-        self.acc_speed = self.acc_pos = None  # no target
+        self.acc_speed = self.acc_pos = None  # idle
       elif addr == ACC_SPEED_ADDR:
         self.acc_speed = (t, (be_bits(dat, 29, 11) - 1024) * 0.125)
       else:
@@ -192,7 +192,7 @@ class Ars510Radar:
         for k in [k for k, v in store.items() if v[0] < t - 5.0]:
           store.pop(k)
     if len(self.published) > 400:
-      # Invalid geometry may leave a live allocation without a recent speed-filter entry.
+      # A live allocation can outlast its recent speed-filter entry after invalid geometry.
       self.published &= set(self.kf) | {state[0] for state in self.slots.values()}
 
 
@@ -223,5 +223,5 @@ class RadarInterface(RadarInterfaceBase):
       pt = structs.RadarData.RadarPoint()
       pt.trackId, pt.dRel, pt.yRel, pt.vRel = track_id, d_rel, y_rel, v_rel
       pts.append(pt)
-    ret.points = pts  # assigned as a list: forks with capnp-backed structs (sunnypilot) have no append
+    ret.points = pts  # assigned as a list: forks with capnp-backed structs (sunnypilot) take list assignment only
     return ret

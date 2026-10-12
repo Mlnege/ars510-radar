@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Make ARS510 objects visible in Cabana: a virtual-bus DBC plus rlogs with the reassembled records appended.
 
-The object list is a 742-byte record segmented over 106 frames on 0x80, so no DBC can decode it from the raw
-frames. This tool reassembles each record and appends, on a virtual bus (default 10), one CAN-FD-sized message
+The object list is a 742-byte record segmented over 106 frames on 0x80, so a DBC decodes it from the
+reassembled record. This tool reassembles each record and appends, on a virtual bus (default 10), one CAN-FD-sized message
 per occupied object slot with the slot's own 36 bytes, so the bit positions in the DBC are the real slot bit
 positions. The original log is copied unchanged; Cabana sorts events by time.
 
@@ -20,7 +20,7 @@ Usage:
   python tools/build_cabana_route.py SEG_DIR [SEG_DIR ...] --out OUT  # SEG_DIR holds rlog(.zst|.bz2) (+ cameras)
 Then: cabana --data_dir OUT/route "<route name>" --dbc dbc/ars510_objects_vbus.dbc  (see docs/09_tools_and_data.md)
 
-Reading and writing logs needs openpilot's cereal (run from an openpilot venv / PYTHONPATH). --dbc-only does not.
+Reading and writing logs needs openpilot's cereal (run from an openpilot venv / PYTHONPATH). --dbc-only runs on plain Python.
 """
 from __future__ import annotations
 

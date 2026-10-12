@@ -304,7 +304,7 @@
    "doc": "04",
    "claim": "Byte 16 low 5 bits: count-like quantity, 2-20 above a fixed 0x20; mean 3.5 at standstill, 10.4 at 14-22 m/s, 7.5 above 30 m/s; Spearman .58 with the number of populated cells, correlated with 0x80 header byte 13",
    "status": "supported",
-   "value": "values 2-20 on 677,699 of 677,754 records (44 records 0-1, 11 without 0x20); means 3.50 (v < 0.1 m/s; 3.65 at v < 0.5) / 10.37 / 7.53; Spearman populated cells .575, speed .575, header byte 13 .387",
+   "value": "values 2-20 on 677,699 of 677,754 records (44 records 0-1, 11 with an upper part other than 0x20); means 3.50 (v < 0.1 m/s; 3.65 at v < 0.5) / 10.37 / 7.53; Spearman populated cells .575, speed .575, header byte 13 .387",
    "source": "research workspace SCR-416; recomputed from the research captures",
    "note": "The standstill mean follows the speed threshold (3.5 at v < 0.1 m/s)."
   },
@@ -414,7 +414,7 @@
   },
   {
    "doc": "05",
-   "claim": "0x191 score 1|7: 91-100 while a target is active, 127 = none",
+   "claim": "0x191 score 1|7: 91-100 while a target is active, 127 = idle sentinel",
    "status": "supported",
    "value": {
     "active_min": 91,
@@ -542,7 +542,7 @@
   },
   {
    "doc": "05",
-   "claim": "Summaries are present without an ACC target at a median 60 m (0x194: 79 m); about half lie beyond 60 m (0x194: 65 %)",
+   "claim": "Summaries are present while the ACC target is idle at a median 60 m (0x194: 79 m); about half lie beyond 60 m (0x194: 65 %)",
    "status": "supported",
    "value": {
     "0x192": {

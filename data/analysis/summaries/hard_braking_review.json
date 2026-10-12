@@ -416,7 +416,7 @@
   "radar_only_per_h": 0.88
  },
  "summaries_planner_effect": {
-  "definition": "fused vs fused without summaries, ticks where one requests >= 0.3 m/s2 more braking; split by camera range closing (< -1 m/s) and range holding or opening; about 5 h of driving",
+  "definition": "fused vs fused on the object list alone, ticks where one requests >= 0.3 m/s2 more braking; split by camera range closing (< -1 m/s) and range holding or opening; about 5 h of driving",
   "totals": {
    "noS_harder": {
     "ticks": 143,

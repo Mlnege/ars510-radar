@@ -5,7 +5,7 @@
 
 Sections: A who supplies the lead; B braking demand added by radar noise (each fork on a profile against the same
 fork on the radar's ACC target); C braking the radar added or removed against the same fork on vision only;
-D StarPilot's two lead paths and its lead filters; E leads only FrogPilot accepts without camera confirmation;
+D StarPilot's two lead paths and its lead filters; E leads FrogPilot accepts on the radar's word alone;
 F when braking starts in lead-braking events seen by the radar's ACC target (few events: a hint only).
 "Demand" is the proxy of forksim.py at the planner's nominal spacing (what the lead's predicted speed and
 acceleration ask for, independent of the gap the driver kept).

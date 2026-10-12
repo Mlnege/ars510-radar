@@ -10,7 +10,7 @@ moments; `fused` runs one Kalman filter per track on the object list and the ACC
 | profile | what reaches radard | hard radar-only braking ticks, 20 held-out routes | radar-only braking per hour |
 |---|---|---|---|
 | `raw` | object-list speed | 93 | 1.75 |
-| `fused` (2.0 without ACC target) | Kalman-filtered object-list speed | 48 | 0.88 |
+| `fused` (2.0, object-list filter alone) | Kalman-filtered object-list speed | 48 | 0.88 |
 | `fused` | filtered object list weighted with the ACC target | 16 | 0 |
 | `acc` | the ACC target's speed | 66 (14 while moving; 52 are holds at standstill) | 0 |
 

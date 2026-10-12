@@ -76,7 +76,7 @@
  },
  "ablations": {
   "no_innovation_gate": "an opening +10 m/s object-list excursion passes; one owner target episode",
-  "maneuver_adaptation": "follows a far slot slide (no ACC target): owner hard 0 -> 12 when driven by the object list, -1.95 m/s2 episode when driven by the summary",
+  "maneuver_adaptation": "follows a far slot slide (ACC target idle): owner hard 0 -> 12 when driven by the object list, -1.95 m/s2 episode when driven by the summary",
   "range_in_filter": "the object list's range rate and speed disagree by 10-20 %; a coupled filter ran 2-5 m short for seconds",
   "raw_range": "radard's vision match flickers on raw far range (+21 % lead-source switches)"
  },
@@ -234,7 +234,7 @@
    "verdict": "as range fusion removed alone",
    "unjustified_ticks": 2
   },
-  "rule": "same driving as fused: unjustified hard radar-only braking within +2 ticks of fused (hard_braking_review.json) and radar <-> vision lead switches within +15 %. The rule fixed before the results also required zero owner-drive target episodes; the one such episode (without summaries) was reviewed as an early reaction to a real slowdown, so it counts as a pass."
+  "rule": "same driving as fused: unjustified hard radar-only braking within +2 ticks of fused (hard_braking_review.json) and radar <-> vision lead switches within +15 %. The rule fixed before the results also required zero owner-drive target episodes; the one such episode (the filter on the object list alone) was reviewed as an early reaction to a real slowdown, so it counts as a pass."
  },
  "range_retention_no_relink": {
   "status": "rejected by frozen component-removal gates",
@@ -288,7 +288,7 @@
   ]
  },
  "openpilot_file_lines": {
-  "definition": "non-blank, non-comment lines of the openpilot version of 2.0 (fused without summaries and relink); the 2.6 file (187 code lines of 227) is in openpilot_file_parts.json",
+  "definition": "non-blank, non-comment lines of the openpilot version of 2.0 (fused reduced to the object list: summaries and relink removed together); the 2.6 file (187 code lines of 227) is in openpilot_file_parts.json",
   "total_lines": 213,
   "total": 189,
   "decode_ids_publication": 84,

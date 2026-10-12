@@ -71,7 +71,7 @@ Each replay number below names its `fused` version. 2.6 is the current profile a
 | 2.0 | speed filter with the ACC target (σ 0.5 m/s) and the summaries, range fusion, track-ID relink, 0.25 × ACC match scale; the ablations and combinations |
 | 2.1 | ACC distance as the followed car's range; trackers matched by position |
 | 2.3 | path gate beyond 15 m (2.5 m); ACC match scale 0.4 × |
-| 2.4 | 2.3 without the summaries and the relink: the openpilot version of 2.4 |
+| 2.4 | 2.3 with the summaries and the relink removed: the openpilot version of 2.4 |
 | 2.5 | 2.4 with the ACC target at σ 0.3 m/s |
 | 2.6 | 2.5 with the far rule (beyond 60 m only the ACC target's track), the stationary path gate and ACC σ 0.13 m/s |
 
@@ -125,7 +125,7 @@ frames lie beyond 3 σ. The error leans toward closing (median −0.2 to −0.7 
 ACC target supplies the correction where it is present
 ([`object_stream_0x680.json`](../data/analysis/summaries/object_stream_0x680.json)).
 
-A new track (or one silent for over 0.5 s) starts from its object-list speed with `P = σ²`. Each track gets the
+A new track (or one that stalls for over 0.5 s) starts from its object-list speed with `P = σ²`. Each track gets the
 object-list reading plus, for the one track the ACC target describes, the ACC reading.
 
 **The gain changes every cycle.** radard's filter uses one precomputed gain for every track. Here `K` follows the
@@ -181,7 +181,7 @@ The two filters run in series, so all replay numbers include their combined effe
   `raw` withholds the track until the speed is back within 5 m/s (or 1 s), then continues under a new ID. Held-out
   hard ticks 117 → 93 (`saturation_guard_heldout` in [`fused_filter.json`](../data/analysis/summaries/fused_filter.json)). In `fused` the robust update absorbs the sentinel, so the guard is off.
 - **Track-ID relink (`raw` only):** a track lost and re-found within 3.5 s keeps its ID. With the filter on, the
-  braking counts are identical with and without it (lead switches 1,770 vs 1,772), so `fused` leaves it off.
+  braking counts are identical with the relink on or off (lead switches 1,770 vs 1,772), so `fused` runs with it off.
 - **Range fusion (`fused`):** range walks by metres at 60-100 m (about 3 % of range per frame). A fixed-gain predictor,
   separate from the speed filter:
 
@@ -251,7 +251,7 @@ and 3 owner drives; owner target episodes), each version against vision only:
 | `fused` version | held-out hard ticks / episodes / target | further / owner hard ticks | owner target episodes | onset vs vision | driver brakes anticipated at −1 m/s² |
 |---|---|---|---|---|---|
 | 2.1 | 30 / 11 / 4 | 2 / 0 | 1 | −0.022 s | 43.7 % |
-| 2.4 (0.4 x ACC match, path gate, no summaries) | 30 / 11 / 3 | 1 / 0 | 0 | −0.010 s | 41.3 % |
+| 2.4 (0.4 x ACC match, path gate, summaries off) | 30 / 11 / 3 | 1 / 0 | 0 | −0.010 s | 41.3 % |
 | 2.5 (ACC σ 0.3) | 29 / 11 / 4 | 1 / 0 | 0 | −0.009 s | 42.5 % |
 | 2.6 (far rule, stationary gate, ACC σ 0.13) | 16 / 8 / 1 | 0 / 0 | 0 | −0.013 s | 44.9 % |
 
@@ -271,7 +271,7 @@ Numbers: [`lead_choice_guards.json`](../data/analysis/summaries/lead_choice_guar
 
 ### Stationary objects close in
 
-radard stops for a radar point within 1 m laterally and 25 m ahead when ego is slower than 4 m/s, even without a
+radard stops for a radar point within 1 m laterally and 25 m ahead when ego is slower than 4 m/s, regardless of the
 camera lead ([14](14_forks.md)). Parked cars at the curb while ego turns past them, or a car parked alongside, then
 become a lead and raise hard radar-only requests. Parked cars and roadside objects hold their position, so from 2.6 a
 stationary track (over-ground speed below 0.5 m/s) is path-gated at every range: within 1.5 m of the path curved with
@@ -312,7 +312,7 @@ The 60 m cutoff and the ACC weight were chosen on the owner's drive sets with a 
 then checked on the second car. 2.6's 8 remaining hard episodes are all on the oldest replay drives; 2 last longer than
 one 50 ms tick, and both are real closings the oracle also brakes for (−2.9, −1.7 m/s²).
 
-The cost is time on a fast far closing that the radar's ACC has yet to pick: the car reaches the planner through the
+The cost is time on a fast far closing before the radar's ACC picks it: the car reaches the planner through the
 camera until the radar makes it its ACC target, about 1 s later on one owner drive (95 m, closing 4.5 m/s) and 0.8 s on
 the second car (86 m, closing 8.8 m/s). Vision alone brakes at or after 2.6's moment in either, and Toyota's own ACC is more
 patient still: on a far closing car it acquired at 94 m it first braked at 66 m. Against 2.4, where 2.6 changes the
@@ -366,7 +366,7 @@ owner drives:
 | the speed-std publication gate | 30 | 8 | 0 | needed |
 | the age-60 publication gate (age 6) | 31 | 12 | 0 (radar-only braking ×3) | needed |
 | range fusion | 27 | 0 | 0 | same braking; lead switches +39 %, held-out target episodes 4 → 6: kept for lead stability |
-| the ego-speed alignment (× 0.149/0.15) | 31 | 2 | 0 | same braking (onset +12 ms); one empirical setting, folded into the decode factor (no line) |
+| the ego-speed alignment (× 0.149/0.15) | 31 | 2 | 0 | same braking (onset +12 ms); one empirical setting, folded into the decode factor (0 lines) |
 | the track-ID relink | 30 | 2 | 0 | same braking counts, lead switches 1,770 vs 1,772: off in `fused` |
 | the saturation guard | identical | identical | identical | off in `fused`: the robust update absorbs the sentinel |
 
@@ -394,22 +394,22 @@ in combination on the same 27 drives. A version drives the same as `fused` when 
 
 ![fewest lines for the same driving](img/analysis/kalman_combinations.png)
 
-- **The track-ID relink is free:** braking counts are identical with and without it (lead switches 1,770 vs 1,772).
-- **The summaries change little:** unjustified braking and lead stability are the same without them (see below).
-- **Range fusion keeps the lead stable:** every version without it flips between radar and vision leads about 39%
+- **The track-ID relink is free:** braking counts are identical with the relink on or off (lead switches 1,770 vs 1,772).
+- **The summaries change little:** unjustified braking and lead stability are the same with them switched off (see below).
+- **Range fusion keeps the lead stable:** every version with range fusion removed flips between radar and vision leads about 39%
   more often, with 27 held-out hard ticks against 30.
 - **The young-track factor and the std gate cost 5 code lines** (3 + 2). With range fusion kept they prevent unjustified
   braking on a far lead (+9 and +6 unjustified ticks).
 
-The smallest version with the same driving is 2.0 without the summaries and the relink. With 2.3's path gate and wider
+The smallest version with the same driving is 2.0 with the summaries and the relink removed. With 2.3's path gate and wider
 ACC match, and 2.6's far rule and stationary gate added, that is today's `fused`. The openpilot version
 ([`upstream/ars510_radar.py`](../upstream/ars510_radar.py); its parts and line
 costs are in [10](10_research_directions.md#parts-of-the-openpilot-file)) is the same filter in one file, and a test
 keeps the two equal point for point (`tests/test_upstream_candidate.py`; combinations in
 [`fused_filter.json`](../data/analysis/summaries/fused_filter.json)).
 
-The rule fixed before these results also required zero target episodes on the owner drives; the version without
-summaries had one. That episode was an early reaction to a real slowdown (the case below), and it
+The rule fixed before these results also required zero target episodes on the owner drives; the version with the
+summaries removed had one. That episode was an early reaction to a real slowdown (the case below), and it
 is counted as such: a judgment made after the results, stated here.
 
 ### On a second car
@@ -424,21 +424,21 @@ any variant was run on it. The driver had flagged 11 false brakes made by an old
 | older profile, as driven | – | – | 11 of 11 | – | – |
 | `fused` 2.5 | 1 | 6 | 1 | 491 | −1.78 m/s² |
 | 2.5 + the far rule (beyond 60 m only the ACC target; in 2.6) | 0 | 4 | 0 | 412 | −0.11 |
-| far rule without the young-track factor and std gate | 1 | 4 | 0 | 414 | −0.19 |
-| far rule without the path gate | 0 | 4 | 0 | 441 | −0.11 |
-| far rule without range fusion | 0 | 4 | 0 | 456 | −0.05 |
+| far rule, young-track factor and std gate removed | 1 | 4 | 0 | 414 | −0.19 |
+| far rule, path gate removed | 0 | 4 | 0 | 441 | −0.11 |
+| far rule, range fusion removed | 0 | 4 | 0 | 456 | −0.05 |
 
 - **`fused` 2.5** brakes at ≤ −1 m/s² on 1 of the 11 flagged moments (vision only 0 of 11). Its one hard brake is a
-  lead at 86 m published at −7.3 m/s with no ACC target while the camera range opens. It also asks −1.78 m/s² for
+  lead at 86 m published at −7.3 m/s while the ACC target is idle and the camera range opens. It also asks −1.78 m/s² for
   a new track at 97 m while the ACC target and camera read −3.6 and about −3 m/s. Both are far tracks carried by the
   object list alone.
 - **The far rule** (2.6, [far cars beyond 60 m](#far-cars-beyond-60-m)) removes both. Four of
   the real closings keep their braking unchanged, and the car at 86 m closing at 8.8 m/s starts braking 0.8 s later than
   with 2.5: the object list has the car 0.75 s before the radar picks it as its ACC target (vision only asks 0 m/s²
   there). The owner car's 95 m closing shows the same delay (about 1 s).
-- **The young-track factor and std gate** belong on this car too: without them a new track at 31 m is published at
+- **The young-track factor and std gate** belong on this car too: with them removed a new track at 31 m is published at
   −13 m/s for 0.15 s and the planner asks −2.9 m/s².
-- **With the far rule, the path gate and range fusion steady the lead** (flips +7 % and +11 % without them) at equal
+- **With the far rule, the path gate and range fusion steady the lead** (flips rise 7 % and 11 % when they are removed) at equal
   braking counts.
 
 The speed noise that sets the filter's σ values is the same on both radar units ([06](06_accuracy.md#velocity)).
@@ -447,18 +447,18 @@ The speed noise that sets the filter's σ values is the same on both radar units
 
 ![summary updates in an owner-drive replay](img/analysis/summary_owner_case.png)
 
-*Owner drive, lead at about 100 m with no ACC target, replayed with `fused` 2.0. With summaries the planner asks for at
-most −0.58 m/s²; without them, −1.11 m/s² for 0.5 s (vision: about −0.13 at that moment). Over the next 4.5 s the radar's and the camera's range
-both fell from about 104 to 80 m and vision-only asked for −1.37 m/s²: the slowdown was real, and the version without
-summaries reacted about 4.5 s earlier ([`summary_owner_case.json`](../data/analysis/summaries/summary_owner_case.json),
+*Owner drive, lead at about 100 m while the ACC target is idle, replayed with `fused` 2.0. With summaries the planner asks for at
+most −0.58 m/s²; with them removed, −1.11 m/s² for 0.5 s (vision: about −0.13 at that moment). Over the next 4.5 s the radar's and the camera's range
+both fell from about 104 to 80 m and vision-only asked for −1.37 m/s²: the slowdown was real, and the version with the
+summaries removed reacted about 4.5 s earlier ([`summary_owner_case.json`](../data/analysis/summaries/summary_owner_case.json),
 [`hard_braking_review.json`](../data/analysis/summaries/hard_braking_review.json)).*
 
 Over the 27 replay drives (`fused` 2.0), the summaries change the planner's request by 0.3 m/s² or more on 198 ticks
-(about 10 s). Without them the planner brakes harder on 143 of those ticks: 107 while the gap really was closing, 36
-while it held or opened (camera range). The summaries soften the response to far leads without an ACC target, mostly while
+(about 10 s). With them removed the planner brakes harder on 143 of those ticks: 107 while the gap really was closing, 36
+while it held or opened (camera range). The summaries soften the response to far leads while the ACC target is idle, mostly while
 the gap was really closing.
 
-Against the hindsight-lead oracle ([above](#against-what-the-car-should-have-done)) the version without them scores
+Against the hindsight-lead oracle ([above](#against-what-the-car-should-have-done)) the version with them removed scores
 better: 7.1 s of unnecessary braking instead of 8.1 s and 3.0 s missed instead of 3.3 s on the 27 replay drives
 (2.4 against 2.3; RMS 0.244 for both). On the owner's road drives the two give the same minimum request on 19 of 23
 bookmarks (within 0.03 m/s² on the other 4), with 0 hard radar-only braking and 7 mild requests each

@@ -54,14 +54,14 @@ class NativeInterfaceConfig:
     min_publish_age: int = 1
     # When a new track is first published, give it the trackId of a settled track (age >= 30) lost within
     # this many seconds if it starts where that track predicts and the match is one-to-one. 0 disables.
-    # Requires min_publish_age >= RELINK_MIN_PUBLISH_AGE so the lost ID has ended (no duplicate IDs).
+    # Requires min_publish_age >= RELINK_MIN_PUBLISH_AGE so the lost ID has ended (IDs stay unique).
     relink_max_gap_s: float = 0.0
     # Multiplies the decoded over-ground velocity. Against Toyota 0xB4, steady following reads 0.149 m/s/code
     # instead of nominal 0.150 in the original fit. This empirical 0.667% profile setting is
     # separate from physical calibration and the ~1-1.5% discrepancy between ego references (docs/06).
     # Use 1.0 with a carState.vEgo or GPS ego reference.
     vground_scale: float = 1.0
-    # Withhold points whose vRel is unresolved (no fresh ego speed).
+    # Withhold points whose vRel rests on a stale ego speed.
     drop_unresolved_vrel: bool = False
     # Velocity-aided range: predict dRel with vRel, correct toward measured dRel with this gain (0 disables).
     range_fusion_gain: float = 0.0
@@ -161,7 +161,7 @@ BASE_CONFIG = NativeInterfaceConfig(
 # The `fused` install profile (docs/12, docs/11; the default is `acc`): the base decode plus range fusion and one uncertainty-weighted speed
 # filter per track that fuses the object list and the radar's ACC target (matched by position, 0.4 x range scale; its
 # track takes the ACC distance as range; the ACC speed is weighted at 0.13 m/s, acc_sigma_mps). The track-ID relink and the saturation guard of the base decode are off:
-# with the filter on, the driving is the same with or without them (docs/12). Beyond 15 m, tracks other than the ACC target's that sit
+# with the filter on, the driving is the same with them on or off (docs/12). Beyond 15 m, tracks other than the ACC target's that sit
 # more than 2.5 m from the yaw-predicted path are withheld (docs/12 "Path gate"). The summaries are off. The openpilot
 # version (upstream/ars510_radar.py) is this profile in one file.
 FUSED_CONFIG = replace(BASE_CONFIG, range_fusion_gain=0.1, relink_max_gap_s=0.0, drop_saturated_codes=False,

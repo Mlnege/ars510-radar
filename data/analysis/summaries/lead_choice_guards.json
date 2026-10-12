@@ -198,7 +198,7 @@
   },
   "onset_change_per_drive_max_s": 0.015,
   "cases_2_4": {
-   "note": "minimum planner request within 3 s of each case in the open-loop road replays; 2.4 = the openpilot version 2.3 (no summaries, replay label CL_op23), 2.3 fused = CL_P15S",
+   "note": "minimum planner request within 3 s of each case in the open-loop road replays; 2.4 = the openpilot version 2.3 (object list alone, replay label CL_op23), 2.3 fused = CL_P15S",
    "late_brake_case": {
     "vision only": -1.61,
     "2.1 fused": -2.36,

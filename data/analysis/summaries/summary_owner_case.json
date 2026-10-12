@@ -71,7 +71,7 @@
     "local_control": "Retained-summary and full fused saved fields match exactly over 119 ticks around the event.",
     "target_episode": "Planner acceleration <= -1 m/s^2 while captured vision >= -0.3 m/s^2 and ego speed > 1 m/s; contiguous gaps < 0.1 s, duration >= 0.3 s.",
     "scope": "Saved radard lead and planner output. The native cache identifies an earlier eligible summary update; the summary's timing is its receipt time (the saved history holds the applied timing).",
-    "trace": "summary_owner_case.csv; relative event time; zero distance denotes absent lead."
+    "trace": "summary_owner_case.csv; relative event time; zero distance marks an idle lead slot."
   },
   "source_history": {
     "native_range_at_summary_m": 73.4375,

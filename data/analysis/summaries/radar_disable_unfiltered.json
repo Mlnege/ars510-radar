@@ -1,5 +1,5 @@
 {
- "description": "Two drives from a second RAV4 (radar firmware 8821F0R03100) on the factory bus-1 wiring (no CAN filter): U1 with stock ACC (openpilot lateral only), U2 with openpilot alpha longitudinal (sunnypilot 2026.003, which sends the same UDS request as stock opendbc's disable_ecu). Times are seconds from the start of each log. Car-bus rates in U1 identify the messages the radar sends on bus 0; U2 shows which stop after the disable request and that bus 1 keeps running. Records are reassembled and CRC-checked per segment with ars510.transport.",
+ "description": "Two drives from a second RAV4 (radar firmware 8821F0R03100) on the factory bus-1 wiring (unfiltered radar line): U1 with stock ACC (openpilot lateral only), U2 with openpilot alpha longitudinal (sunnypilot 2026.003, which sends the same UDS request as stock opendbc's disable_ecu). Times are seconds from the start of each log. Car-bus rates in U1 identify the messages the radar sends on bus 0; U2 shows which stop after the disable request and that bus 1 keeps running. Records are reassembled and CRC-checked per segment with ars510.transport.",
  "U2_alpha_longitudinal": {
   "radar_fw": [
    "8821F0R03100"

@@ -98,7 +98,7 @@ A slot's life, as the fields show it ([03](03_slot_fields.md) has every field):
 3. **Tracked.** Age saturates at 126. State `0|2` is commonly 1 (update-like); the score `16|8` commonly sits at
    100 and can decline.
 4. **Coasting candidate.** State 2 is prediction-like: the score drops by exactly 20 or 1 per cycle (20 on about three quarters).
-5. **Deletion.** The allocation can return to state 1, with or without score recovery, or be freed near score 20:
+5. **Deletion.** The allocation can return to state 1, with score recovery in some cases, or be freed near score 20:
    age can go to 0 for one cycle with the previous geometry, or the slot returns directly to the idle template.
 
 ![lifetimes](img/analysis/track_lifetimes.png)

@@ -82,8 +82,8 @@ A populated cell is one boundary curve, `y(x) = c0 + c1·x + c2·x²/2 + c3·x³
 | `79\|1` | flag; the same in cells 2 and 3 on 99 % of rows | set on 79-80 % of cells 2/3 and 43-44 % of 8/9, rarely elsewhere | ○ |
 | `30\|1` | parameters present | above | ● |
 
-Unpopulated cells hold the defaults 900 at `48|16` and 500 at `64|15`; the conversions describe populated cells, and `ShellCell.heading_rad`,
-`.curvature_per_m` and `.lane_offset_m` return `None` for the others.
+Idle cells hold the defaults 900 at `48|16` and 500 at `64|15`; the conversions describe populated cells, and `ShellCell.heading_rad`,
+`.curvature_per_m` and `.lane_offset_m` return `None` for idle cells.
 
 **Heading.** Three references agree on sign and zero:
 * the ego-motion offset rate, `d(c0)/d(distance driven)` from consecutive records and carState speed, falls linearly with the code: binned correlation −0.985…−0.993 and slope −1.63…−1.80e-5 rad/code in cells 2, 3, 8 and 9;

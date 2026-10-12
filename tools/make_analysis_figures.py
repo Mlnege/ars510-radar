@@ -148,7 +148,7 @@ def standstill_codes():
 
 
 def _lat_bins(half_width_m: float, codes_per_bin: int) -> np.ndarray:
-    """Lateral bin edges on the code grid (whole codes per bin, edges between codes), so histograms do not alias."""
+    """Lateral bin edges on the code grid (whole codes per bin, edges between codes), so histograms align with the code grid."""
     n = int(half_width_m / LATERAL_M_PER_CODE) // codes_per_bin * codes_per_bin
     return (np.arange(-n, n + 1, codes_per_bin) - 0.5) * LATERAL_M_PER_CODE
 
@@ -1041,7 +1041,7 @@ def summary_owner_case():
         ax.axvspan(0, info["episode"]["duration_s"], color=S2, alpha=.10)
         ax.set_ylabel(label)
     axes[0].axhline(-1, color=INK2, lw=1, ls=":")
-    axes[0].set_title("A far lead without an ACC target: the summaries soften the request; the slowdown was real")
+    axes[0].set_title("A far lead while the ACC target is idle: the summaries soften the request; the slowdown was real")
     axes[0].legend(loc="lower left", fontsize=8)
     axes[-1].set_xlabel("Seconds relative to episode onset (owner drive O1)")
     fig.tight_layout()
@@ -1121,7 +1121,7 @@ def pcs_flag_0x344():
     ax.plot(ts, bs, color=INK, lw=1.8, drawstyle="default")
     ax.set_xlim(0, t_end)
     ax.set_ylim(-0.6, 1.25)
-    ax.set_yticks([0, 1], ["0 (link ok)", "1 (0x344 missing)"])
+    ax.set_yticks([0, 1], ["0 (link ok)", "1 (0x344 stopped)"])
     ax.set_xlabel("seconds from the start of the log (O5, parked)")
     ax.set_title("0x320 bit 13 follows 0x344 alone: set while the radar is silent, clear whenever 0x344 is replayed")
     ax.grid(axis="y", visible=False)

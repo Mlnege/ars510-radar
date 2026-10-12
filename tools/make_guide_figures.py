@@ -5,7 +5,7 @@
 
 guide_pipeline.png and guide_lead_guards.png are schematics with numbers from the summaries. guide_cases.png plots
 data/analysis/lead_choice_cases.csv.gz: two road moments replayed through openpilot's planner with vision only, 2.1 and
-2.3 (relative time, no route identifiers; 2.4 asks the same as 2.3 in both, lead_choice_guards.json). guide_road_stats.png plots data/analysis/summaries/road_v21.json;
+2.3 (relative time, anonymised routes; 2.4 asks the same as 2.3 in both, lead_choice_guards.json). guide_road_stats.png plots data/analysis/summaries/road_v21.json;
 guide_parts_ledger.png plots data/analysis/summaries/openpilot_file_parts.json; guide_far_rule.png plots far_acc_only.json; guide_acc_target_parser.png plots acc_target_parser.json; guide_oracle.png plots
 data/analysis/summaries/oracle_reference.json.
 """
@@ -265,7 +265,7 @@ def far_rule() -> None:
 
 def acc_target_parser() -> None:
   """The ACC target alone against 2.6, from acc_target_parser.json: file size; braking over every drive set; lead flips
-  over every drive; unnecessary braking on drives never used for fitting; close cut-ins by a faster car."""
+  over every drive; unnecessary braking on drives held out from fitting; close cut-ins by a faster car."""
   J = json.loads((SUM / "acc_target_parser.json").read_text()); F, A = J["file_size"], J["by_version_and_set"]
   M = J["hard_and_mild_moving_vs_standstill"]; ALL = "all sets"; E, H, C = J["every_drive"], J["drives_not_used_for_development_pooled"], J["close_cut_ins"]["faster_car"]
   col = {"vision only": VIS, "2.6": V23, "ACC target only": S4}

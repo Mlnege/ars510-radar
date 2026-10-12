@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Self-check of an installed ARS510 integration, without a car or a log. Run it with the opendbc checkout you
+"""Self-check of an installed ARS510 integration on synthetic records and the bundled ACC-target sample. Run it with the opendbc checkout you
 installed into, using a Python that has pycapnp (for example openpilot's .venv):
 
     $OP/.venv/bin/python openpilot/check_integration.py --opendbc $OP/opendbc_repo
@@ -11,8 +11,8 @@ It checks:
 - the RadarInterface path card.py uses: synthetic 0x80 records are fed as card.py's (address, data, src) tuples and
   as CanData, and it checks
   - the RadarData points (units, sign, ego-speed subtraction, age gate);
-  - radarless behaviour (empty tracks, no error) before the first record;
-  - that no output is produced between records;
+  - radarless behaviour (empty tracks, error-free status) before the first record;
+  - that update() returns None between records;
   - the radarUnavailableTemporary report at 20 Hz when records stop;
   - recovery when they resume.
 - for the `acc` profile instead: the bundled ACC-target sample (data/sample/highway_acc_anchor_24s.csv.gz) is fed at
@@ -58,7 +58,7 @@ def check_acc_profile(RI, check) -> None:
         f"on every output ({sum(match)}/{len(match)}, {n_pts} points)")
   n0 = len(outs)
   silent = []
-  for _ in range(100):  # 1 s without target frames
+  for _ in range(100):  # 1 s after the target frames stop
     t_ns += 10_000_000
     out = RI.update([(t_ns, [])])
     if out is not None:
@@ -155,7 +155,7 @@ def main() -> int:
       batch = [CanData(a, d, s) for a, d, s in batch]
     outputs.append((t_ns, RI.update([(t_ns, batch)])))
 
-  # power-up: ego speed but no object records for 6 s -> radarless behaviour (empty tracks at 20 Hz, no error)
+  # power-up: ego speed and zero object records for 6 s -> radarless behaviour (empty tracks at 20 Hz, error-free status)
   for _ in range(600):
     step([], use_candata=False)
   boot = [o for _, o in outputs if o is not None]

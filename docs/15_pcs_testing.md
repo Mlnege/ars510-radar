@@ -21,7 +21,7 @@ U3 had an inflatable decoration and a pickup behind it. The object list tracked 
   the approach path; keep people, real parked vehicles and homemade reflector assemblies off it.
 - Keep the target's background free of other plausible reflectors; record the complete scene and surveyed positions.
 - Measure the target's position and motion independently and demonstrate association before interpreting a PCS edge.
-- Read a target absent from the object list as an association limit: a radar detection below threshold or a camera input outside the log can each be the source of the warning.
+- Read a gap in the object list at the target as an association limit: a radar detection below threshold or a camera input outside the log can each be the source of the warning.
 
 ## 2. Record the complete event
 
@@ -49,7 +49,7 @@ visual overlap give an approximate alignment.
 | C: brake-stage capture | facility-managed warning, brake-assist, pre-fill and autonomous-braking conditions, labelled separately | which car-bus commands and radar-bus values mark each stage |
 | D: disabled-output condition | facility-approved control/logging setup with the radar's car-bus output disabled | whether bus-1 threat/alarm signaling remains available; the car's warning or braking is recorded as observed |
 
-Keep runs without warning or braking, labelled **unexercised**: each records the conditions tried. The facility separates driver braking, brake assist and autonomous action; the
+Keep runs where warning and braking stay idle, labelled **unexercised**: each records the conditions tried. The facility separates driver braking, brake assist and autonomous action; the
 actuator source comes from the brake-pressure/force fields and stage labels, since a pedal press or deceleration trace is
 common to all three.
 
@@ -59,7 +59,7 @@ Repeated, stage-labelled events qualify an alarm or braking decision signal and 
 configuration. A safe AEB relay, universal target detection and restoration of stock behavior are separate
 questions that need their own fork-level design and safety review
 ([13](13_car_bus_messages.md#where-a-relay-stands-for-developers)).
-Short-TTC 0x195/0x196 activity without PCS action is a useful control, with its own label.
+Short-TTC 0x195/0x196 activity with PCS idle is a useful control, with its own label.
 
 Brake requests come from decoded, stage-labelled stock events; a warning-only signal stays a warning, and message
 replication is described as replication.

@@ -98,10 +98,10 @@ bus, openpilot longitudinal needs one of two setups:
 | radar's 0x343 | ends as openpilot's begins (3.487 s / 3.501 s after power-up, O4) | silent |
 | PCS / AEB (0x283 / 0x344) | **passed to the car**: the radar's AEB stays in place | **silent**: the radar's PCS / AEB request is off with its car-bus output |
 | 0x411 on the dash | the radar's: PCS on | openpilot's `40 20 00 00 10 01 00 00`: PCS off |
-| car's reaction | normal (0x320 bit 13 clear) | **0x320 bit 13** set (0x344 missing, below); dash "Pre-Collision System Malfunction" and PCS OFF lamp |
+| car's reaction | normal (0x320 bit 13 clear) | **0x320 bit 13** set (0x344 stopped, below); dash "Pre-Collision System Malfunction" and PCS OFF lamp |
 | bus 1 (decoder input) | running | running ([01](01_radar_bus.md#openpilots-radar-disable)) |
 
-**0x320 bit 13 = "0x344 missing" (●).** 0x320 (`VSC1S07`) is the gateway's brake-system status to the
+**0x320 bit 13 = "0x344 stopped" (●).** 0x320 (`VSC1S07`) is the gateway's brake-system status to the
 driving-support ECU. Its bit 13 (byte 1 bit 5; Toyota name `P2BRXMK`) sets about 0.15 s after the radar's 0x344
 (`ACC1F01`) stops and clears on the next 0x320 frame (20 Hz) once 0x344 is back. The presence of 0x344 alone clears it (table below): bit 13 stays clear with 0x344 present whether its `PCSOPR` bit
 (16, "PCS operational", 1 in the radar's idle frame) is 1 or 0, and idle 0x283 alone leaves it set.
@@ -226,7 +226,7 @@ How it would work:
    - The stages carry the reference names: alarm (`PCSALM`, `PCSWAR`, FCW in 0x411), brake pre-fill (`PREFILL`),
      brake assist, autonomous braking (0x283 `FORCE` and `STATE` 3, `PRECOLLISION_ACTIVE`; 0x344 `DSS1GDRV`
      deceleration).
-4. **Fail safe.** If bus 1 goes stale, a record fails its CRC, or openpilot stops, the relay drops to idle frames, and
+4. **Fail safe.** If bus 1 goes stale, a record's CRC mismatches, or openpilot stops, the relay drops to idle frames, and
    the dash shows PCS off (below). The relay adds one openpilot cycle of delay (10-30 ms) to the radar's own timing.
 5. **A panda safety mode that allows it.** Upstream panda passes 0x283 with bytes 0-5 zero. A fork would allow
    the radar's brake request with limits: force, duration, only while moving, and only while bus 1 is healthy.
@@ -240,7 +240,7 @@ candidate. The rule for any implementation:
 |---|---|---|
 | relay healthy (radar records arriving, openpilot running, panda in its AEB mode) | PCS on | as the radar's idle frame, `PCS_OFF` 0 |
 | any part unhealthy, or the relay unvalidated | PCS off | `PCS_OFF` 1, as upstream openpilot sends today |
-| openpilot not running | malfunction | the car's own check reports it |
+| openpilot stopped | malfunction | the car's own check reports it |
 
 "PCS on" also carries the radar's real alerts. The radar's own 0x411 reports a blocked or dirty sensor
 (`PCS_DUST2`) and faults (`PCS_INDICATOR` 2); a relay that sends the idle frame reports "all clear" whatever the radar's alerts say. The candidate bus-1

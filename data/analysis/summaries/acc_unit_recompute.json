@@ -157,7 +157,7 @@
     "coverage_windows": 1187
    },
    "inputs": "VID-6 addendum 2: data/derived/ars510_wheel_cell_mechanism_20261002/acc_independence.py (teacher dataset.parquet, ars510_video_looming_20261002/steps.parquet, ars510_native_quality_fields/slots_*.parquet, ars510_drift_mechanism/samples_{discovery,confirmation}.parquet); coverage: VID-7 data/derived/ars510_chain_interface_20261002 (decoder copy source/ars510/interface.py _acc_target_match); public summary video_truth.json acc_target_velocity",
-   "method": "acc_independence.py verbatim with O = stored oem_vrel x 1.25; three-cornered hat (N,O,L) as original. Old reproduced exactly. At 0.125 the 10-40 m ACC hat variance is ~1e-4 (sigma ~0.01): the ACC sits within noise of zero there, var(ACC-loom) halves 0.40 -> 0.19; 40-70 m unchanged at 0.54. The vision-model shared-error signal reads var(O-M) ratio 1.28/0.95 (0.77/0.63 at 0.1). Coverage is unit-invariant: the fusion gate is position/age/presence only (cost<1, margin>1, age>=60), so 38% / 11% stand without recomputation.",
+   "method": "acc_independence.py verbatim with O = stored oem_vrel x 1.25; three-cornered hat (N,O,L) as original. The original values reproduce exactly. At 0.125 the 10-40 m ACC hat variance is ~1e-4 (sigma ~0.01): the ACC sits within noise of zero there, var(ACC-loom) halves 0.40 -> 0.19; 40-70 m unchanged at 0.54. The vision-model shared-error signal reads var(O-M) ratio 1.28/0.95 (0.77/0.63 at 0.1). Coverage is unit-invariant: the fusion gate is position/age/presence only (cost<1, margin>1, age>=60), so 38% / 11% carry over unchanged at both units.",
    "status": "recomputed"
   },
   {

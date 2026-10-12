@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Replay logged drives through openpilot's own card -> radard -> plannerd, with a stock or an ARS510-patched opendbc.
 
-This is the end-to-end check of `openpilot/install.py`: nothing is simulated around the integration.
+This is the end-to-end check of `openpilot/install.py`: everything around the integration is openpilot's own code.
 openpilot's process_replay runs:
   - card: real fingerprinting on the logged CAN, the patched Toyota CarInterface, RadarInterface.update() on
     can_capnp_to_list() batches;
@@ -17,22 +17,22 @@ Run it once with a stock opendbc and once with a patched copy, then compare:
 
 - Pass consecutive segments of one drive in order. They are replayed as one stream, so track IDs and radard state
   carry across segment boundaries.
-- `--mpc-shadow DIR` points at a build from build_long_mpc_shadow.py if the checkout's acados solver is not built.
+- `--mpc-shadow DIR` points at a build from build_long_mpc_shadow.py; it supplies the acados solver for a source checkout before its scons build.
 - card fingerprints as on the car: FW versions come from the logged CarParams (the cached-FW path), then CAN
   fingerprinting runs on the logged frames. ARS510 detection therefore sees the radar FW, and bus 1 as it was at
   the start of the first segment.
 - CarParams.openpilotLongitudinalControl is cleared. Otherwise process_replay turns
   alpha long on, and on a RADAR_ACC Toyota card's startup then runs the UDS radar-disable routine. In
   process_replay card stalls after that routine (stock opendbc too): 80 carState messages per segment instead of
-  6000. radard and the planner do not depend on the toggle. On the car the radar keeps sending 0x80 after the real
+  6000. radard and the planner run identically at either toggle setting. On the car the radar keeps sending 0x80 after the real
   disable request (docs/01).
 - When logged carFw is present, fingerprintSource is set to "fw" so process_replay can reuse it, including logs
-  from forks that manually select the car. Without logged firmware the original fingerprint source is kept.
+  from forks that manually select the car. Logs that carry CAN fingerprinting only keep the original fingerprint source.
 
-Open-loop: ego motion stays as recorded. It shows what openpilot would have requested, not what the car would have
-done. Outputs:
+Open-loop: ego motion stays as recorded. It shows what openpilot would have requested; the car's own response is a
+separate quantity. Outputs:
 - <out>/<label>.ticks.csv.gz: one row per radarState. Its radar_valid column is False throughout in accelerated
-  replay (SubMaster frequency checks use wall time), stock and patched alike; the planner does not gate on it;
+  replay (SubMaster frequency checks use wall time), stock and patched alike; the planner runs regardless of it;
 - <out>/<label>.tracks.csv.gz: one row per radarTracks;
 - <out>/<label>.meta.json: CarParams, RadarInterface timing;
 - with --dump-points: <out>/<label>.points.csv.gz, every published radar point;
@@ -43,8 +43,8 @@ done. Outputs:
   - the cameras are symlinked;
   - the layout is `DIR/<label>/<dongle>|<route>/<seg>/rlog.zst`, which openpilot's Route(data_dir=...) reads.
   These are changed:
-  - radarState.valid is set from the replayed radarTracks.valid, because accelerated replay fails the frequency
-    checks and the UI would otherwise draw no lead;
+  - radarState.valid is set from the replayed radarTracks.valid, because accelerated replay violates the frequency
+    checks and the UI would otherwise hide the lead;
   - initData.params is emptied, because the recording's params (another fork, the VIN) break tools/clip;
   - modelV2 lane lines are cut to the 4 the current UI draws (FrogPilot's model publishes 6);
   - CarParams.openpilotLongitudinalControl is restored to the recorded value, because the UI draws the lead

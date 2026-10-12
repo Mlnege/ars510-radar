@@ -112,7 +112,7 @@ The code comes in two versions that drive identically:
   [docs/10](docs/10_research_directions.md#parts-of-the-openpilot-file) lists what each part costs and buys. The
   `acc` proposal is [`upstream/ars510_acc_target.py`](upstream/ars510_acc_target.py), 41 lines (26 code) with its
   [DBC](upstream/toyota_tss2_ars510.dbc). The fork build also keeps the radar's target summaries and the track-ID
-  relink as options; `fused` drives as well without them
+  relink as options; `fused` drives the same with both switched off
   ([docs/12](docs/12_kalman_filter.md#what-the-summaries-do)).
 
 | profile | install | what it does | use it for |
@@ -240,7 +240,7 @@ numbers and a glossary.
 | [10 Research directions](docs/10_research_directions.md) | open problems, the signals that would help most, the path to an upstream interface |
 | [11 Profiles compared](docs/11_profiles_compared.md) | `acc` and `fused` head to head and against vision only, which profile for what, driving pros and cons, assumptions, other openpilot radar interfaces |
 | [12 Kalman speed filter](docs/12_kalman_filter.md) | the `fused` profile's filter: model, gains, constants and their sources, what each part is worth, variants tested |
-| [13 Car-bus messages](docs/13_car_bus_messages.md) | the radar's nine Toyota driving-support messages on bus 0 (ACC command, PCS / AEB, lead distance), CAN filter versus radar disable, what happens to AEB, AEB without a filter |
+| [13 Car-bus messages](docs/13_car_bus_messages.md) | the radar's nine Toyota driving-support messages on bus 0 (ACC command, PCS / AEB, lead distance), CAN filter versus radar disable, what happens to AEB, AEB on an unfiltered radar line |
 | [14 Forks](docs/14_forks.md) | what sunnypilot, FrogPilot and StarPilot do with the radar lead, and what that does with this radar (replays of their own radard and MPC lead code) |
 | [15 Recording PCS / AEB events](docs/15_pcs_testing.md) | professional/passive recording specification: isolated targets, warning/brake stages, complete logs and interpretation limits |
 | [16 Routes and tests](docs/16_routes_and_tests.md) | thirteen capture procedures: ordinary routes, parked diagnostics, physical references, lifecycle/class/lane tests and what to send back |

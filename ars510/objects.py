@@ -57,7 +57,7 @@ MOVEMENT_CODE = NativeField("movement_code", 109, 3, 0.0, 1.0, "code", "likely")
 # Bit 13 is a separate raw flag (docs/03).
 RAW8_LOW5 = NativeField("raw8_low5", 8, 5, 0.0, 1.0, "code", "confirmed")
 RAW13_BIT = NativeField("raw13_bit", 13, 1, 0.0, 1.0, "bit", "raw")
-# Lane state 128|3: 3 ego lane, 2 right lane, 4 left lane; 1 / 5 / 7 = no lane weights (docs/03).
+# Lane state 128|3: 3 ego lane, 2 right lane, 4 left lane; 1 / 5 / 7 = all-zero lane weights (docs/03).
 RAW_WEIGHT_STATE128 = NativeField("raw_weight_state128", 128, 3, 0.0, 1.0, "code", "confirmed_structure")
 # Lane weights in 1/15 steps: 148|4 right lane, 152|4 left lane, 156|4 ego lane; nonzero triplets sum to 15 or 16
 # (docs/03). Raw wire values are kept as they are.
@@ -70,7 +70,7 @@ ONCOMING_FLAG = NativeField("oncoming_flag", 14, 1, 0.0, 1.0, "flag", "tested_se
 
 # Existence probability in percent (10-100); 20|3 is its bits 4-6, score // 16 (docs/03). Reaches 100 % at about age 21.
 EXISTENCE = NativeField("existence_pct", 16, 8, 0.0, 1.0, "%", "likely")
-# Predicted (not measured) record, the Continental "Meas = 0" state: common in a track's last records (docs/03).
+# Predicted record, the Continental "Meas = 0" state: common in a track's last records (docs/03).
 PREDICTED = NativeField("predicted", 107, 1, 0.0, 1.0, "flag", "likely")
 
 # Camera-association state 112|3: 0 radar only, 1 (rarely 2-4) while the camera has the vehicle. By day it is set inside
@@ -160,7 +160,7 @@ class NativeObject:
     raw8_low5: int | None = None  # 8|5 startup countdown while the motion code is 5
     raw13_bit: int | None = None  # 13|1 raw flag next to the startup code
     raw_weights148: tuple[int, int, int] | None = None  # 148/152/156|4 lane weights (right, left, ego) in 1/15 steps
-    raw_weight_state128: int | None = None  # 128|3 lane state: 3 ego, 2 right, 4 left lane; 1/5/7 no lane weights
+    raw_weight_state128: int | None = None  # 128|3 lane state: 3 ego, 2 right, 4 left lane; 1/5/7 all-zero lane weights
     vel_code: int = -1  # raw 64|10 code; 1023 is a saturated (invalid) reading
     v_lat_code: int = -1  # raw 74|10 code; 0 and 1023 are sentinels
     existence_pct: int | None = None  # 16|8 existence probability, percent

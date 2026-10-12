@@ -87,7 +87,7 @@ What the table shows:
 
 On the 26 held-out owner routes `acc` minus `fused` per moving hour (route-bootstrap 95 % CI, 19 routes) is −1.45 s of
 unnecessary braking (−2.79 … −0.26) and −22 lead flips (−36.5 … −3.3); the differences in hard (+0.39,
-0.0 … +1.24), mild and missed braking include zero. Pooling every drive not used for development (32 routes, 4.54 moving
+0.0 … +1.24), mild and missed braking include zero. Pooling every drive held out of development (32 routes, 4.54 moving
 h), `acc` has −0.84 s of unnecessary braking per hour (−1.72 … −0.13). Over every drive (94 routes, 21.45 moving h) the
 unnecessary-braking difference is −0.31 s per hour (−0.72 … +0.06) and the flip difference −22 per hour (−35.9 … −7.4).
 
@@ -226,7 +226,7 @@ What the radar adds, by profile:
 against `raw`'s 93, 0.88 radar-only braking events per hour (0.22 with the driver on the gas) against 1.75 (0.66), first
 request −0.03 s against −0.15 s, 41.9 % anticipation at ≤ −1 m/s² against 44.3 %. The ACC target supplies the rest of
 `fused`'s drop (16 hard ticks, 0 radar-only braking per hour). The filter alone is the behaviour of a `fused` track
-without a matched ACC target.
+whose lead comes from the object list alone.
 
 ## Driving experience: pros and cons
 

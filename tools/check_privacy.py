@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail if tracked text files contain identifiers of a real car, drive or person.
+"""Report identifiers of a real car, drive or person in tracked text files (exit status 1 when any is found).
 
     python tools/check_privacy.py            # scan every file git tracks (what CI runs)
     python tools/check_privacy.py FILE ...   # scan specific files
@@ -23,7 +23,7 @@ PATTERNS = {  # privacy-ok
   # a bare 10-hex route part next to the word "route" (for example a route named in a JSON note); needs a letter and a digit
   "openpilot route fragment": re.compile(r"\broute[ _:=\"']{1,3}(?=[0-9a-f]{0,9}[a-f])(?=[0-9a-f]{0,9}\d)[0-9a-f]{10}\b", re.I),  # privacy-ok
   "openpilot route name (date form)": re.compile(r"\b\d{4}-\d{2}-\d{2}--\d{2}-\d{2}-\d{2}\b"),  # privacy-ok
-  # 16 hex characters with both a digit and a letter, not a decimal fraction; the replay harness's fixed fake dongle
+  # 16 hex characters with both a digit and a letter; the replay harness's fixed fake dongle
   # id a510a510a510a510 is allowed
   "dongle id": re.compile(r"(?<![0-9a-fA-F.])(?!(?:a510){4})(?=[0-9a-f]{0,15}[a-f])(?=[0-9a-f]{0,15}\d)[0-9a-f]{16}(?![0-9a-fA-F])"),  # privacy-ok
   "Toyota VIN": re.compile(r"\b(?:JT|2T|4T|5T|JT)[A-HJ-NPR-Z0-9]{15}\b"),  # privacy-ok

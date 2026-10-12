@@ -60,7 +60,7 @@ OP=/path/to/openpilot
 cp -r $OP/opendbc_repo /tmp/opendbc_acc && python openpilot/install.py /tmp/opendbc_acc                      # acc, the default
 cp -r $OP/opendbc_repo /tmp/opendbc_fused && python openpilot/install.py /tmp/opendbc_fused --profile fused  # the all-tracks alternative
 PY=$OP/.venv/bin/python
-PYTHONPATH=$OP $PY tools/openpilot_replay/build_long_mpc_shadow.py --openpilot $OP --out op_shadow   # once, if not built with scons
+PYTHONPATH=$OP $PY tools/openpilot_replay/build_long_mpc_shadow.py --openpilot $OP --out op_shadow   # once, as an alternative to the scons build
 $PY tools/openpilot_replay/process_replay_ars510.py run --openpilot $OP --opendbc $OP/opendbc_repo --mpc-shadow op_shadow \
     --label vision --out pr --save-logs pr/logs route--0/rlog route--1/rlog
 $PY tools/openpilot_replay/process_replay_ars510.py run --openpilot $OP --opendbc /tmp/opendbc_acc --mpc-shadow op_shadow \
@@ -81,7 +81,7 @@ PYTHONPATH=$OP $PY $OP/openpilot/tools/clip/run.py "a510a510a510a510/<route>/<st
 To **plot**, open a saved `rlog.zst` in PlotJuggler: `longitudinalPlan.aTarget`, `radarState.leadOne.dRel` / `.vRel`,
 `radarTracks`. Replay is open loop: ego motion is as recorded, and "braking" means the planner's requested
 acceleration. With ffmpeg 8+, put [`tools/openpilot_replay/ffmpeg`](../tools/openpilot_replay/ffmpeg) first on `PATH`
-if clip rendering fails on `-vsync`.
+when clip rendering reports a `-vsync` error.
 
 Here `vision` is unmodified openpilot (vision-only leads on this car), `acc` the default install and `fused` the all-tracks
 install; another profile goes into its own opendbc copy (`install.py /tmp/opendbc_raw --profile raw`).
@@ -89,7 +89,7 @@ install; another profile goes into its own opendbc copy (`install.py /tmp/opendb
 ### Compare forks
 
 [14](14_forks.md) comes from `tools/fork_lead/`, which executes a fork's radard and `long_mpc.process_lead` unmodified
-(no openpilot runtime, no solver) on recorded ticks. Clone the forks, then:
+on recorded ticks (plain Python; these two are the only openpilot code). Clone the forks, then:
 
 ```bash
 export PYTHONPATH=$OP                      # openpilot's LogReader, as for decode_log.py
@@ -102,7 +102,7 @@ python tools/fork_lead/fork_synth.py --sunnypilot ~/sunnypilot --frogpilot ~/fro
 
 Pass the forks you have. The result is a proxy for the planner (a demand number on the lead trajectory each fork
 gives its MPC), suited to comparing forks and profiles; the planner's own request comes from the replay above. Its tests
-(`tests/test_fork_lead_tools.py`) run without a fork checkout.
+(`tests/test_fork_lead_tools.py`) run on this repo alone.
 
 ## Developing and testing a change
 

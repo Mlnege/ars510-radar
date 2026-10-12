@@ -272,7 +272,7 @@ def kalman_ablation() -> None:
 
 
 def kalman_combinations() -> None:
-    """Each tested version of the 2.0 filter: lines in the openpilot file of that time, driving numbers, pass or fail (27 drives)."""
+    """Each tested version of the 2.0 filter: lines in the openpilot file of that time, driving numbers, acceptance verdict (27 drives)."""
     C = json.loads((REPO / "data" / "analysis" / "summaries" / "fused_filter.json").read_text())["combinations_34_drives"]
     names = {"fused": "fused 2.0 (all parts)", "no_L": "− track-ID relink", "no_S": "− summaries", "no_RL": "− range fusion − relink",
              "no_SL": "− summaries − relink",

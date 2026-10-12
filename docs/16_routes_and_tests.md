@@ -89,7 +89,7 @@ and broadcast status ([13](13_car_bus_messages.md)). Catalog DID meanings are ca
 The prepared diagnostic probe saves responses and B4 (the radar CAN comes from a separate logger). A simultaneous broadcast comparison
 needs a separate compatible passive logger on a shared clock; otherwise record a separate normal-logging condition
 sequence and describe timing at the session level. Restart normal logging and verify recovery before normal use.
-Missing-message faults, blockage and object-list silence are three conditions; record each as it occurs, and the car's
+Dropped-message faults, blockage and object-list stalls are three conditions; record each as it occurs, and the car's
 own events cover electrical faults.
 
 ## T02: radar-reported ego speed
@@ -132,7 +132,7 @@ Code 160 is the initialization code; the measured zero comes from this survey. A
 2. Cover observable near/middle/far bands, including 60–120 m, subject to safe speed/gap and site limits. Collect
    60–120 seconds steady in each band, then three gentle speed-change/recovery repetitions where practical.
 3. Separate causes: lead steady/ego changes, ego approximately steady/lead changes, both steady. Include natural
-   ACC-target absence, competing targets and switches; retain every disagreement and missing output.
+   ACC-target idle spans, competing targets and switches; retain every disagreement and every dropped output.
 4. Project physical motion into the declared radar axes. Compare fixed equations, zero, scale, bias, tails and delay
    separately. Relative acceleration requires the ego acceleration term and a qualified derivative/integrated reference.
 
@@ -221,14 +221,14 @@ contribution comes from a professional facility test or access to the actual inp
 
 **Targets:** existence `16|8`, candidate score `184|8`, class `163|3` / confidence `115|5`, length `56|7`, width `216|6`, size-like `272|5`.
 
-1. With ego parked, independently label pedestrians, ridden bicycles, people walking bicycles, bicycles without
-   riders, motorcycles, cars and large vehicles where available. Pilot three distinct encounters per relevant category.
+1. With ego parked, independently label pedestrians, ridden bicycles, people walking bicycles, bicycles standing
+   alone, motorcycles, cars and large vehicles where available. Pilot three distinct encounters per relevant category.
 2. Measure dimensions and pose; capture stationary/moving and changed orientation at several ranges. These
    conditions separate measured size from templates. Labels come from the independent annotation, while the radar's
    size and speed codes are the quantities under test.
 3. Include roadside/overhead and unoccupied reflectors as candidate controls, with physical path/contact geometry.
    Define what makes a control a non-obstacle (a stationary object can still be an obstacle). Keep volunteers out of any approach path ([15](15_pcs_testing.md)).
-4. Keep early life, class changes, confidence changes, score drops and missing outputs. Label blind to the radar
+4. Keep early life, class changes, confidence changes, score drops and dropped outputs. Label blind to the radar
    codes. Class 5 cyclist/person hypotheses come with counterexamples as well as an overlapping projection.
 
 A few encounters test availability. Reliability/coverage and probability calibration use a larger
@@ -253,8 +253,8 @@ Cell roles and quality units take several lane geometries.
 **Targets:** 0x100, 0x195/196, 0x33E and car-bus PCS stages. Follow the professional/passive recording specification
 in [15](15_pcs_testing.md), including isolated target controls, synchronized reference/video, all-bus logs and driver actions.
 The recorded alarm stage covers the alarm; brake stages, disabled-radar signaling and target attribution take the events
-specified in [15](15_pcs_testing.md). Keep short-TTC states without PCS action as controls. Brake requests come from
-decoded stock events, and a missing-message replica is described as a replica.
+specified in [15](15_pcs_testing.md). Keep short-TTC states with PCS idle as controls. Brake requests come from
+decoded stock events, and a replica that substitutes for a message is described as a replica.
 
 ## T13: fresh road and parser validation
 
@@ -307,5 +307,5 @@ transfer with the maintainer; retain original instrument exports and quality fla
 reproduction commands belong in the repo when the result is ready.
 
 Before promoting a conclusion, verify that the intended condition occurred, physical identity/reference timing
-is adequate, absences and missing outputs stay visible, and conclusion-bearing numbers were checked a second way.
+is adequate, gaps and dropped outputs stay visible, and conclusion-bearing numbers were checked a second way.
 Report each result as supported, contradicted, inconclusive or unexercised.

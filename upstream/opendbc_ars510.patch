@@ -37,13 +37,13 @@ index 00000000..583cf690
 +      return ret
 +
 +    target, position = self.rcp.vl["ACC_TARGET_1"], self.rcp.vl["ACC_TARGET_2"]
-+    if target["STATE"] == 5 and position["PRESENT"]:  # 1 = no target, with every field zero
++    if target["STATE"] == 5 and position["PRESENT"]:  # 1 = idle, with every field zero
 +      pt = RadarData.RadarPoint()
 +      pt.trackId = int(target["TARGET_ID"])
 +      pt.dRel = position["LONG_DIST"]
 +      pt.yRel = position["LAT_DIST"]
 +      pt.vRel = target["REL_SPEED"]
-+      ret.points = [pt]  # assigned as a list: forks with capnp-backed structs (sunnypilot) have no append
++      ret.points = [pt]  # assigned as a list: forks with capnp-backed structs (sunnypilot) take list assignment only
 +    return ret
 diff --git a/opendbc/car/toyota/interface.py b/opendbc/car/toyota/interface.py
 index 2090e7f0..7319ca5d 100644
@@ -300,7 +300,7 @@ index 00000000..2e9d4a78
 +
 +CM_ "Continental ARS510 front radar (Toyota RAV4 2022-25, fwdRadar 8821F0R03100), radar bus: the target the radar's own ACC follows. The 0x80 object list and 0x85 metadata record span many frames and are decoded by ars510-radar (ars510/).";
 +CM_ BO_ 565 "ACC target, part 1: 50 Hz, content updated once per 60 ms radar cycle.";
-+CM_ SG_ 565 STATE "5 = target present, 1 = no target (all other fields zero).";
++CM_ SG_ 565 STATE "5 = target present, 1 = idle (all other fields zero).";
 +CM_ SG_ 565 REL_ACCEL "Target acceleration relative to ego.";
 +CM_ SG_ 565 REL_SPEED "Closing speed relative to ego, negative = closing.";
 +CM_ SG_ 565 TARGET_ID "Changes when the radar switches to a different target.";

@@ -62,10 +62,10 @@ What sunnypilot, FrogPilot and StarPilot each do with a radar lead, and how the 
 | situation | RadarData | effect in openpilot |
 |---|---|---|
 | record completed (~16.7 Hz) | points | radard fuses them with the vision leads |
-| between completed records, last record still fresh | no message (`None`) | radard retains the last scan; a genuinely empty completed scan still clears its tracks |
+| between completed records, last record still fresh | `None` returned | radard retains the last scan; a genuinely empty completed scan still clears its tracks |
 | before the first record (boot ~6 s) | empty list | vision-only leads, as on a radarless car |
-| no record for > 0.5 s after the first | `radarUnavailableTemporary` | radarState invalid → `commIssue` (lateral too); with openpilot long also `radarTempUnavailable` |
-| CRC-failed record | dropped | the 0.5 s rule covers sustained loss |
+| last record older than 0.5 s (after the first) | `radarUnavailableTemporary` | radarState invalid → `commIssue` (lateral too); with openpilot long also `radarTempUnavailable` |
+| record with a bad CRC | dropped | the 0.5 s rule covers sustained loss |
 
 ### Built into a fork's opendbc (car-model routing)
 
@@ -132,7 +132,7 @@ brake presses unless noted):
 | first braking request vs vision only, mean | −0.04 s | −0.01 s | −0.15 s |
 | braking only the radar asked for, per hour (driver on the gas) | 0 (0) | 0 (0) | 1.75 (0.66) |
 
-"Hard radar-only" means the planner asks for ≤ −2 m/s² while the same drive without radar asks for ≥ −0.5 m/s²: braking that only the radar wanted. `raw` reacts earlier than `fused` before some driver brakes, partly from
+"Hard radar-only" means the planner asks for ≤ −2 m/s² while the vision-only replay of the same drive asks for ≥ −0.5 m/s²: braking that only the radar wanted. `raw` reacts earlier than `fused` before some driver brakes, partly from
 real head starts and partly from an over-closing bias, the bias behind its 93 hard radar-only ticks against `fused`'s 16
 ([12](12_kalman_filter.md#the-model)).
 
@@ -154,12 +154,12 @@ radard (openpilot, September 2026) runs at the model's 20 Hz:
 
 - **Kalman filter on vLead only.** One filter per track ID; a NaN vRel would stay in it for good, so the interface
   publishes finite values only. A new track ID resets it; `raw` therefore re-links IDs across short losses, while
-  `fused` hands radard an already filtered speed, and the replays give the same braking counts with and without the relink.
-- **Matching needs a vision lead.** radard matches a radar track to the vision lead while the lead probability is
+  `fused` hands radard an already filtered speed, and the replays give the same braking counts with the relink on or off.
+- **Matching starts from a vision lead.** radard matches a radar track to the vision lead while the lead probability is
   above 0.5, with a distance gate of max(5 m, 25%) and a permissive velocity check. Matching runs afresh every tick,
   so the radar lead follows whichever car the camera currently selects.
 - **Wide lateral weighting.** radard scores distance, lateral position and speed against the camera's lead, each
-  weighted by the camera's uncertainty, and checks only distance and speed afterwards. If the true lead is missing from the radar list, an
+  weighted by the camera's uncertainty, and checks only distance and speed afterwards. If the true lead is dropped from the radar list, an
   adjacent-lane object at the right distance and speed becomes the lead 34-75% of the time, still 34-46% at 6 m
   offset. `fused`'s path gate withholds such tracks beyond 15 m ([12](12_kalman_filter.md#path-gate)); the radar's
   own lane weights ([03](03_slot_fields.md#lane-assignment)) could supply a gate inside radard.
@@ -167,7 +167,7 @@ radard (openpilot, September 2026) runs at the model's 20 Hz:
   ![lateral gate](img/analysis/radard_lateral_gate.png)
 
 - **Low-speed override** (ego < 4 m/s): a radar-only lead within ±1 m laterally and 0.75-25 m ahead is accepted
-  without vision.
+  on the radar alone.
 - **16.7 Hz into 20 Hz.** radard re-uses the latest radar record on every tick, so 17.5% of ticks repeat the previous
   vRel; this adds about 1% to `aLeadK` roughness.
 - **Stopped vehicles** first seen stopped come mostly from vision ([02](02_object_list.md#what-the-radar-lists)).

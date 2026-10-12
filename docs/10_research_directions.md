@@ -31,8 +31,8 @@ questions ([upstream interface](#towards-an-upstream-comma-interface), [parts](#
 3. **A controlled factory-camera comparison.** *What does the factory camera contribute to the ACC target's selection and
    kinematics?* The target's distance and speed hold steady where the camera's association (`112|3`) changes (steps at
    association onset: 0.06 m and −0.01 m/s), the camera's bus-1 frames arrive continuously (longest gap 0.78 s in 698
-   one-minute segments), and the radar takes far targets without association (539 day acquisitions beyond 60 m, 0
-   associated; [05](05_acc_target_and_support.md),
+   one-minute segments), and the radar acquires far targets while the association field reads 0 (539 day acquisitions beyond 60 m, all
+   with association 0; [05](05_acc_target_and_support.md),
    [`acc_target_camera.json`](../data/analysis/summaries/acc_target_camera.json)). *Data:* a paired parked or
    controlled-site intervention, clear against covered, on matched target paths
    ([T09](16_routes_and_tests.md#t09-factory-camera-dependence)); selection, kinematics and function restriction are
@@ -167,7 +167,7 @@ The goal: tell a velocity excursion from a real closing within about 1 s ([07](0
 
 ## Keeping AEB under openpilot longitudinal
 
-*Can a relay bring the radar's AEB back under openpilot longitudinal?* Without a radar CAN filter, openpilot longitudinal
+*Can a relay bring the radar's AEB back under openpilot longitudinal?* On an unfiltered radar line, openpilot longitudinal
 disables the radar and its AEB. The disabled radar keeps assessing threats on bus 1, and openpilot would pass its brake
 decision to the car as 0x283 / 0x344, keep 0x344 running for the brake system's link check, and show PCS on the dash only
 while the relay is healthy. How it would work, and what is needed first, are in
@@ -192,7 +192,7 @@ What other radars in openpilot send (signals in their DBCs), the ARS510 counterp
 | the radar's own **relative** speed | `REL_SPEED` on Toyota, Honda, Hyundai, Chrysler | over-ground speed (`64\|10`) minus 0xB4 ego speed | the ACC target carries a relative speed for the followed car |
 | relative **acceleration** | Hyundai `REL_ACCEL`, Tesla `LongAccel` | `84\|10` over-ground acceleration (◐, lags about 0.5 s); the ACC target's relative acceleration (●) | calibrate `84\|10` against independent motion |
 | **lateral speed** | Tesla `LatSpeed` | `74\|10` (◐, 0.147-0.155 m/s per code against the gyro, `decode_references.json`) | already published as `yvRel` where forks carry it |
-| radar **fault / blockage** status | Honda `RADAR_STATE`, Tesla `sensorBlocked` | the interface reports "no record for 0.5 s"; candidates (○): Toyota's car-bus 0x411 `PCS_HUD` alerts (`PCS_DUST2` sensor blocked, `PCS_INDICATOR` = 2 fault), the camera's object-list acknowledgement (0x101 byte 0, 0x197), and a long idle run of 0x680 while driving (longest 1.0 s in 7.8 h of normal driving) | parked baseline/covered/recovery diagnostic and passive captures ([T01](16_routes_and_tests.md#t01-parked-startup-and-status)); naturally occurring warnings from ordinary drives, kept in the logs |
+| radar **fault / blockage** status | Honda `RADAR_STATE`, Tesla `sensorBlocked` | the interface reports `radarUnavailableTemporary` once the last record is older than 0.5 s; candidates (○): Toyota's car-bus 0x411 `PCS_HUD` alerts (`PCS_DUST2` sensor blocked, `PCS_INDICATOR` = 2 fault), the camera's object-list acknowledgement (0x101 byte 0, 0x197), and a long idle run of 0x680 while driving (longest 1.0 s in 7.8 h of normal driving) | parked baseline/covered/recovery diagnostic and passive captures ([T01](16_routes_and_tests.md#t01-parked-startup-and-status)); naturally occurring warnings from ordinary drives, kept in the logs |
 | measurement **uncertainty** | (rarely exposed) | `224/232/240/248\|7` family, scaled against the radar's ACC target | physical units would let radard weight radar against vision |
 | plain **DBC** decode through `CANParser` | every upstream interface | a 742-byte record split over 106 frames | a reassembler of about 80 lines (`ars510/transport.py`) and a CRC check |
 
@@ -240,7 +240,7 @@ The `acc` proposal, [`upstream/opendbc_ars510.patch`](../upstream/opendbc_ars510
 With the patch, opendbc's Toyota, platform-config, DBC-parser and car-interface tests pass and its ruff rules hold.
 Through opendbc's own CANParser the DBC decodes the bundled frames exactly like the reference decoder
 (`tests/test_acc_target_parser.py` checks the same in CI with a minimal parser). `install.py --profile acc` installs the
-same file and DBC on a fork. Why the ACC target and not the object list: [the ACC target alone](#the-acc-target-alone--candidate).
+same file and DBC on a fork. Why the ACC target replaces the object list as the lead source: [the ACC target alone](#the-acc-target-alone--candidate).
 
 If upstream wants every radar track instead, the candidate is the single file
 [`upstream/ars510_radar.py`](../upstream/ars510_radar.py) (227 lines, 187 of them code). It holds the reassembler, the slot
@@ -274,11 +274,11 @@ What upstream review is likely to ask, from recent openpilot / opendbc radar PRs
 
 ### Parts of the openpilot file
 
-Each part of [`upstream/ars510_radar.py`](../upstream/ars510_radar.py) (`fused`), its code lines (no comments, docstrings or
-blank lines; shared constants counted once, counted as `tests/test_openpilot_file_ledger.py` does), what removing it costs
+Each part of [`upstream/ars510_radar.py`](../upstream/ars510_radar.py) (`fused`), its code lines (statements only, comments, docstrings and
+blank lines left out of the count; shared constants counted once, counted as `tests/test_openpilot_file_ledger.py` does), what removing it costs
 on the 27 replay drives, and its status for an upstream PR. The `acc` file has 26 code lines counted the same way.
 
-| part | code lines | since | without it | for upstream |
+| part | code lines | since | cost of removal | for upstream |
 |---|---|---|---|---|
 | transport, CRC, slot decode, track IDs, ego speed, RadarInterface wrapper | 103 | 1.0 | the car runs on vision only | required |
 | ACC target decode and association | 27 | 2.0 (range scale 0.4 x since 2.3) | +24 unjustified hard ticks on 27 drives; with the 0.25 x scale, one road late brake -1.47 -> -2.36 m/s2 | keep |
@@ -357,12 +357,12 @@ Replayed over every drive set (16.9 moving h, 62 routes, unchanged radard and pl
   - hard, mild and missed braking tie within their intervals. Its one hard episode is a hold at 0.3 m/s, 1.3 m from an
     object, where the oracle asks for −2.65 m/s² too.
 
-Each part earns its line, by what breaks without it (replays of every drive set):
+Each part earns its line, by what breaks when it is removed (replays of every drive set):
 - **Target id as track id.** The id restarts radard's per-track filter at a target change; with a constant id the filter carries the old target's speed into the new
   one: unnecessary braking 19.2 → 37.2 s, hard episodes 13 → 16.
 - **Lateral position.** At 0, radard's low-speed rule (points within 1 m of the path) takes targets that sit off the
   path: hard braking while moving 5 → 7, mild 22 → 27.
-- **The radar's target-present flags.** They remove the point of an absent target; without them it becomes a point at 0 m, which radard keeps
+- **The radar's target-present flags.** They remove the point of an idle target; with the flags dropped it becomes a point at 0 m, which radard keeps
   switching to: lead flips 302 → 342 per hour, mild 30 → 32.
 - **Reporting at 20 Hz.** Replay runs radard in simulation mode and shows the same results at 100 Hz; on the car radard
   accepts radarTracks at 8-24 Hz.

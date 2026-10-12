@@ -43,7 +43,7 @@ planner are readable), StarPilot `StarPilot` 2a12dbd.
 | radard | openpilot's (its change is Hyundai-only) | openpilot's plus the rows below | openpilot's plus the rows below |
 | camera confirmation of a lead | peak-held probability (0.2 s decay) > 0.5 | per-frame probability > 0.35 (setting, 0.25-0.5) | peak-held probability (0.2 s decay) > 0.35 (setting, 0.25-0.5) |
 | match of a track to the vision lead | distance, lateral and speed weights; distance and speed sanity | the same | the same plus a lateral sanity check; keeps the previous track if it only just misses the gate |
-| radar-only lead | ego below 4 m/s, track within ±1 m laterally and 0.75-25 m ahead | the same, plus any moving in-lane track after about 0.5 s with no camera lead (the "far lead") | the same as sunnypilot, with a 3-frame persistence gate after standstill |
+| radar-only lead | ego below 4 m/s, track within ±1 m laterally and 0.75-25 m ahead | the same, plus any moving in-lane track after about 0.5 s while the camera lead is empty (the "far lead") | the same as sunnypilot, with a 3-frame persistence gate after standstill |
 | lead acceleration decay (`aLeadTau`) | 1.5 s | 1.5 s | 0.6 s |
 | lead path given to the MPC | openpilot's: radar `dRel`, `vLead`, `aLeadK`, decaying | Human Following on (default, model v9): radar `dRel` and `vLead` at t = 0, the model's deltas after. Off: openpilot's | the same vision-model path (radar sets the start, the model the deltas) while the lead brakes under 0.5 m/s² and its time to collision stays above 7 s; otherwise openpilot's, through `lead_v_filter` / `lead_a_filter` |
 | smoothing in the planner | 0 s | 0 s | lead speed and acceleration filters: 0 s below 47 mph, 1.2 s at 65 mph and above |
@@ -54,7 +54,7 @@ planner are readable), StarPilot `StarPilot` 2a12dbd.
 **A radar speed error, with the truth known.** A lead pace-matched to the ego car at 30 m/s; the radar's closing speed
 reads too fast (a synthetic profile: it ramps up over 1.5 s, holds 1 s and decays over 2 s; the measured excursions in
 [07](07_velocity_excursions.md) ramp up over about 1 s).
-Extra braking demand (m/s², proxy) over the same fork without the error, gap 45 m:
+Extra braking demand (m/s², proxy) over the same fork fed error-free input, gap 45 m:
 
 | error | sunnypilot | FrogPilot, Human Following off | StarPilot | FrogPilot, default |
 |---|---|---|---|---|
@@ -86,7 +86,7 @@ are braking that vision alone would have asked for and the radar left out.
 **Radar-only leads.** Of the lead time, 80-85% has a radar-sourced lead and 0.4-0.7% a radar-only one, on every fork.
 FrogPilot's far-lead path takes an in-lane moving track that only the radar reports: with the scene otherwise empty it
 did so after 0.5 s in the synthetic case (peak demand 0.74 m/s² for a 10 m/s slower object, 1.49 for 20 m/s slower),
-while sunnypilot and StarPilot kept the vision-only lead. On the drives it produced 11 leads in 37 min with `fused` (15 with `raw`) that no other fork took (median
+while sunnypilot and StarPilot kept the vision-only lead. On the drives it produced 11 leads in 37 min with `fused` (15 with `raw`) that the other forks left to the vision-only lead (median
 0.15 s, longest 0.9 s); 2 would have asked for at least 1.0 m/s².
 
 **StarPilot's two paths.** The legacy path (openpilot's, through the filters) runs 12% of the lead time with vision

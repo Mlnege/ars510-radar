@@ -36,7 +36,7 @@
    "filter_tau_s": 0.5,
    "threshold": 0.63,
    "requires": "moving > 1 m/s, between the model's lane lines, nearer than the model path end",
-   "applies": "when no lead was matched and low_speed_override is set (leadOne)"
+   "applies": "when the lead match comes back empty and low_speed_override is set (leadOne)"
   },
   "frogpilot_model_path": "radar sets dRel and vLead at t=0; the model supplies the deltas; aLeadK / aLeadTau ignored; braking leads take the same path",
   "starpilot_model_path": {

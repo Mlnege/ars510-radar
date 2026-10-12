@@ -31,11 +31,11 @@ class RadarInterface(RadarInterfaceBase):
       return ret
 
     target, position = self.rcp.vl["ACC_TARGET_1"], self.rcp.vl["ACC_TARGET_2"]
-    if target["STATE"] == 5 and position["PRESENT"]:  # 1 = no target, with every field zero
+    if target["STATE"] == 5 and position["PRESENT"]:  # 1 = idle, with every field zero
       pt = RadarData.RadarPoint()
       pt.trackId = int(target["TARGET_ID"])
       pt.dRel = position["LONG_DIST"]
       pt.yRel = position["LAT_DIST"]
       pt.vRel = target["REL_SPEED"]
-      ret.points = [pt]  # assigned as a list: forks with capnp-backed structs (sunnypilot) have no append
+      ret.points = [pt]  # assigned as a list: forks with capnp-backed structs (sunnypilot) take list assignment only
     return ret

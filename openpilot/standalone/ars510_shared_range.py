@@ -1,11 +1,11 @@
 """Toyota / Continental ARS510 front radar: every object plus the radar's ACC target, one shared range model (research profile `shared_range`).
 
-Protocol (no estimation): the object list (0x80, one 742-byte record over 106 frames, CRC32) gives up to 20 slots whose
+Protocol (decoding only): the object list (0x80, one 742-byte record over 106 frames, CRC32) gives up to 20 slots whose
 age counts up while the radar keeps an object, which gives track IDs; the ACC target (0x235 / 0x237) is published as
 one more track. Estimation: every track is the same two-state Kalman filter (range, range rate) with a random-
 acceleration process and a traffic prior on its range rate (0 +- PRIOR_SIGMA). Its readings are weighted by their own
-uncertainty: object-list range RANGE_FRAC x range (the slot speed is not used: its slow, correlated errors are not
-the white noise a filter assumes, docs/07); ACC target range ACC_RANGE_SIGMA and closing speed ACC_SIGMA.
+uncertainty: object-list range RANGE_FRAC x range (the slot speed stays out: its errors are slow and correlated, while a filter
+assumes white noise, docs/07); ACC target range ACC_RANGE_SIGMA and closing speed ACC_SIGMA.
 Research only: the object list's slow, correlated errors reach the planner (docs/10, "The ACC target alone").
 """
 import zlib
@@ -16,7 +16,7 @@ from opendbc.car.interfaces import RadarInterfaceBase
 RADAR_BUS, OBJECTS_ADDR, ACC_SPEED_ADDR, ACC_POS_ADDR = 1, 0x80, 0x235, 0x237
 RECORD_FRAMES, RECORD_LEN, SLOT_START, SLOT_LEN, SLOTS = 106, 742, 17, 36, 20
 IDLE_SLOT = bytes.fromhex("FCE00000A0F07F00FFFDF71FFFA100F807000F0008000000000000000000000000000000")
-STALE_S = 0.5  # protocol: older ego speed or radar data is missing data
+STALE_S = 0.5  # protocol: ego speed or radar data older than this is stale
 ACC_TRACK = 1 << 20  # protocol: ACC target ids live above the object ids
 
 PRIOR_SIGMA = 2.0  # m/s: spread of a followed car's speed relative to ego (1.95 on every drive set)
@@ -52,7 +52,7 @@ class RadarInterface(RadarInterfaceBase):
           self.acc_pos = (be_bits(dat, 39, 13) * 0.025, (be_bits(dat, 27, 12) - 2000) * 0.01) if be_bits(dat, 10, 1) else None
         elif src == RADAR_BUS and address == OBJECTS_ADDR and len(dat) == 8:
           record = self.reassemble(dat) or record
-    if record is None:  # protocol: one report per radar cycle; without one, report missing data at 20 Hz
+    if record is None:  # protocol: one report per radar cycle; between records, report stale data at 20 Hz
       if t is None or self.frame % 5 != 0 or (self.last_t is not None and t - self.last_t <= STALE_S):
         return None
       ret = structs.RadarData()
@@ -68,7 +68,7 @@ class RadarInterface(RadarInterfaceBase):
       pt.trackId, pt.yRel = tid, y
       pt.dRel, pt.vRel = self.filter(tid, t, z)
       pts.append(pt)
-    ret.points = pts  # assigned as a list: forks with capnp-backed structs (sunnypilot) have no append
+    ret.points = pts  # assigned as a list: forks with capnp-backed structs (sunnypilot) take list assignment only
     self.kf = {k: v for k, v in self.kf.items() if t - v[0] <= STALE_S}
     return ret
 

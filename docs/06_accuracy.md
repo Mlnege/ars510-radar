@@ -202,8 +202,8 @@ for the object-list range of the same car ([`acc_fields.json`](../data/analysis/
 - **Against the camera** (within 60 m, tracks with a long camera chain): the radar track keeps one camera identity for
   at least 95% of its life on A 21 / 21, B 28 / 36 and C 28 / 30 tracks.
 - **Re-link:** `raw` re-links a track the radar re-initialises within 3.5 s near its predicted position, so radard keeps
-  its filter state across short losses; with `fused`'s speed filter the replays brake the same with or without it (lead-source switches 1,770 vs 1,772,
-  [`fused_filter.json`](../data/analysis/summaries/fused_filter.json)), so `fused` leaves it off. `acc` takes the radar's target ID as the track ID.
+  its filter state across short losses; with `fused`'s speed filter the replays brake the same with the re-link on or off (lead-source switches 1,770 vs 1,772,
+  [`fused_filter.json`](../data/analysis/summaries/fused_filter.json)), so `fused` runs with it off. `acc` takes the radar's target ID as the track ID.
 
 ## Object list and ACC target side by side
 

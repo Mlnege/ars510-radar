@@ -149,7 +149,7 @@ Two companion frames at the same 50 Hz describe the same target (`support.parse_
   includes stationary objects as narrow as 23 cm (median 50 cm, at a median 31 m, on 22 routes)
   ([`object_size_provenance.json`](../data/analysis/summaries/object_size_provenance.json)). The radar's target choice
   includes objects far narrower than a vehicle.
-- **Width.** Zero exactly while there is no target. The car class reads 140-220 cm (median 171, clipped at 140), the truck
+- **Width.** Zero exactly while the ACC target is idle. The car class reads 140-220 cm (median 171, clipped at 140), the truck
   class 200-280 cm (exactly 200 on 97 % of its frames); cars read about 175 cm inside 30 m and 165 cm at 90 m.
 - **Object-list flag.** Set on 88-95 % of target frames when the object list holds one to four objects and on 0.2 % when
   it is empty; 99 % when an object-list track sits at the target's position.
@@ -165,7 +165,7 @@ internal tracker: 0x191 / 0x193 its lifecycle and class, 0x192 / 0x194 its posit
 
 | bits (LE) | field |
 |---|---|
-| `1\|7` | score: 91-100 active, 127 none |
+| `1\|7` | score: 91-100 active, 127 idle |
 | `9\|7` | target age in cycles, saturates at 126 |
 | `26\|6` | pair-local target code; can move between pairs; every value 0-63 occurs in active frames |
 | `17\|7` | 100 while a target is present |
@@ -311,7 +311,7 @@ ACC target (◐). `support.parse_0x680` decodes it (big-endian fields, MSB-first
   same-direction vehicle in 13%, an oncoming one in 3%. While driving, the 0x80 object list holds the moving objects
   ([02](02_object_list.md#what-the-radar-lists)); 0x680 reports the stationary ones, one at a time.
 - **Idle** payload `00 00 08 00 80 00 80 0A` appears in 0.12% of frames above 5 m/s and at most 1.0 s at a time
-  in 7.8 h, so a long idle run while driving is a candidate "radar sees nothing" indicator
+  in 7.8 h, so a long idle run while driving is a candidate "empty radar" indicator
   ([10](10_research_directions.md)).
 
 Numbers: [`object_stream_0x680.json`](../data/analysis/summaries/object_stream_0x680.json).
