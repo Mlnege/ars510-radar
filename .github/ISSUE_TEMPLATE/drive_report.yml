@@ -12,7 +12,7 @@ body:
     id: car
     attributes:
       label: Car and model year
-      placeholder: RAV4 2023 hybrid
+      placeholder: RAV4 2023 hybrid, C-HR 2021, Yaris 2023
     validations:
       required: true
   - type: input

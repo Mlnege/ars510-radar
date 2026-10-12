@@ -4,8 +4,8 @@ Installed by `openpilot/install.py` as `opendbc/car/toyota/ars510_radar_interfac
 decoder package as `opendbc/car/toyota/ars510/`. The installer appends a marked block to the end of
 `opendbc/car/toyota/interface.py` that calls `hook_car_interface(CarInterface)`; every other file of the fork stays as shipped,
 so the same install works on openpilot and its forks (sunnypilot, StarPilot, CarrotPilot, FrogPilot-style trees):
-  - detection: the radar-ACC RAV4 2022 and 2023-25 platforms (ARS510_PLATFORMS) get radarUnavailable = False (stock
-    keeps radar-ACC Toyotas radar-unavailable); C-HR and Yaris keep the fork's behaviour;
+  - detection: the radar-ACC platforms (ARS510_PLATFORMS: RAV4 2022 and 2023-25, C-HR, Yaris) get
+    radarUnavailable = False (stock keeps radar-ACC Toyotas radar-unavailable);
   - tracks: `CarInterface.RadarInterface` becomes a thin dispatcher that builds `Ars510RadarInterface` for such a car
     and the fork's own RadarInterface otherwise. ToyotaFlags stays as shipped, so fork flag bits stay free.
 Worth knowing (docs/07, docs/08, docs/12):
@@ -50,9 +50,12 @@ STANDALONE = {"acc": "ars510_acc_target", "shared_speed": "ars510_shared_speed",
 PROFILES = {"fused": FUSED_CONFIG, "openpilot": None, "raw": BASE_CONFIG, "colored": COLORED_CONFIG, **{k: k for k in STANDALONE}}
 PROFILE = PROFILES["acc"]
 
-# Radar-ACC RAV4 platforms: both radar firmwares in openpilot's fingerprints (8821F0R01100, 8821F0R03100) are the
-# Continental ARS510 and send the same bus-1 messages (docs/01), so the car model selects the parser.
-ARS510_PLATFORMS = {"TOYOTA_RAV4_TSS2_2022", "TOYOTA_RAV4_TSS2_2023"}
+# Radar-ACC platforms: every radar firmware they list (RAV4 8821F0R01100 / 8821F0R03100, C-HR 8821FF41xx00, Yaris
+# 8821F0D0xx00) is the Continental ARS510 sending the same bus-1 messages (docs/01), so the car model selects the parser.
+# The RAV4s carry the replay and road evidence; C-HR and Yaris are enabled for testing.
+ARS510_PLATFORMS = {"TOYOTA_RAV4_TSS2_2022", "TOYOTA_RAV4_TSS2_2023", "TOYOTA_CHR_TSS2", "TOYOTA_YARIS"}
+# The object-list profiles need the 0xB4 wheel speed, which the Yaris does not send: it runs `acc` whatever the profile.
+ACC_ONLY_PLATFORMS = {"TOYOTA_YARIS"}
 
 STALE_S = 0.5  # radard leaves track-content staleness to this interface
 NO_RECORD_WARN_S = 15.0
@@ -66,10 +69,11 @@ class Ars510RadarInterface(RadarInterfaceBase):
   def __init__(self, CP, *args, **kwargs):  # forks add arguments (sunnypilot: CP_SP)
     super().__init__(CP, *args, **kwargs)
     self.standalone = None
-    if isinstance(PROFILE, str):  # a standalone file: a complete RadarInterface of its own (frames, cadence, staleness)
-      self.standalone = importlib.import_module(f"opendbc.car.toyota.{STANDALONE[PROFILE]}").RadarInterface(CP, *args, **kwargs)
+    profile = "acc" if str(CP.carFingerprint) in ACC_ONLY_PLATFORMS else PROFILE
+    if isinstance(profile, str):  # a standalone file: a complete RadarInterface of its own (frames, cadence, staleness)
+      self.standalone = importlib.import_module(f"opendbc.car.toyota.{STANDALONE[profile]}").RadarInterface(CP, *args, **kwargs)
     else:
-      self.ars = UpstreamCandidate() if PROFILE is None else Ars510NativeRadarInterface(replace(PROFILE, include_metadata=False))
+      self.ars = UpstreamCandidate() if profile is None else Ars510NativeRadarInterface(replace(profile, include_metadata=False))
     self.start_s: float | None = None
     self.last_record_s: float | None = None
     self.warned = False
@@ -157,7 +161,7 @@ def _radar_acc(flags) -> bool:
 
 
 def detect(ret, fingerprint, car_fw) -> bool:
-  """ARS510: a radar-ACC RAV4 2022 or 2023-25 (the car model; works at a cold start, before the radar sends)."""
+  """ARS510: a radar-ACC RAV4 2022 / 2023-25, C-HR or Yaris (the car model; works at a cold start, before the radar sends)."""
   return _radar_acc(ret.flags) and str(ret.carFingerprint) in ARS510_PLATFORMS
 
 

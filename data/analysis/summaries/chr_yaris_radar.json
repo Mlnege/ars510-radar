@@ -115,5 +115,5 @@
   "mismatches": 0,
   "signals": "every signal of ACC_TARGET_1-4 in upstream/toyota_tss2_ars510.dbc through opendbc's CANParser against ars510.support (parse_acc_target, parse_0x239, parse_0x23b)"
  },
- "consequence": "Not enabled: the integration and the upstream proposal keep C-HR and Yaris radarless until a drive with traffic validates them. Enabling one is a radar DBC entry (toyota_tss2_ars510) in values.py and the platform in the installer hook's ARS510_PLATFORMS; fused would also need the Yaris ego speed source."
+ "consequence": "The community integration enables both platforms for testing (installer hook ARS510_PLATFORMS; the Yaris runs acc whatever the profile, since it sends no 0xB4 wheel speed). The upstream proposal keeps them radarless until a drive with traffic validates them; enabling one there is a radar DBC entry (toyota_tss2_ars510) in values.py."
 }
