@@ -69,11 +69,11 @@
   "lead_accel_mps2": 1.0
  },
  "learned_noise_importance": {
-  "s240": 0.4767,
-  "v_ego": 0.2879,
-  "acc84": 0.1127,
-  "s200": 0.0691,
-  "y": 0.0674
+  "s240": 0.3577,
+  "v_ego": 0.2219,
+  "acc84": 0.096,
+  "d": 0.0675,
+  "y": 0.0623
  },
  "replay_34_drives": {
   "fused": {
@@ -912,5 +912,6 @@
    },
    "routes": 62
   }
- }
+ },
+ "learned_noise_importance_note": "Gradient-boosting importance at the 0.125 m/s unit; the ranking s240 > v_ego > acc84 is the same as at 0.1 m/s (0.53 / 0.27 / 0.11), and the values vary by about 0.05 between runs."
 }

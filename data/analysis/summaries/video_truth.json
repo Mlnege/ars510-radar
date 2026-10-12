@@ -58,13 +58,13 @@
   "verification_scope": "Slope, decile R2 and range-stratified rank correlation recomputed; transfer/bootstrap/AUC outputs are those of the exploratory report"
  },
  "acc_target_velocity": {
-  "units_note": "Measured with the ACC speed at 0.1 m/s per code. At 0.125 (acc_unit_recompute.json) the 10-40 m ACC sigma is about 0.01 m/s and 40-70 m stays 0.54; coverage 38 % / 11 % is unit-invariant.",
+  "units_note": "At 0.125 m/s per code (acc_unit_recompute.json, claim 3): the 10-40 m ACC sigma is about 0.01 m/s (hat estimates 0.0001-0.134 by triple) and 40-70 m is 0.54; coverage 38 % / 11 % is unit-invariant.",
   "error_correlation_with_vision_model_40_70m": 0.5,
   "coverage_of_40_130m_windows": 0.38,
   "coverage_beyond_80m": 0.11,
   "conditional_model_sigma_mps_10_40m": {
    "native": 0.55,
-   "acc": 0.31,
+   "acc": 0.01,
    "vision_model": 0.67,
    "looming": 0.57
   },
