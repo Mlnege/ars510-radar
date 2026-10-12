@@ -43,7 +43,7 @@ def check_acc_profile(RI, check) -> None:
         step = steps.setdefault(int(float(r["t_s"]) * 100), [])
         step.append((int(r["address"], 16), bytes.fromhex(r["data_hex"]), int(r["bus"])))
         if r["address"] == "0x237":
-          step.append((0x239, ((1 + n237 // 3) * 60000 << 3).to_bytes(8, "big"), 1))
+          step.append((0x239, ((n237 % 16) << 52 | (1 + n237 // 3) * 60000 << 3).to_bytes(8, "big"), 1))  # counter, clock
           n237 += 1
   t_ns, last, outs = 1_000_000_000, {}, []
   for k in range(max(steps) + 1):
@@ -69,7 +69,8 @@ def check_acc_profile(RI, check) -> None:
   rec = []
   for k in sorted(steps)[:60]:  # frames resume, with the cycle clock continuing
     t_ns += 10_000_000
-    batch = [(a, ((5000 + n237) * 60000 << 3).to_bytes(8, "big") if a == 0x239 else d, s) for a, d, s in steps[k]]
+    batch = [(a, ((n237 % 16) << 52 | (5000 + n237) * 60000 << 3).to_bytes(8, "big") if a == 0x239 else d, s)
+             for a, d, s in steps[k]]
     n237 += sum(1 for a, _, _ in batch if a == 0x239)
     out = RI.update([(t_ns, batch)])
     if out is not None:
@@ -113,9 +114,17 @@ def main() -> int:
     for fw in (b'\x018821F0R01100\x00\x00\x00\x00', b'\x018821F0R03100\x00\x00\x00\x00'):
       CP = params(car, cold_bus1, fw)
       check(is_ars510(CP), f"{car}: ARS510 from the car model (radar FW {fw[1:13].decode()}, cold start)")
-  CP = params(CAR.TOYOTA_CHR_TSS2, ars_bus1)
-  check(not is_ars510(CP) and CP.radarUnavailable, "radar-ACC C-HR keeps the fork's behaviour (radar unavailable)")
   extra = (structs.CarParamsSP(),) if hasattr(structs, "CarParamsSP") else ()  # sunnypilot passes CP_SP
+  for name in ("TOYOTA_CHR_TSS2", "TOYOTA_YARIS"):
+    car = getattr(CAR, name, None)
+    if car is None:
+      print(f"skip {name}: not in this fork")
+      continue
+    CP = params(car, cold_bus1)
+    RIc = CarInterface.RadarInterface(CP, *extra)
+    check(is_ars510(CP) and isinstance(RIc, Ars510RadarInterface), f"{name}: ARS510 from the car model (testing)")
+    if name == "TOYOTA_YARIS":
+      check(RIc.standalone is not None, "TOYOTA_YARIS runs the acc parser whatever the profile (no 0xB4 wheel speed)")
   CP = params(CAR.TOYOTA_RAV4_TSS2, ars_bus1)
   RI0 = CarInterface.RadarInterface(CP, *extra)
   check(not is_ars510(CP) and not isinstance(RI0, Ars510RadarInterface),

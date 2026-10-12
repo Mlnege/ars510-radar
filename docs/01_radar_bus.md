@@ -131,6 +131,7 @@ opendbc test route each, mostly parked or on an empty road; [`chr_yaris_radar.js
 
 On the C-HR the camera's lead sits a steady 1.7-2.2 m beyond the ACC target's distance at 3-20 m, the camera-to-bumper
 offset, so the distance unit holds there too. The `fused` decoder reads the object list on all three, but the Yaris
-sends no 0xB4 wheel-speed frame, so the filter has no ego speed on that car. Both platforms (`TOYOTA_CHR_TSS2`,
-`TOYOTA_YARIS`) stay radarless in the integration and the upstream proposal until a drive with traffic validates them;
-enabling one is a radar DBC entry in `values.py`.
+sends no 0xB4 wheel-speed frame, so the filter has no ego speed on that car. The integration enables both
+platforms (`TOYOTA_CHR_TSS2`, `TOYOTA_YARIS`) for testing, the Yaris with `acc` whatever the profile; the upstream
+proposal keeps them radarless until a drive with traffic validates them (enabling one there is a radar DBC entry in
+`values.py`).

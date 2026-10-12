@@ -1,8 +1,8 @@
 # ARS510 radar for openpilot
 
-openpilot drives the **Toyota RAV4 TSS2 2022 / 2023** (`TOYOTA_RAV4_TSS2_2022` / `_2023`) on camera alone, because the
-car's front radar, a **Continental ARS510** (firmware `8821F0R03100` at 0x750 / 0x0f), speaks its own
-segmented object-list format, so stock openpilot takes its leads from the camera. This repo decodes that radar and plugs it into openpilot and its forks, so radard gets radar leads with
+openpilot drives the radar-ACC Toyotas, the **RAV4 2022-25, C-HR 2021-22 and Yaris** ([supported cars](#supported-cars)),
+on camera alone, because their front radar, a **Continental ARS510**, speaks its own segmented object-list format, so
+stock openpilot takes its leads from the camera. This repo decodes that radar and plugs it into openpilot and its forks, so radard gets radar leads with
 measured distance and speed. It contains the decoder, an installer, the evidence behind every decoded field, and
 replay comparisons against vision only.
 
@@ -11,9 +11,25 @@ replay comparisons against vision only.
 *Decoded radar objects projected onto the road camera: each box is one object at its decoded distance and lateral
 position, with track ID, distance, lateral offset and relative speed.*
 
+## Supported cars
+
+Every radar-ACC Toyota in openpilot carries the ARS510: each radar firmware these platforms list sends the same radar
+bus, and the integration selects the parser by the car model ([01](docs/01_radar_bus.md#radar-firmware)).
+
+| car | openpilot platform | radar firmware (0x750 / 0x0f) | status |
+|---|---|---|---|
+| Toyota RAV4 / RAV4 Hybrid 2022 | `TOYOTA_RAV4_TSS2_2022` | `8821F0R01100`, `8821F0R03100` | ● the decode, replays and road drives (owner's car) |
+| Toyota RAV4 / RAV4 Hybrid 2023-25 | `TOYOTA_RAV4_TSS2_2023` | `8821F0R03100` | ● replays and road drives (a second driver's 2025 Hybrid) |
+| Toyota C-HR 2021, C-HR Hybrid 2021-22 | `TOYOTA_CHR_TSS2` | `8821FF410200` to `8821FF410500` | ◐ same radar frames on comma's test routes; **testers wanted** |
+| Toyota Yaris 2020, 2023 (non-US) | `TOYOTA_YARIS` | `8821F0D04100`, `8821F0D05300` | ◐ same radar frames on comma's test routes; **testers wanted**; `acc` only (no 0xB4 wheel speed for the object-list profiles) |
+
+The C-HR and Yaris rows rest on a minute of each car's test route, mostly parked or on an empty road
+([`chr_yaris_radar.json`](data/analysis/summaries/chr_yaris_radar.json)): a drive report from one of those cars is the
+most useful test right now.
+
 ## Try it (testers)
 
-You need a RAV4 2022 / 2023 with the ARS510 radar and a comma device running openpilot or a fork with openpilot's
+You need one of the [supported cars](#supported-cars) and a comma device running openpilot or a fork with openpilot's
 `opendbc_repo` layout (sunnypilot, StarPilot, CarrotPilot, ...).
 
 ```bash
@@ -154,8 +170,8 @@ filter with replay evidence for every part: [docs/12](docs/12_kalman_filter.md).
   Firmware `8821F0R01100`, the other RAV4 radar in openpilot's fingerprints, sends the same messages: on opendbc's two
   2022 RAV4 test routes (Hybrid and ICE) it carries the full ARS510 bus, and the `acc` and `fused` parsers decode it
   ([01](docs/01_radar_bus.md#radar-firmware)). The integration therefore selects the parser by the car model.
-  The C-HR and Yaris radars send the same frames on opendbc's test routes, but those minutes hold little traffic, so the
-  two platforms stay radarless for now ([01](docs/01_radar_bus.md#c-hr-and-yaris)).
+  The C-HR and Yaris radars send the same frames on opendbc's test routes; the integration enables them for testing,
+  but no drive in traffic has been checked yet ([01](docs/01_radar_bus.md#c-hr-and-yaris)).
 - **Far range.** The object list's speed sometimes reads a far car closing several m/s faster than it is, for 1-10 s
   ([07](docs/07_velocity_excursions.md)). The ACC target is present for 99 % of radar-lead time at 15-80 m and 66 %
   beyond 80 m ([08](docs/08_openpilot_integration.md#on-the-road)); beyond 60 m both profiles publish the car the ACC
@@ -178,7 +194,7 @@ filter with replay evidence for every part: [docs/12](docs/12_kalman_filter.md).
 ```mermaid
 flowchart LR
     CAN["CAN: bus 1 radar<br/>+ bus 0 wheel speed, yaw rate"] --> card --> RI["Toyota RadarInterface"]
-    RI -- "radar-ACC RAV4<br/>(car model)" --> A["Ars510RadarInterface<br/>acc: ACC target frames<br/>fused: reassemble · CRC · decode · Kalman speed filter"]
+    RI -- "radar-ACC Toyota<br/>(car model)" --> A["Ars510RadarInterface<br/>acc: ACC target frames<br/>fused: reassemble · CRC · decode · Kalman speed filter"]
     A -- "RadarPoints: acc 16.7 Hz, fused 16.7 Hz" --> radard["radard (unchanged)"] --> planner["planner (unchanged)"]
 ```
 
