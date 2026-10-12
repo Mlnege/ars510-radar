@@ -111,8 +111,8 @@ percentile +0.88, at least 1.0 in 22 of 259 runs); with `raw` +0.66 (+1.79, 208 
 
 - The forks' radard and `process_lead` run unmodified in a harness that replaces messaging, params and the solver
   (`tools/fork_lead/forksim.py`), per model tick (20 Hz) of recorded drives: the vision model's leads and lane lines, the
-  car state, and the radar points of the profile being tested. U1 is a drive with stock ACC and U2 one with openpilot
-  longitudinal (a second car); O6 and O7 are owner sunnypilot drives of 28 and 22 min ([09](09_tools_and_data.md#data-in-this-repo)).
+  car state, and the radar points of the profile being tested. U1 (stock ACC, 21 min) and U2 (openpilot
+  longitudinal, 26 min) come from a second car; O6 and O7 are owner sunnypilot drives of 28 and 22 min ([09](09_tools_and_data.md#data-in-this-repo)).
 - **Demand** is the constant deceleration that keeps the MPC's own safety distance over 10 s along the lead path a fork
   hands its MPC, with the ego started at the desired spacing, so it measures the lead path alone. It compares forks and profiles
   through radard and the lead path; the MPC, jerk limits, cruise, personalities and each fork's other features belong to
