@@ -1,6 +1,6 @@
 {
   "description": "Corrected chronological response selection with fixed scalar RW and colored-noise speed models; object-list-only estimation against a hidden same-radar ACC witness.",
-  "units_note": "cohorts: windows and lags with the ACC target speed read at 0.1 m/s per code (the first extraction of the bench readings); response_at_acc_unit_0p125 holds the same experiment at 0.125 m/s per code.",
+  "units_note": "All cohorts use the ACC target speed at 0.125 m/s per code.",
   "status": "Exploratory comparison on reused cached routes with fixed model parameters.",
   "selection": {
     "order": "Enumerate eligible starts within native contiguous track segments, then sort all candidate starts chronologically within each route; apply one route-wide 4 s refractory interval across native track IDs; reset the refractory clock between routes.",
@@ -74,244 +74,208 @@
   ],
   "selection_counts": {
     "nonempty_input_routes": 37,
-    "contributing_routes": 33,
-    "selected_windows": 252
+    "contributing_routes": 34,
+    "selected_windows": 276
   },
   "cohorts": {
     "development": {
-      "event_count": 76,
+      "event_count": 84,
       "contributing_routes": 8,
       "models": {
         "RW": {
-          "mean": 0.4354282240526322,
-          "median": 0.2749707260000491,
-          "miss": 0,
+          "mean": 0.4857754556667101,
+          "median": 0.2416583874992284,
+          "miss": 1,
           "unit": "s"
         },
         "historicalCN": {
-          "mean": 0.38715016232892757,
-          "median": 0.23423153749990888,
-          "miss": 1,
+          "mean": 0.407712838869038,
+          "median": 0.24028492899969928,
+          "miss": 0,
           "unit": "s"
         },
         "currentCN": {
-          "mean": 0.3942918522499755,
-          "median": 0.23988760149950394,
-          "miss": 1,
+          "mean": 0.4083126969881145,
+          "median": 0.2466016554994894,
+          "miss": 0,
           "unit": "s"
         }
       },
       "paired_lag_difference_s": {
         "historicalCN_minus_RW": {
-          "mean": -0.048278061723704614,
+          "mean": -0.0780626167976721,
           "route_block_bootstrap_95": [
-            -0.1261113027333969,
-            0.06689609343500054
+            -0.14213721131040888,
+            -0.003778969395110856
           ]
         },
         "currentCN_minus_RW": {
-          "mean": -0.04113637180265671,
+          "mean": -0.07746275867859558,
           "route_block_bootstrap_95": [
-            -0.12681882915816717,
-            0.09492241362733894
+            -0.14057120121351044,
+            -0.004681242649281971
           ]
         }
       }
     },
     "prior_evaluation": {
-      "event_count": 113,
+      "event_count": 124,
       "contributing_routes": 15,
       "models": {
         "RW": {
-          "mean": 0.4030241767699777,
-          "median": 0.18935655700079224,
-          "miss": 2,
+          "mean": 0.546922596306439,
+          "median": 0.35974146250009653,
+          "miss": 4,
           "unit": "s"
         },
         "historicalCN": {
-          "mean": 0.35760572363720766,
-          "median": 0.18047578800002384,
-          "miss": 1,
+          "mean": 0.46063383608063946,
+          "median": 0.1851857425001526,
+          "miss": 3,
           "unit": "s"
         },
         "currentCN": {
-          "mean": 0.34840299315934375,
-          "median": 0.18047578800002384,
-          "miss": 1,
+          "mean": 0.45893981975000836,
+          "median": 0.18996028400010795,
+          "miss": 3,
           "unit": "s"
         }
       },
       "paired_lag_difference_s": {
         "historicalCN_minus_RW": {
-          "mean": -0.045418453132770015,
+          "mean": -0.08628876022579961,
           "route_block_bootstrap_95": [
-            -0.17157193830726888,
-            0.04364858116020362
+            -0.18988870182400913,
+            -0.019423689608657917
           ]
         },
         "currentCN_minus_RW": {
-          "mean": -0.054621183610633915,
+          "mean": -0.08798277655643075,
           "route_block_bootstrap_95": [
-            -0.1836926150173836,
-            0.0347254702358872
+            -0.1842278663062361,
+            -0.02098114360980999
           ]
         }
       }
     },
     "recent_reused": {
-      "event_count": 17,
-      "contributing_routes": 5,
+      "event_count": 19,
+      "contributing_routes": 6,
       "models": {
         "RW": {
-          "mean": 0.375943920529422,
-          "median": 0.3801967140002489,
+          "mean": 0.6189563005262851,
+          "median": 0.3102799020002749,
           "miss": 0,
           "unit": "s"
         },
         "historicalCN": {
-          "mean": 0.3658075694705842,
-          "median": 0.4090676899998016,
+          "mean": 0.48146773857897224,
+          "median": 0.2398923509999804,
           "miss": 0,
           "unit": "s"
         },
         "currentCN": {
-          "mean": 0.3693952759999925,
-          "median": 0.4090676899998016,
+          "mean": 0.4689040139473257,
+          "median": 0.2398923509999804,
           "miss": 0,
           "unit": "s"
         }
       },
       "paired_lag_difference_s": {
         "historicalCN_minus_RW": {
-          "mean": -0.01013635105883783,
+          "mean": -0.13748856194731288,
           "route_block_bootstrap_95": [
-            -0.13112419523084257,
-            0.21657284191676732
+            -0.24024545131251251,
+            -0.026727179199817448
           ]
         },
         "currentCN_minus_RW": {
-          "mean": -0.006548644529429486,
+          "mean": -0.15005228657895936,
           "route_block_bootstrap_95": [
-            -0.13112419523084257,
-            0.21657284191676732
+            -0.24087723435501454,
+            -0.054410269812551704
           ]
         }
       }
     },
     "owner": {
-      "event_count": 46,
+      "event_count": 49,
       "contributing_routes": 5,
       "models": {
         "RW": {
-          "mean": 0.552164432391059,
-          "median": 0.14997926100022596,
+          "mean": 0.6648904834286886,
+          "median": 0.3601323160000902,
           "miss": 2,
           "unit": "s"
         },
         "historicalCN": {
-          "mean": 0.5089092145869828,
-          "median": 0.15515719650102255,
-          "miss": 1,
+          "mean": 0.6014156960408938,
+          "median": 0.2999103330002981,
+          "miss": 2,
           "unit": "s"
         },
         "currentCN": {
-          "mean": 0.5141227016738807,
-          "median": 0.18527319250097207,
-          "miss": 1,
+          "mean": 0.6050874191429214,
+          "median": 0.2999103330002981,
+          "miss": 2,
           "unit": "s"
         }
       },
       "paired_lag_difference_s": {
         "historicalCN_minus_RW": {
-          "mean": -0.04325521780407618,
+          "mean": -0.06347478738779481,
           "route_block_bootstrap_95": [
-            -0.05975951285477127,
-            -0.01841871699951298
+            -0.09680728614261613,
+            -0.004305446714235072
           ]
         },
         "currentCN_minus_RW": {
-          "mean": -0.03804173071717821,
+          "mean": -0.059803064285767274,
           "route_block_bootstrap_95": [
-            -0.05768930453795735,
-            -0.011190877959525097
+            -0.0894586516937013,
+            -2.782271420594316e-05
           ]
         }
       }
     },
     "combined": {
-      "event_count": 252,
-      "contributing_routes": 33,
+      "event_count": 276,
+      "contributing_routes": 34,
       "models": {
         "RW": {
-          "mean": 0.43819399818252547,
-          "median": 0.23968249749941606,
-          "miss": 4,
+          "mean": 0.5542150131014756,
+          "median": 0.3101883504998568,
+          "miss": 7,
           "unit": "s"
         },
         "historicalCN": {
-          "mean": 0.3946881415079528,
-          "median": 0.19018013950085333,
-          "miss": 3,
+          "mean": 0.47095554448551724,
+          "median": 0.24006201100010566,
+          "miss": 5,
           "unit": "s"
         },
         "currentCN": {
-          "mean": 0.3939090593928666,
-          "median": 0.19018013950085333,
-          "miss": 3,
+          "mean": 0.47016399999639485,
+          "median": 0.24006201100010566,
+          "miss": 5,
           "unit": "s"
         }
       },
       "paired_lag_difference_s": {
         "historicalCN_minus_RW": {
-          "mean": -0.04350585667457266,
+          "mean": -0.08325946861595833,
           "route_block_bootstrap_95": [
-            -0.09785156979694141,
-            0.010833021768335484
+            -0.12839524265621435,
+            -0.04420182772167025
           ]
         },
         "currentCN_minus_RW": {
-          "mean": -0.0442849387896589,
+          "mean": -0.08405101310508067,
           "route_block_bootstrap_95": [
-            -0.10119926260174507,
-            0.012572279129314445
+            -0.1288244197949507,
+            -0.04534400386735111
           ]
         }
-      }
-    }
-  },
-  "response_at_acc_unit_0p125": {
-    "description": "The corrected chronological selection rerun on the readings rescaled to the ACC speed at 0.125 m/s per code (same selector, same fixed RW and CN models, route-block bootstrap with 4000 draws, seed 510); the 0.1 m/s cohorts below reproduce with the same script.",
-    "windows": 276,
-    "routes": 34,
-    "lag_mean_s": {
-      "RW": 0.554,
-      "colored": 0.471,
-      "currentCN": 0.47
-    },
-    "lag_median_s": {
-      "RW": 0.31,
-      "colored": 0.24,
-      "currentCN": 0.24
-    },
-    "misses": {
-      "RW": 7,
-      "colored": 5,
-      "currentCN": 5
-    },
-    "paired_lag_difference_s": {
-      "colored_minus_RW": {
-        "mean": -0.083,
-        "route_block_bootstrap_95": [
-          -0.128,
-          -0.044
-        ]
-      },
-      "currentCN_minus_RW": {
-        "mean": -0.084,
-        "route_block_bootstrap_95": [
-          -0.129,
-          -0.045
-        ]
       }
     }
   }

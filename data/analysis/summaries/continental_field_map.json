@@ -60,7 +60,7 @@
       "accel_res": 0.246
     }
   },
-  "excursion_auc_units_note": "Recomputed with the ACC speed at 0.125 m/s per code (the 0.1 m/s values 0.968 / 0.95 below 40 m and 0.42-0.55 beyond are reproduced by the same script at that unit); excursion = |object vRel - ACC speed| > 2.5 m/s on matched ACC-target rows, age >= 20, AUC of the sigma code within each range band.",
+  "excursion_auc_units_note": "Computed with the ACC speed at 0.125 m/s per code; excursion = |object vRel - ACC speed| > 2.5 m/s on matched ACC-target rows, age >= 20, AUC of the sigma code within each range band.",
   "excursion_auc_by_range": {
     "0-40m": {
       "n_exc": 72,

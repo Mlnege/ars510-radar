@@ -63,5 +63,5 @@
   "real_closings_flagged": "11/26",
   "label": "vision-based, 0x235 possibly camera-fused"
  },
- "units_note": "Binned medians are the SCR-129 values (decoded at 0.1) times 1.25: field and reference derivative scale together, so the correlations are unit-independent. Rerun at 0.125 (SCR-424 rows): correlation with the reference lead acceleration 0.64 (radard aLeadK 0.56), RMS 0.69 vs 0.80 m/s2."
+ "units_note": "Binned medians are at 0.125 m/s2 per code; field and reference derivative scale together, so the correlations are unit-independent. Against the reference lead acceleration: correlation 0.64 (radard aLeadK 0.56), RMS 0.69 vs 0.80 m/s2."
 }
