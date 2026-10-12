@@ -63,7 +63,7 @@ Every frame above is in [`dbc/ars510_radar_bus.dbc`](../dbc/ars510_radar_bus.dbc
 Start-up times: `object_stream_0x680.json` (object records, 0x101 / 0x197) and `decode_claim_sources.json` (0x235 / 0x680 / sendcan, recomputed from the research captures).
 
 - The object list starts after openpilot's fingerprinting has finished, so the openpilot integration selects the
-  radar by the car model, the radar-ACC RAV4 2022 and 2023-25 platforms ([08](08_openpilot_integration.md),
+  radar by the car model, the radar-ACC platforms (RAV4 2022 and 2023-25, C-HR, Yaris) ([08](08_openpilot_integration.md),
   [radar firmware](#radar-firmware)).
 - 0x101 switches 0x1D → 0x11 0.14 s after the first 0x80 record (spread 7 ms) and 0x197 bit 8 sets 60 ms later (0.20 s, spread 14 ms) on
   27 of 27 cold starts: both behave as the camera's acknowledgement of the object list (◐) and serve as "radar running" signals.
@@ -132,6 +132,5 @@ opendbc test route each, mostly parked or on an empty road; [`chr_yaris_radar.js
 On the C-HR the camera's lead sits a steady 1.7-2.2 m beyond the ACC target's distance at 3-20 m, the camera-to-bumper
 offset, so the distance unit holds there too. The `fused` decoder reads the object list on all three, but the Yaris
 sends no 0xB4 wheel-speed frame, so the filter has no ego speed on that car. The integration enables both
-platforms (`TOYOTA_CHR_TSS2`, `TOYOTA_YARIS`) for testing, the Yaris with `acc` whatever the profile; the upstream
-proposal keeps them radarless until a drive with traffic validates them (enabling one there is a radar DBC entry in
-`values.py`).
+platforms (`TOYOTA_CHR_TSS2`, `TOYOTA_YARIS`) for testing, the Yaris with `acc` whatever the profile, and the upstream
+`acc` proposal includes them ([17](17_upstream.md)); drives in traffic on those cars are still to come.

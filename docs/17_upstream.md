@@ -24,7 +24,7 @@ all-tracks candidate.
 | files | [`upstream/ars510_acc_target.py`](../upstream/ars510_acc_target.py) + [`toyota_tss2_ars510.dbc`](../upstream/toyota_tss2_ars510.dbc), as [`opendbc_ars510.patch`](../upstream/opendbc_ars510.patch) | [`upstream/ars510_radar.py`](../upstream/ars510_radar.py), routed by [`toyota_routing.patch`](../upstream/toyota_routing.patch) |
 | size | 33 code lines (50 in the file); reads 7 DBC signals of three messages plus their rolling counters | 187 code lines (227 in the file) |
 | constants / state attributes / conditions / functions | 1 / 4 / 5 / 2 | 28 / 15 / 85 / 13 |
-| radar available when | the car model: the radar-ACC RAV4 2022 and 2023-25 platforms | the car model (same platforms) |
+| radar available when | the car model: every radar-ACC platform (RAV4 2022 and 2023-25, C-HR, Yaris) | the car model: the radar-ACC RAV4 2022 and 2023-25 platforms |
 | evidence | [below](#the-acc-target-alone--candidate) | [parts ledger](#parts-of-the-openpilot-file) |
 
 Sizes: [`acc_target_parser.json`](../data/analysis/summaries/acc_target_parser.json) (`file_size`) and
@@ -35,8 +35,8 @@ commit:
 - **DBC:** `opendbc/dbc/toyota_tss2_ars510.dbc` with the ACC target frames `ACC_TARGET_1`-`4` (0x235 / 0x237 / 0x239 /
   0x23B), every field documented. The interface reads seven signals; through CANParser every signal equals the
   reference decoder on 9,574 frame sets.
-- **`values.py`:** `dbc_dict` accepts no radar; the RAV4 2022 and 2023-25 platforms get `toyota_tss2_ars510`, and the
-  other radar-ACC cars stay radarless. So the car model selects the parser.
+- **`values.py`:** the radar-ACC platforms (RAV4 2022 and 2023-25, C-HR, Yaris) get `toyota_tss2_ars510` as their radar
+  DBC instead of none, two lines in the TSS2 and SecOC platform configs. So the car model selects the parser.
 - **`radar_interface.py`:** for radar-ACC cars the Toyota `RadarInterface` publishes the ACC target as one point, once
   per radar cycle: after the stock trigger check (0x237 updated), the radar's cycle clock (0x239 `TIMESTAMP`) must have
   advanced. The frames repeat at 50 Hz, and radard accepts `liveTracks` only at 8-24 Hz. The clock advances once per
@@ -47,8 +47,8 @@ commit:
 smasher816 helped frame this approach (the ACC target inline in Toyota's `RadarInterface`, selected through the radar
 DBC) and reviewed it; the DBC field names follow his.
 
-The C-HR and Yaris radars send the same frames ([01](01_radar_bus.md#c-hr-and-yaris)); the proposal keeps those two
-platforms radarless until a drive validates them.
+The C-HR and Yaris radars send the same frames ([01](01_radar_bus.md#c-hr-and-yaris)), so the proposal includes them;
+drives in traffic on those cars are still being collected before a pull request upstream.
 
 With the patch, opendbc's Toyota, platform-config, DBC-parser and car-interface tests pass and its ruff rules hold.
 Through opendbc's own CANParser the DBC decodes the bundled frames exactly like the reference decoder

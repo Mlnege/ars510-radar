@@ -1,5 +1,5 @@
 diff --git a/opendbc/car/toyota/radar_interface.py b/opendbc/car/toyota/radar_interface.py
-index 207b5a17..3edda177 100755
+index 207b5a17..68323afc 100755
 --- a/opendbc/car/toyota/radar_interface.py
 +++ b/opendbc/car/toyota/radar_interface.py
 @@ -6,8 +6,11 @@ from opendbc.car.toyota.values import DBC, ToyotaFlags
@@ -37,7 +37,7 @@ index 207b5a17..3edda177 100755
    def __init__(self, CP):
      super().__init__(CP)
 -    if CP.flags & ToyotaFlags.TSS2:
-+    # of the radar-ACC cars only the RAV4s have a radar DBC (Continental ARS510); C-HR and Yaris stay radarless
++    # radar-ACC cars (RAV4 2022-25, C-HR, Yaris) have a Continental ARS510: its ACC target becomes the one point
 +    self.use_ars510 = CP.flags & ToyotaFlags.RADAR_ACC
 +    if self.use_ars510:
 +      self.RADAR_A_MSGS = [0x235]
@@ -151,10 +151,10 @@ index 207b5a17..3edda177 100755
      return ret
 diff --git a/opendbc/car/toyota/tests/test_ars510.py b/opendbc/car/toyota/tests/test_ars510.py
 new file mode 100644
-index 00000000..96e283e4
+index 00000000..28e6cc17
 --- /dev/null
 +++ b/opendbc/car/toyota/tests/test_ars510.py
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,94 @@
 +import unittest
 +
 +from opendbc.can import CANPacker
@@ -201,16 +201,13 @@ index 00000000..96e283e4
 +
 +
 +class TestArs510(unittest.TestCase):
-+  def test_radar_dbc_only_on_the_rav4s(self):
-+    with_radar = {car for car in CAR if car.config.flags & ToyotaFlags.RADAR_ACC and Bus.radar in DBC[car]}
-+    assert with_radar == {CAR.TOYOTA_RAV4_TSS2_2022, CAR.TOYOTA_RAV4_TSS2_2023}
-+
-+  def test_radar_available_on_the_rav4s_only(self):
-+    for car in (CAR.TOYOTA_RAV4_TSS2_2022, CAR.TOYOTA_RAV4_TSS2_2023):
-+      assert not car_params(car).radarUnavailable
-+    for car in (CAR.TOYOTA_CHR_TSS2, CAR.TOYOTA_YARIS):
++  def test_radar_acc_cars_get_the_ars510(self):
++    radar_acc = {car for car in CAR if car.config.flags & ToyotaFlags.RADAR_ACC}
++    assert radar_acc == {CAR.TOYOTA_RAV4_TSS2_2022, CAR.TOYOTA_RAV4_TSS2_2023, CAR.TOYOTA_CHR_TSS2, CAR.TOYOTA_YARIS}
++    for car in radar_acc:
++      assert DBC[car][Bus.radar] == "toyota_tss2_ars510"
 +      CP = car_params(car)
-+      assert CP.radarUnavailable and RadarInterface(CP).rcp is None
++      assert not CP.radarUnavailable and RadarInterface(CP).use_ars510
 +
 +  def test_recorded_frames_once_per_radar_cycle(self):
 +    for f235, f237, track_id, d_rel, y_rel, v_rel in RECORDED:
@@ -253,76 +250,30 @@ index 00000000..96e283e4
 +if __name__ == "__main__":
 +  unittest.main()
 diff --git a/opendbc/car/toyota/values.py b/opendbc/car/toyota/values.py
-index efdef6a0..d9739771 100644
+index efdef6a0..91cd3f24 100644
 --- a/opendbc/car/toyota/values.py
 +++ b/opendbc/car/toyota/values.py
-@@ -83,7 +83,10 @@ class ToyotaFlags(IntFlag):
- 
- 
- def dbc_dict(pt, radar):
--  return {Bus.pt: pt, Bus.radar: radar}
-+  if radar is not None:
-+    return {Bus.pt: pt, Bus.radar: radar}
-+  else:
-+    return {Bus.pt: pt}
- 
- 
- class Footnote(Enum):
-@@ -111,9 +114,6 @@ class ToyotaTSS2PlatformConfig(PlatformConfig):
-   def init(self):
+@@ -112,7 +112,7 @@ class ToyotaTSS2PlatformConfig(PlatformConfig):
      self.flags |= ToyotaFlags.TSS2 | ToyotaFlags.NO_DSU
  
--    if self.flags & ToyotaFlags.RADAR_ACC:
+     if self.flags & ToyotaFlags.RADAR_ACC:
 -      self.dbc_dict = {Bus.pt: 'toyota_nodsu_pt_generated'}
--
++      self.dbc_dict = dbc_dict('toyota_nodsu_pt_generated', 'toyota_tss2_ars510')
+ 
  
  @dataclass
- class ToyotaSecOCPlatformConfig(PlatformConfig):
-@@ -122,9 +122,6 @@ class ToyotaSecOCPlatformConfig(PlatformConfig):
-   def init(self):
+@@ -123,7 +123,7 @@ class ToyotaSecOCPlatformConfig(PlatformConfig):
      self.flags |= ToyotaFlags.TSS2 | ToyotaFlags.NO_DSU | ToyotaFlags.SECOC
  
--    if self.flags & ToyotaFlags.RADAR_ACC:
+     if self.flags & ToyotaFlags.RADAR_ACC:
 -      self.dbc_dict = {Bus.pt: 'toyota_secoc_pt_generated'}
--
++      self.dbc_dict = dbc_dict('toyota_secoc_pt_generated', 'toyota_tss2_ars510')
+ 
  
  class CAR(Platforms):
-   # Toyota
-@@ -190,6 +187,7 @@ class CAR(Platforms):
-       ToyotaCarDocs("Toyota C-HR Hybrid 2021-22"),
-     ],
-     TOYOTA_CHR.specs,
-+    dbc_dict('toyota_nodsu_pt_generated', None),
-     flags=ToyotaFlags.RADAR_ACC,
-   )
-   TOYOTA_COROLLA = PlatformConfig(
-@@ -276,6 +274,7 @@ class CAR(Platforms):
-       ToyotaCarDocs("Toyota RAV4 Hybrid 2022", video="https://youtu.be/U0nH9cnrFB0"),
-     ],
-     TOYOTA_RAV4_TSS2.specs,
-+    dbc_dict('toyota_nodsu_pt_generated', 'toyota_tss2_ars510'),
-     flags=ToyotaFlags.RADAR_ACC,
-   )
-   TOYOTA_RAV4_TSS2_2023 = ToyotaTSS2PlatformConfig(
-@@ -284,6 +283,7 @@ class CAR(Platforms):
-       ToyotaCarDocs("Toyota RAV4 Hybrid 2023-25", video="https://youtu.be/4eIsEq4L4Ng"),
-     ],
-     TOYOTA_RAV4_TSS2.specs,
-+    dbc_dict('toyota_nodsu_pt_generated', 'toyota_tss2_ars510'),
-     flags=ToyotaFlags.RADAR_ACC | ToyotaFlags.ANGLE_CONTROL,
-   )
-   TOYOTA_RAV4_PRIME = ToyotaSecOCPlatformConfig(
-@@ -293,6 +293,7 @@ class CAR(Platforms):
-   TOYOTA_YARIS = ToyotaSecOCPlatformConfig(
-     [ToyotaSecOcCarDocs("Toyota Yaris (Non-US only) 2020, 2023", min_enable_speed=MIN_ACC_SPEED)],
-     CarSpecs(mass=1170, wheelbase=2.55, steerRatio=14.80, tireStiffnessFactor=0.5533),
-+    dbc_dict('toyota_secoc_pt_generated', None),
-     flags=ToyotaFlags.RADAR_ACC,
-   )
-   TOYOTA_MIRAI = ToyotaTSS2PlatformConfig( # TSS 2.5
 diff --git a/opendbc/dbc/toyota_tss2_ars510.dbc b/opendbc/dbc/toyota_tss2_ars510.dbc
 new file mode 100644
-index 00000000..8080ad4a
+index 00000000..d7390cba
 --- /dev/null
 +++ b/opendbc/dbc/toyota_tss2_ars510.dbc
 @@ -0,0 +1,104 @@
@@ -398,7 +349,7 @@ index 00000000..8080ad4a
 + SG_ COUNTER : 15|4@0+ (1,0) [0|15] "" XXX
 + SG_ WIDTH : 11|12@0+ (1,0) [0|4095] "cm" XXX
 +
-+CM_ "Continental ARS510 front radar, radar bus: the target the radar's own ACC follows. Used on the RAV4 2022-25 (fwdRadar 8821F0R01100, 8821F0R03100). The C-HR (8821FF41xxxx) and Yaris (8821F0D05300) radars send the same frames in comma's CI test logs, but those platforms are not validated. The 0x80 object list and 0x85 metadata record span many frames and are decoded by ars510-radar (ars510/). The radar interface uses STATE, REL_SPEED, TARGET_ID, LONG_DIST, LAT_DIST, PRESENT and TIMESTAMP; the other signals are documented for completeness.";
++CM_ "Continental ARS510 front radar, radar bus: the target the radar's own ACC follows. Used on the radar-ACC platforms: RAV4 2022-25 (fwdRadar 8821F0R01100, 8821F0R03100), C-HR 2021-22 (8821FF4102xx-0500) and Yaris (8821F0D0xxxx). The 0x80 object list and 0x85 metadata record span many frames and are decoded by ars510-radar (ars510/). The radar interface uses STATE, REL_SPEED, TARGET_ID, LONG_DIST, LAT_DIST, PRESENT and TIMESTAMP; the other signals are documented for completeness.";
 +CM_ BO_ 565 "ACC target, part 1: 50 Hz, content updated once per 60 ms radar cycle.";
 +CM_ SG_ 565 CHECK_BYTE "Check byte over the rest of the frame (algorithm unknown).";
 +CM_ SG_ 565 STATE "5 = target present, 1 = idle (bytes 2-7 64 80 0B 24 00 FF), 15 = start-up.";
