@@ -64,7 +64,7 @@ Extra braking demand (m/s², proxy) over the same fork without the error, gap 45
 
 At 70 m the results are within 0.05 of these, except −1 m/s, which falls to 0.22 (0.01 on FrogPilot's default).
 
-**The same on real drives** (U1 and U2, 29-30 min with a radar lead and an ACC target). Each fork on a profile against
+**On real drives** (U1 and U2, 29-30 min with a radar lead and an ACC target). Each fork on a profile against
 the same fork given the radar's ACC target alone (the `acc` profile, 0 by construction); events per hour of extra demand
 of at least 1.0 (0.5) m/s²:
 
