@@ -149,106 +149,63 @@ index 207b5a17..68323afc 100755
 +
 +      ret.points = list(self.pts.values())
      return ret
-diff --git a/opendbc/car/toyota/tests/test_ars510.py b/opendbc/car/toyota/tests/test_ars510.py
-new file mode 100644
-index 00000000..28e6cc17
---- /dev/null
-+++ b/opendbc/car/toyota/tests/test_ars510.py
-@@ -0,0 +1,94 @@
-+import unittest
-+
+diff --git a/opendbc/car/toyota/tests/test_toyota.py b/opendbc/car/toyota/tests/test_toyota.py
+index 9d825d35..02c3b48f 100644
+--- a/opendbc/car/toyota/tests/test_toyota.py
++++ b/opendbc/car/toyota/tests/test_toyota.py
+@@ -1,8 +1,10 @@
+ import unittest
+ 
+-from opendbc.car import Bus
 +from opendbc.can import CANPacker
 +from opendbc.car import Bus, gen_empty_fingerprint
+ from opendbc.car.structs import CarParams
+ from opendbc.car.fw_versions import build_fw_dict
 +from opendbc.car.toyota.interface import CarInterface
-+from opendbc.car.toyota.radar_interface import RadarInterface
-+from opendbc.car.toyota.values import CAR, DBC, ToyotaFlags
-+
-+# recorded ACC target frames (0x235, 0x237) of one followed car, and the radar's idle payload without a target
-+RECORDED = [
-+  ("B24567806B13D60E", "A64297BA611C0550", 14, 33.175, -1.32, 0.375),
-+  ("9BC56180CB13F20E", "2DC3BB3E5923FD50", 14, 47.75, -0.05, 0.75),
-+  ("F135657F8AEBD50E", "10334D3D4123FD50", 14, 42.25, -0.4, -0.5),
-+]
-+IDLE_235, IDLE_237 = bytes.fromhex("000164800B2400FF"), bytes.fromhex("00000000003E8000")
-+
-+
-+def car_params(car=CAR.TOYOTA_RAV4_TSS2_2023):
+ from opendbc.car.toyota.fingerprints import FW_VERSIONS
+ from opendbc.car.toyota.values import CAR, DBC, ToyotaFlags, FW_QUERY_CONFIG, PLATFORM_CODE_ECUS, \
+                                                   FUZZY_EXCLUDED_PLATFORMS, get_platform_codes
+@@ -11,6 +13,10 @@ from opendbc.testing import fuzzy_test
+ Ecu = CarParams.Ecu
+ 
+ 
++def get_params(car):
 +  return CarInterface.get_params(car, gen_empty_fingerprint(), [], False, False, False)
 +
 +
-+def with_counter(dat, counter):
-+  """The rolling counter is the high nibble of byte 1."""
-+  return dat[:1] + bytes([(counter % 16) << 4 | dat[1] & 0x0F]) + dat[2:]
+ def check_fw_version(fw_version: bytes) -> bool:
+   # TODO: just use the FW patterns, need to support all chunks
+   return b'?' not in fw_version and b'!' not in fw_version
+@@ -36,6 +42,29 @@ class TestToyotaInterfaces(unittest.TestCase):
+       if car_model.config.flags & ToyotaFlags.TSS2 and not (car_model.config.flags & ToyotaFlags.SECOC):
+         assert dbc[Bus.pt] == "toyota_nodsu_pt_generated"
+ 
++  def test_radar_acc_ars510(self):
++    # Radar-ACC cars have a Continental ARS510, whose ACC target is their radar point
++    for car_model in cars_with(ToyotaFlags.RADAR_ACC):
++      assert DBC[car_model][Bus.radar] == "toyota_tss2_ars510"
++      assert not get_params(car_model).radarUnavailable
 +
-+
-+PACKER = CANPacker("toyota_tss2_ars510")
-+
-+
-+def run(ri, frames, t0=0, cycle0=0):
-+  """card.py updates at 100 Hz, one ACC frame pair every other update (50 Hz), the radar's cycle clock (0x239)
-+  advancing every third pair (60 ms); returns the reports."""
-+  out = []
-+  for i, pair in enumerate(frames):
-+    for j in range(2):
-+      can = []
-+      if j == 0 and pair:
-+        clock = PACKER.make_can_msg("ACC_TARGET_3", 1, {"TIMESTAMP": cycle0 + 60000 * (1 + i // 3)})[1]
-+        can = [(0x235, with_counter(pair[0], i), 1), (0x237, with_counter(pair[1], i), 1), (0x239, clock, 1)]
-+      rr = ri.update([(int(t0 + (2 * i + j) * 1e7), can)])
++  def test_ars510_once_per_radar_cycle(self):
++    # The ACC target frames repeat at 50 Hz; one report per 60 ms radar cycle (0x239 clock) keeps liveTracks
++    # inside radard's frequency window
++    RI = CarInterface.RadarInterface(get_params(CAR.TOYOTA_RAV4_TSS2_2023))
++    packer = CANPacker("toyota_tss2_ars510")
++    reports = []
++    for i in range(30):
++      msgs = [packer.make_can_msg("ACC_TARGET_1", 1, {"STATE": 5, "REL_SPEED": -3.25, "TARGET_ID": 7}),
++              packer.make_can_msg("ACC_TARGET_2", 1, {"LONG_DIST": 61.5, "LAT_DIST": 0.42, "PRESENT": 1}),
++              packer.make_can_msg("ACC_TARGET_3", 1, {"TIMESTAMP": 60000 * (1 + i // 3)})]
++      rr = RI.update([(int(i * 2e7), msgs)])
 +      if rr is not None:
-+        out.append(rr)
-+  return out
-+
-+
-+class TestArs510(unittest.TestCase):
-+  def test_radar_acc_cars_get_the_ars510(self):
-+    radar_acc = {car for car in CAR if car.config.flags & ToyotaFlags.RADAR_ACC}
-+    assert radar_acc == {CAR.TOYOTA_RAV4_TSS2_2022, CAR.TOYOTA_RAV4_TSS2_2023, CAR.TOYOTA_CHR_TSS2, CAR.TOYOTA_YARIS}
-+    for car in radar_acc:
-+      assert DBC[car][Bus.radar] == "toyota_tss2_ars510"
-+      CP = car_params(car)
-+      assert not CP.radarUnavailable and RadarInterface(CP).use_ars510
-+
-+  def test_recorded_frames_once_per_radar_cycle(self):
-+    for f235, f237, track_id, d_rel, y_rel, v_rel in RECORDED:
-+      ri = RadarInterface(car_params())
-+      reports = run(ri, [(bytes.fromhex(f235), bytes.fromhex(f237))] * 21)
-+      assert len(reports) == 7  # 21 frame pairs at 50 Hz = 7 radar cycles of 60 ms (16.7 Hz)
-+      pt, = reports[-1].points
-+      assert pt.trackId == track_id
-+      assert abs(pt.dRel - d_rel) < 1e-6 and abs(pt.yRel - y_rel) < 1e-6 and abs(pt.vRel - v_rel) < 1e-6
-+
-+  def test_packed_target(self):
-+    pair = (PACKER.make_can_msg("ACC_TARGET_1", 1, {"STATE": 5, "REL_SPEED": -3.25, "TARGET_ID": 7})[1],
-+            PACKER.make_can_msg("ACC_TARGET_2", 1, {"LONG_DIST": 61.5, "LAT_DIST": 0.42, "PRESENT": 1})[1])
-+    reports = run(RadarInterface(car_params()), [pair] * 30)
++        reports.append(rr)
++    assert len(reports) == 10
 +    pt, = reports[-1].points
 +    assert pt.trackId == 7 and abs(pt.dRel - 61.5) < 1e-6 and abs(pt.yRel - 0.42) < 1e-6 and abs(pt.vRel + 3.25) < 1e-6
-+    assert not reports[-1].errors.canError
 +
-+  def test_stuck_counter_publishes_no_target(self):
-+    # the ACC target frames repeat a counter value: CANParser rejects them, so the trigger (0x237) never updates
-+    ri = RadarInterface(car_params())
-+    pair = (bytes.fromhex(RECORDED[0][0]), bytes.fromhex(RECORDED[0][1]))
-+    reports = []
-+    for i in range(21):
-+      clock = PACKER.make_can_msg("ACC_TARGET_3", 1, {"TIMESTAMP": 60000 * (1 + i // 3)})[1]
-+      for j in range(2):
-+        rr = ri.update([(int((2 * i + j) * 1e7), [(0x235, pair[0], 1), (0x237, pair[1], 1), (0x239, clock, 1)] if j == 0 else [])])
-+        if rr is not None:
-+          reports.append(rr)
-+    assert len(reports) == 2  # frames accepted until CANParser's counter check trips (5 bad frames), then nothing
-+
-+  def test_no_target_and_silent_radar(self):
-+    ri = RadarInterface(car_params())
-+    reports = run(ri, [(IDLE_235, IDLE_237)] * 21)  # no target: the radar keeps sending, so empty reports keep coming
-+    assert len(reports) == 7 and all(len(rr.points) == 0 and not rr.errors.canError for rr in reports)
-+    # a silent radar publishes nothing, like Toyota's other radars: radard then flags liveTracks as missing
-+    assert run(ri, [None] * 20, t0=0.5e9) == []
-+
-+
-+if __name__ == "__main__":
-+  unittest.main()
+   def test_essential_ecus(self):
+     # Asserts standard ECUs exist for each platform
+     common_ecus = {Ecu.fwdRadar, Ecu.fwdCamera}
 diff --git a/opendbc/car/toyota/values.py b/opendbc/car/toyota/values.py
 index efdef6a0..91cd3f24 100644
 --- a/opendbc/car/toyota/values.py

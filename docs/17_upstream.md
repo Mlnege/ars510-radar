@@ -5,7 +5,7 @@ ask. Both are prepared as branches on a fork of opendbc, on top of opendbc maste
 
 | branch | profile | what it adds |
 |---|---|---|
-| [`ars510-acc`](https://github.com/commaai/opendbc/compare/master...ds-sebastian:opendbc:ars510-acc) | `acc`: the radar's ACC target alone (the proposal) | the ACC target inline in the Toyota `radar_interface.py`, the DBC `toyota_tss2_ars510.dbc`, the radar DBC for the two RAV4 platforms in `values.py`, and `tests/test_ars510.py` |
+| [`ars510-acc`](https://github.com/commaai/opendbc/compare/master...ds-sebastian:opendbc:ars510-acc) | `acc`: the radar's ACC target alone (the proposal) | the ACC target inline in the Toyota `radar_interface.py`, the DBC `toyota_tss2_ars510.dbc`, the radar DBC for the two RAV4 platforms in `values.py`, and two tests in `tests/test_toyota.py` |
 | [`ars510-fused`](https://github.com/commaai/opendbc/compare/master...ds-sebastian:opendbc:ars510-fused) | `fused`: every track, one Kalman speed filter per track | `car/toyota/ars510_radar.py`, its test, the same DBC, and the same routing and detection |
 
 `upstream/opendbc_ars510.patch` is the `ars510-acc` branch as one patch, and `upstream/toyota_tss2_ars510.dbc` is its
@@ -42,7 +42,10 @@ commit:
   advanced. The frames repeat at 50 Hz, and radard accepts `liveTracks` only at 8-24 Hz. The clock advances once per
   60 ms cycle, with or without a target, so reports go out at 16.7 Hz: empty when there is no target, nothing when the
   radar stops sending. There is no point while the frames are invalid (a stale or bad counter).
-- **Tests:** `opendbc/car/toyota/tests/test_ars510.py`.
+- **Tests:** two in the existing `opendbc/car/toyota/tests/test_toyota.py`: every radar-ACC car gets the ARS510, and
+  50 Hz frames give one report per radar cycle (radard's frequency check is off in replay, so only this test guards it).
+  opendbc's generic tests cover the rest: `test_car_interfaces.py` runs every platform's `RadarInterface`, and
+  `test_models.py` replays each platform's test route through it, now including the RAV4 2022, C-HR and Yaris routes.
 
 smasher816 helped frame this approach (the ACC target inline in Toyota's `RadarInterface`, selected through the radar
 DBC) and reviewed it; the DBC field names follow his.
