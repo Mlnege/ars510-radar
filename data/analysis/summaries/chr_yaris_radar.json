@@ -115,5 +115,5 @@
   "mismatches": 0,
   "signals": "every signal of ACC_TARGET_1-4 in upstream/toyota_tss2_ars510.dbc through opendbc's CANParser against ars510.support (parse_acc_target, parse_0x239, parse_0x23b)"
  },
- "consequence": "The community integration enables both platforms for testing (installer hook ARS510_PLATFORMS; the Yaris runs acc whatever the profile, since it sends no 0xB4 wheel speed). The upstream proposal keeps them radarless until a drive with traffic validates them; enabling one there is a radar DBC entry (toyota_tss2_ars510) in values.py."
+ "consequence": "The community integration enables both platforms for testing (installer hook ARS510_PLATFORMS; the Yaris runs acc whatever the profile, since it sends no 0xB4 wheel speed), and the upstream acc proposal (upstream/opendbc_ars510.patch) gives every radar-ACC platform the radar DBC toyota_tss2_ars510. Drives in traffic on a C-HR or Yaris are still to come."
 }
