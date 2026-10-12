@@ -49,7 +49,7 @@ visual overlap give an approximate alignment.
 | C: brake-stage capture | facility-managed warning, brake-assist, pre-fill and autonomous-braking conditions, labelled separately | which car-bus commands and radar-bus values mark each stage |
 | D: disabled-output condition | facility-approved control/logging setup with the radar's car-bus output disabled | whether bus-1 threat/alarm signaling remains available; the car's warning or braking is recorded as observed |
 
-Keep runs without warning or braking, labelled **not exercised**: each records the conditions tried. The facility separates driver braking, brake assist and autonomous action; the
+Keep runs without warning or braking, labelled **unexercised**: each records the conditions tried. The facility separates driver braking, brake assist and autonomous action; the
 actuator source comes from the brake-pressure/force fields and stage labels, since a pedal press or deceleration trace is
 common to all three.
 
@@ -68,6 +68,6 @@ replication is described as replication.
 
 Open a [research finding](https://github.com/ds-sebastian/ars510-radar/issues/new?template=research_finding.yml)
 with the condition table, firmware/configuration, relative event times, observed stages, reference uncertainty
-and runs labelled not exercised. Offer rlogs and video privately; the maintainer arranges transfer.
+and runs labelled unexercised. Offer rlogs and video privately; the maintainer arranges transfer.
 Keep route/dongle IDs, VINs, GPS and identifying footage out of public posts. The public repo carries anonymous
 signal summaries and reproduction instructions.

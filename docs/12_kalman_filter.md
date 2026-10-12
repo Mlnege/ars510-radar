@@ -357,7 +357,7 @@ owner drives:
 
 ![what each part is worth](img/analysis/kalman_ablation.png)
 
-| `fused` 2.0 without … | held-out | further | owner | verdict |
+| `fused` 2.0 minus … | held-out | further | owner | verdict |
 |---|---|---|---|---|
 | `fused` 2.0 (baseline) | **30** | **2** | **0** | |
 | the ACC target and summaries (filter on the object list alone) | 48 | 2 | 0 (4 target episodes) | needed |

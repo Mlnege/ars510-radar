@@ -82,7 +82,7 @@ and broadcast status ([13](13_car_bus_messages.md)). Catalog DID meanings are ca
    first and run only those reads (the kit carries read commands alone).
 3. With ignition on and ego secured, collect baseline → covered → uncovered, 60 seconds each. Use a removable
    shield on a stand clear of the radar emblem, with a clean surface, held by the stand alone. Note messages and condition edges.
-   If the state holds constant, record **not exercised** and stay parked.
+   If the state holds constant, record **unexercised** and stay parked.
 4. Keep raw responses, negative responses/timeouts, request/response times and session mode. After a successful
    contrast, repeat the parked sequence once and verify recovery. Keep default/extended-session captures separate.
 
@@ -300,7 +300,7 @@ reconstructs continuous streams across segment edges.
 Submit a [drive report](https://github.com/ds-sebastian/ars510-radar/issues/new?template=drive_report.yml) for road
 behavior or a [research finding](https://github.com/ds-sebastian/ars510-radar/issues/new?template=research_finding.yml)
 for a controlled test. Include test ID, car/firmware/configuration, conditions, times relative to the session,
-intended contrast, reference accuracy, observed results including runs labelled not exercised, and whether private logs are available.
+intended contrast, reference accuracy, observed results including runs labelled unexercised, and whether private logs are available.
 
 Keep route/dongle IDs, VINs, GPS, unit identifiers and identifying video out of public posts. Arrange private
 transfer with the maintainer; retain original instrument exports and quality flags. Anonymous summaries and
@@ -308,4 +308,4 @@ reproduction commands belong in the repo when the result is ready.
 
 Before promoting a conclusion, verify that the intended condition occurred, physical identity/reference timing
 is adequate, absences and missing outputs stay visible, and conclusion-bearing numbers were checked a second way.
-Report each result as supported, contradicted, inconclusive or not exercised.
+Report each result as supported, contradicted, inconclusive or unexercised.
